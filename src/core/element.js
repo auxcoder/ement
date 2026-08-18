@@ -319,6 +319,71 @@ export class NgElement extends HTMLElement {
     }
   }
 
+  // ─── List Rendering ─────────────────────────────────────────────────────────
+
+  /**
+   * Render a list of items into a container, with keyed reconciliation.
+   * Equivalent to AngularJS `ng-repeat` with `track by`.
+   *
+   * Reuses existing DOM nodes when possible (matched by key), only
+   * creating/removing nodes that actually changed.
+   *
+   * @param {string} selector - CSS selector for the container element
+   * @param {Array} items - Array of data items to render
+   * @param {Function} templateFn - (item, index) => DOM node
+   * @param {Function} [keyFn] - (item) => unique key (default: index)
+   *
+   * @example
+   * this.repeat('.todo-list', this.todos, (todo) => {
+   *   const li = document.createElement('li');
+   *   li.textContent = todo.text;
+   *   return li;
+   * }, (todo) => todo.id);
+   */
+  repeat(selector, items, templateFn, keyFn = (_, i) => i) {
+    const container = this.#shadow.querySelector?.(selector);
+    if (!container) return;
+
+    // Track existing nodes by key
+    const marker = `__ng_repeat_${selector}`;
+    const existingMap = container[marker] || new Map(); // key → node
+    const newMap = new Map();
+
+    // Build new list
+    const fragment = [];
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const key = keyFn(item, i);
+
+      if (existingMap.has(key)) {
+        // Reuse existing node
+        newMap.set(key, existingMap.get(key));
+        existingMap.delete(key);
+      } else {
+        // Create new node
+        const node = templateFn(item, i);
+        node.__ngKey = key;
+        newMap.set(key, node);
+      }
+      fragment.push(newMap.get(key));
+    }
+
+    // Remove nodes that no longer exist
+    for (const [, node] of existingMap) {
+      node.remove?.();
+    }
+
+    // Clear and re-append in order
+    if (container.innerHTML !== undefined) container.innerHTML = '';
+    if (container.childNodes) container.childNodes.length = 0;
+    for (const node of fragment) {
+      container.appendChild(node);
+    }
+
+    // Store map for next reconciliation
+    container[marker] = newMap;
+  }
+
   // ─── Event Emission ────────────────────────────────────────────────────────
 
   /**

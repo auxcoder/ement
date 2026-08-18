@@ -456,4 +456,103 @@ describe('NgElement', () => {
       assert.equal(createCount, 1);
     });
   });
+
+  describe('repeat() — list rendering', () => {
+    function makeContainer() {
+      return {
+        className: 'list',
+        childNodes: [],
+        innerHTML: '',
+        appendChild(c) { this.childNodes.push(c); return c; },
+      };
+    }
+
+    it('renders a list of items', async () => {
+      class ListComp extends NgElement {
+        static template = '<ul>x</ul>';
+      }
+      const comp = new ListComp();
+      await comp.connectedCallback();
+
+      const container = makeContainer();
+      comp.shadowRoot.children.push(container);
+
+      const items = ['Apple', 'Banana', 'Cherry'];
+      comp.repeat('.list', items, (item) => ({ textContent: item }));
+
+      assert.equal(container.childNodes.length, 3);
+      assert.equal(container.childNodes[0].textContent, 'Apple');
+      assert.equal(container.childNodes[1].textContent, 'Banana');
+      assert.equal(container.childNodes[2].textContent, 'Cherry');
+    });
+
+    it('reuses existing nodes by key', async () => {
+      class KeyComp extends NgElement {
+        static template = '<div>x</div>';
+      }
+      const comp = new KeyComp();
+      await comp.connectedCallback();
+
+      const container = makeContainer();
+      comp.shadowRoot.children.push(container);
+
+      const items = [{ id: 1, text: 'A' }, { id: 2, text: 'B' }];
+      comp.repeat('.list', items, (item) => ({ textContent: item.text, id: item.id }), (item) => item.id);
+
+      const firstNode = container.childNodes[0];
+      const secondNode = container.childNodes[1];
+
+      // Re-render with same keys — nodes should be reused
+      comp.repeat('.list', items, (item) => ({ textContent: item.text, id: item.id }), (item) => item.id);
+
+      assert.strictEqual(container.childNodes[0], firstNode);
+      assert.strictEqual(container.childNodes[1], secondNode);
+    });
+
+    it('removes nodes for items no longer in list', async () => {
+      class RemoveComp extends NgElement {
+        static template = '<div>x</div>';
+      }
+      const comp = new RemoveComp();
+      await comp.connectedCallback();
+
+      const container = makeContainer();
+      comp.shadowRoot.children.push(container);
+
+      let removedKeys = [];
+      const items = [{ id: 1 }, { id: 2 }, { id: 3 }];
+      comp.repeat('.list', items,
+        (item) => ({ textContent: item.id, __ngKey: item.id, remove() { removedKeys.push(item.id); } }),
+        (item) => item.id,
+      );
+
+      assert.equal(container.childNodes.length, 3);
+
+      // Remove middle item
+      comp.repeat('.list', [{ id: 1 }, { id: 3 }],
+        (item) => ({ textContent: item.id, remove() { removedKeys.push(item.id); } }),
+        (item) => item.id,
+      );
+
+      assert.equal(container.childNodes.length, 2);
+      assert.ok(removedKeys.includes(2));
+    });
+
+    it('adds new nodes for new items', async () => {
+      class AddComp extends NgElement {
+        static template = '<div>x</div>';
+      }
+      const comp = new AddComp();
+      await comp.connectedCallback();
+
+      const container = makeContainer();
+      comp.shadowRoot.children.push(container);
+
+      comp.repeat('.list', [{ id: 1 }], (item) => ({ textContent: item.id }), (item) => item.id);
+      assert.equal(container.childNodes.length, 1);
+
+      comp.repeat('.list', [{ id: 1 }, { id: 2 }], (item) => ({ textContent: item.id }), (item) => item.id);
+      assert.equal(container.childNodes.length, 2);
+    });
+  });
 });
