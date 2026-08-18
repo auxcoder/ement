@@ -1,0 +1,172 @@
+/**
+ * Tests for http/http.js
+ * Run with: node --test src/http/http.test.js
+ */
+
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
+import { Http, HttpError } from './http.js';
+
+// ─── Mock fetch ────────────────────────────────────────────────────────────────
+
+let lastFetchUrl;
+let lastFetchOptions;
+let mockResponse;
+
+globalThis.fetch = async (url, options) => {
+  lastFetchUrl = url;
+  lastFetchOptions = options;
+  return mockResponse;
+};
+
+function setMockResponse(body, { status = 200, statusText = 'OK', headers = {} } = {}) {
+  mockResponse = {
+    ok: status >= 200 && status < 300,
+    status,
+    statusText,
+    headers: { get: (key) => headers[key] || null },
+    json: async () => body,
+    text: async () => JSON.stringify(body),
+  };
+}
+
+// ─── Tests ─────────────────────────────────────────────────────────────────────
+
+describe('Http', () => {
+  beforeEach(() => {
+    lastFetchUrl = null;
+    lastFetchOptions = null;
+    setMockResponse({ success: true });
+  });
+
+  describe('basic requests', () => {
+    it('GET returns parsed JSON', async () => {
+      setMockResponse({ users: [{ name: 'Alice' }] });
+      const http = new Http({ baseUrl: 'http://api.test' });
+
+      const result = await http.get('/users');
+
+      assert.equal(lastFetchUrl, 'http://api.test/users');
+      assert.equal(lastFetchOptions.method, 'GET');
+      assert.deepEqual(result, { users: [{ name: 'Alice' }] });
+    });
+
+    it('POST sends JSON body', async () => {
+      setMockResponse({ id: 1 });
+      const http = new Http({ baseUrl: 'http://api.test' });
+
+      const result = await http.post('/users', { name: 'Bob' });
+
+      assert.equal(lastFetchOptions.method, 'POST');
+      assert.equal(lastFetchOptions.body, '{"name":"Bob"}');
+      assert.equal(lastFetchOptions.headers['Content-Type'], 'application/json');
+      assert.deepEqual(result, { id: 1 });
+    });
+
+    it('PUT sends JSON body', async () => {
+      setMockResponse({ updated: true });
+      const http = new Http();
+
+      await http.put('/items/1', { name: 'Updated' });
+
+      assert.equal(lastFetchOptions.method, 'PUT');
+      assert.equal(lastFetchOptions.body, '{"name":"Updated"}');
+    });
+
+    it('PATCH sends JSON body', async () => {
+      setMockResponse({ patched: true });
+      const http = new Http();
+
+      await http.patch('/items/1', { status: 'done' });
+
+      assert.equal(lastFetchOptions.method, 'PATCH');
+      assert.equal(lastFetchOptions.body, '{"status":"done"}');
+    });
+
+    it('DELETE sends request', async () => {
+      setMockResponse(null, { headers: { 'content-length': '0' } });
+      const http = new Http();
+
+      const result = await http.delete('/items/1');
+
+      assert.equal(lastFetchOptions.method, 'DELETE');
+      assert.equal(result, null);
+    });
+  });
+
+  describe('baseUrl and headers', () => {
+    it('prepends baseUrl to all requests', async () => {
+      setMockResponse({});
+      const http = new Http({ baseUrl: 'https://api.example.com/v2' });
+
+      await http.get('/users');
+
+      assert.equal(lastFetchUrl, 'https://api.example.com/v2/users');
+    });
+
+    it('sends default headers on all requests', async () => {
+      setMockResponse({});
+      const http = new Http({ headers: { 'X-App': 'my-app' } });
+
+      await http.get('/data');
+
+      assert.equal(lastFetchOptions.headers['X-App'], 'my-app');
+    });
+  });
+
+  describe('error handling', () => {
+    it('throws HttpError on non-ok response', async () => {
+      setMockResponse({ error: 'Not Found' }, { status: 404, statusText: 'Not Found' });
+      const http = new Http();
+
+      await assert.rejects(
+        () => http.get('/missing'),
+        (err) => {
+          assert.ok(err instanceof HttpError);
+          assert.equal(err.status, 404);
+          assert.equal(err.message, 'HTTP 404: Not Found');
+          return true;
+        },
+      );
+    });
+  });
+
+  describe('interceptors', () => {
+    it('request interceptor can add auth headers', async () => {
+      setMockResponse({ data: 'secret' });
+      const http = new Http({
+        interceptors: [{
+          request: async (config) => {
+            config.headers['Authorization'] = 'Bearer token123';
+            return config;
+          },
+        }],
+      });
+
+      await http.get('/protected');
+
+      assert.equal(lastFetchOptions.headers['Authorization'], 'Bearer token123');
+    });
+
+    it('response interceptor can transform response', async () => {
+      setMockResponse({ wrapped: { users: ['A'] } });
+      const http = new Http({
+        interceptors: [{
+          response: async (response) => {
+            // Wrap json to unwrap .wrapped
+            const original = response.json;
+            response.json = async () => {
+              const data = await original();
+              return data.wrapped;
+            };
+            return response;
+          },
+        }],
+      });
+
+      const result = await http.get('/users');
+
+      assert.deepEqual(result, { users: ['A'] });
+    });
+  });
+});
