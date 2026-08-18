@@ -7,4 +7,4 @@
  */
 
 // Placeholder — will import and demonstrate components as they're built
-console.log('[ng-modern] Dev app loaded. Ready for Phase 1 implementation.');
+console.log("[ng-modern] Dev app loaded. Ready for Phase 1 implementation.");
