@@ -50,6 +50,14 @@ class MockShadowRoot {
     return child;
   }
   getElementById() { return null; }
+  querySelector(selector) {
+    // Simple class-based lookup for tests
+    const className = selector.startsWith('.') ? selector.slice(1) : null;
+    if (className) {
+      return this.children.find(c => c.className === className) || null;
+    }
+    return null;
+  }
 }
 
 class MockHTMLElement {
@@ -359,6 +367,93 @@ describe('NgElement', () => {
 
       const event = comp._events[0];
       assert.equal(event.cancelable, true);
+    });
+  });
+
+  describe('show() — conditional display', () => {
+    it('hides an element when condition is false', async () => {
+      class ShowComp extends NgElement {
+        static template = '<div>visible</div>';
+      }
+      const comp = new ShowComp();
+      await comp.connectedCallback();
+
+      // Add an element with className to shadow for querySelector
+      const el = { className: 'loading', style: { display: '' } };
+      comp.shadowRoot.children.push(el);
+
+      comp.show('.loading', false);
+      assert.equal(el.style.display, 'none');
+    });
+
+    it('shows an element when condition is true', async () => {
+      class ShowComp2 extends NgElement {
+        static template = '<div>visible</div>';
+      }
+      const comp = new ShowComp2();
+      await comp.connectedCallback();
+
+      const el = { className: 'content', style: { display: 'none' } };
+      comp.shadowRoot.children.push(el);
+
+      comp.show('.content', true);
+      assert.equal(el.style.display, '');
+    });
+  });
+
+  describe('when() — conditional rendering', () => {
+    it('creates content when condition is true', async () => {
+      class WhenComp extends NgElement {
+        static template = '<div>x</div>';
+      }
+      const comp = new WhenComp();
+      await comp.connectedCallback();
+
+      const container = { className: 'target', children: [], appendChild(c) { this.children.push(c); return c; } };
+      comp.shadowRoot.children.push(container);
+
+      const node = { textContent: 'Created!' };
+      comp.when('.target', true, () => node);
+
+      assert.equal(container.children[0], node);
+    });
+
+    it('removes content when condition is false', async () => {
+      class WhenComp2 extends NgElement {
+        static template = '<div>x</div>';
+      }
+      const comp = new WhenComp2();
+      await comp.connectedCallback();
+
+      let removed = false;
+      const node = { textContent: 'Temp', remove() { removed = true; } };
+      const container = { className: 'box', children: [], appendChild(c) { this.children.push(c); return c; } };
+      comp.shadowRoot.children.push(container);
+
+      // Create first
+      comp.when('.box', true, () => node);
+      assert.equal(container.children.length, 1);
+
+      // Remove
+      comp.when('.box', false, () => node);
+      assert.equal(removed, true);
+    });
+
+    it('does not re-create if already present', async () => {
+      class WhenComp3 extends NgElement {
+        static template = '<div>x</div>';
+      }
+      const comp = new WhenComp3();
+      await comp.connectedCallback();
+
+      let createCount = 0;
+      const container = { className: 'slot', children: [], appendChild(c) { this.children.push(c); return c; } };
+      comp.shadowRoot.children.push(container);
+
+      comp.when('.slot', true, () => { createCount++; return { text: 'hi' }; });
+      comp.when('.slot', true, () => { createCount++; return { text: 'hi' }; });
+
+      assert.equal(createCount, 1);
     });
   });
 });

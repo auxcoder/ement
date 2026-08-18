@@ -256,6 +256,69 @@ export class NgElement extends HTMLElement {
     }
   }
 
+  // ─── Conditional Rendering ─────────────────────────────────────────────────
+
+  /**
+   * Show or hide an element in the shadow DOM by selector.
+   * Uses `display: none` — element stays in DOM but is invisible.
+   * Equivalent to AngularJS `ng-show` / `ng-hide`.
+   *
+   * @param {string} selector - CSS selector within shadow DOM
+   * @param {boolean} condition - Whether to show (true) or hide (false)
+   *
+   * @example
+   * this.show('.loading', this.isLoading);
+   * this.show('.content', !this.isLoading);
+   */
+  show(selector, condition) {
+    const el = this.#shadow.querySelector?.(selector);
+    if (el) {
+      el.style.display = condition ? '' : 'none';
+    }
+  }
+
+  /**
+   * Conditionally create or remove a DOM subtree.
+   * Equivalent to AngularJS `ng-if` — element is fully removed when false.
+   *
+   * @param {string} selector - CSS selector for the container element
+   * @param {boolean} condition - Whether to render content
+   * @param {Function} templateFn - Returns HTML string or DOM node to insert
+   * @returns {Node|null} The inserted node, or null if removed
+   *
+   * @example
+   * this.when('.error-container', this.hasError, () => {
+   *   const el = document.createElement('p');
+   *   el.textContent = this.errorMessage;
+   *   el.className = 'error';
+   *   return el;
+   * });
+   */
+  when(selector, condition, templateFn) {
+    const container = this.#shadow.querySelector?.(selector);
+    if (!container) return null;
+
+    // Track what we've inserted with a data attribute
+    const marker = `__ng_when_${selector}`;
+
+    if (condition) {
+      // Only create if not already present
+      if (!container[marker]) {
+        const content = templateFn();
+        container.appendChild(content);
+        container[marker] = content;
+      }
+      return container[marker];
+    } else {
+      // Remove if present
+      if (container[marker]) {
+        container[marker].remove?.();
+        container[marker] = null;
+      }
+      return null;
+    }
+  }
+
   // ─── Event Emission ────────────────────────────────────────────────────────
 
   /**
