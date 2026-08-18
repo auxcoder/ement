@@ -6,25 +6,9 @@ export default defineConfig({
 
   build: {
     lib: {
-      entry: {
-        'ng-modern': './src/index.js',
-        'core/element': './src/core/element.js',
-        'core/reactive': './src/core/reactive.js',
-        'core/scheduler': './src/core/scheduler.js',
-        'di/container': './src/di/container.js',
-        'di/tokens': './src/di/tokens.js',
-        'router/router': './src/router/router.js',
-        'http/http': './src/http/http.js',
-        'forms/field': './src/forms/field.js',
-        'forms/form-group': './src/forms/form-group.js',
-        'forms/parsers': './src/forms/parsers.js',
-        'forms/formatters': './src/forms/formatters.js',
-        'forms/validators': './src/forms/validators.js',
-        'animate/animate': './src/animate/animate.js',
-        'security/sanitize': './src/security/sanitize.js',
-        'filters/intl': './src/filters/intl.js',
-      },
+      entry: './src/index.js',
       formats: ['es'],
+      fileName: 'ng-modern',
     },
     rollupOptions: {
       output: {
@@ -32,7 +16,7 @@ export default defineConfig({
       },
     },
     sourcemap: true,
-    minify: 'terser',
+    minify: true,
     target: 'es2020',
   },
 

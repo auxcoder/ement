@@ -8,6 +8,7 @@
 export { reactive } from './core/reactive.js';
 export { scheduleUpdate } from './core/scheduler.js';
 export { NgElement } from './core/element.js';
+export { bootstrap } from './core/bootstrap.js';
 
 // Dependency Injection
 export { Container } from './di/container.js';

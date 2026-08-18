@@ -3,9 +3,13 @@
   "version": "0.1.0",
   "description": "AngularJS reimagined with modern browser APIs — a learning exercise",
   "type": "module",
-  "main": "./dist/ng-modern.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "exports": {
-    ".": "./src/index.js",
+    ".": {
+      "import": "./dist/index.js",
+      "development": "./src/index.js"
+    },
     "./core/reactive": "./src/core/reactive.js",
     "./core/scheduler": "./src/core/scheduler.js",
     "./core/element": "./src/core/element.js",
