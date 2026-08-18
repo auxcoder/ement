@@ -11,6 +11,8 @@
  * @module core/reactive
  */
 
+import { trackAccess } from './computed.js';
+
 const PROXY_FLAG = Symbol("__isProxy");
 const RAW_FLAG = Symbol("__raw");
 
@@ -86,6 +88,12 @@ function createProxy(target, onChange, parentPath, proxyCache) {
       if (prop === RAW_FLAG) return obj;
 
       const value = Reflect.get(obj, prop, receiver);
+
+      // Track this access for computed() dependency detection
+      if (typeof prop === 'string') {
+        const path = parentPath ? `${parentPath}.${prop}` : prop;
+        trackAccess(path);
+      }
 
       // Intercept array mutator methods
       if (
