@@ -62,11 +62,49 @@ export class NgElement extends HTMLElement {
   /**
    * Called by the browser when an observed attribute changes.
    * Converts kebab-case attributes to camelCase properties.
+   * Supports type coercion via static `propTypes` declaration.
+   *
+   * @example
+   * class MyComp extends NgElement {
+   *   static observedAttributes = ['user-name', 'is-active', 'count'];
+   *   static propTypes = { isActive: Boolean, count: Number };
+   * }
+   * // <my-comp user-name="Alice" is-active count="5">
+   * // → this.userName = 'Alice', this.isActive = true, this.count = 5
    */
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
     const prop = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-    this[prop] = newValue;
+    const coerced = this.#coerceValue(prop, newValue, name);
+    this[prop] = coerced;
+    this._notifyChange(prop, coerced);
+  }
+
+  /**
+   * Coerce attribute string to the declared type.
+   * @private
+   */
+  #coerceValue(prop, value, attrName) {
+    const types = this.constructor.propTypes;
+    if (!types || !types[prop]) return value;
+
+    const type = types[prop];
+
+    if (type === Boolean) {
+      // Boolean attributes: presence = true, absence = false
+      // <el active> → true, <el active="false"> → false, removal → false
+      if (value === null) return false;
+      if (value === 'false' || value === '0') return false;
+      return true;
+    }
+
+    if (type === Number) {
+      if (value === null || value === '') return null;
+      const num = Number(value);
+      return Number.isNaN(num) ? null : num;
+    }
+
+    return value;
   }
 
   // ─── Template Resolution (class-level cache) ───────────────────────────────

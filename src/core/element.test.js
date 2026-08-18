@@ -223,6 +223,57 @@ describe('NgElement', () => {
       comp.attributeChangedCallback('user-name', 'same', 'same');
       assert.equal(comp.userName, 'Original');
     });
+
+    it('coerces Boolean attributes (presence = true)', () => {
+      class BoolComp extends NgElement {
+        static observedAttributes = ['is-active'];
+        static propTypes = { isActive: Boolean };
+      }
+      const comp = new BoolComp();
+
+      // Attribute present with empty value → true
+      comp.attributeChangedCallback('is-active', null, '');
+      assert.equal(comp.isActive, true);
+
+      // Attribute with "false" string → false
+      comp.attributeChangedCallback('is-active', '', 'false');
+      assert.equal(comp.isActive, false);
+
+      // Attribute removed (null) → false
+      comp.attributeChangedCallback('is-active', 'false', null);
+      assert.equal(comp.isActive, false);
+    });
+
+    it('coerces Number attributes', () => {
+      class NumComp extends NgElement {
+        static observedAttributes = ['count', 'ratio'];
+        static propTypes = { count: Number, ratio: Number };
+      }
+      const comp = new NumComp();
+
+      comp.attributeChangedCallback('count', null, '42');
+      assert.equal(comp.count, 42);
+
+      comp.attributeChangedCallback('ratio', null, '3.14');
+      assert.equal(comp.ratio, 3.14);
+
+      // Invalid number → null
+      comp.attributeChangedCallback('count', '42', 'abc');
+      assert.equal(comp.count, null);
+
+      // Empty string → null
+      comp.attributeChangedCallback('ratio', '3.14', '');
+      assert.equal(comp.ratio, null);
+    });
+
+    it('leaves string attributes unchanged when no propTypes', () => {
+      class StrComp extends NgElement {
+        static observedAttributes = ['label'];
+      }
+      const comp = new StrComp();
+      comp.attributeChangedCallback('label', null, '42');
+      assert.equal(comp.label, '42'); // string, not number
+    });
   });
 
   describe('lifecycle', () => {
