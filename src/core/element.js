@@ -16,9 +16,12 @@
  */
 
 import { resolveContainer } from '../di/provider.js';
+import { reactive } from './reactive.js';
+import { scheduleUpdate } from './scheduler.js';
 
 export class NgElement extends HTMLElement {
   #shadow;
+  #bindings = new Map(); // prop → [{ node, template }]
 
   constructor() {
     super();
@@ -102,7 +105,8 @@ export class NgElement extends HTMLElement {
   // ─── Rendering ─────────────────────────────────────────────────────────────
 
   /**
-   * Renders the template and styles into the Shadow DOM.
+   * Renders the template and styles into the Shadow DOM,
+   * then parses {{ prop }} bindings and connects them to reactive state.
    * @private
    */
   #render() {
@@ -120,7 +124,97 @@ export class NgElement extends HTMLElement {
     if (template) {
       const tpl = document.createElement('template');
       tpl.innerHTML = template;
-      this.#shadow.appendChild(tpl.content.cloneNode(true));
+      const content = tpl.content.cloneNode(true);
+      this.#parseBindings(content);
+      this.#shadow.appendChild(content);
+    }
+
+    // Initial render of all bindings
+    for (const [prop] of this.#bindings) {
+      this.#updateBinding(prop, this[prop]);
+    }
+  }
+
+  // ─── Template Bindings ({{ prop }}) ────────────────────────────────────────
+
+  /**
+   * Walks the DOM tree to find {{ prop }} expressions in text nodes.
+   * Records them so they can be updated when the property changes.
+   * @private
+   */
+  #parseBindings(root) {
+    // TreeWalker for text nodes
+    if (typeof document !== 'undefined' && document.createTreeWalker) {
+      const walker = document.createTreeWalker(root, 4 /* NodeFilter.SHOW_TEXT */);
+      while (walker.nextNode()) {
+        this.#processTextNode(walker.currentNode);
+      }
+    }
+  }
+
+  /**
+   * Checks a text node for {{ prop }} patterns and registers bindings.
+   * @private
+   */
+  #processTextNode(textNode) {
+    const text = textNode.textContent;
+    if (!text || !text.includes('{{')) return;
+
+    const matches = [...text.matchAll(/\{\{\s*(\w+)\s*\}\}/g)];
+    if (matches.length === 0) return;
+
+    for (const match of matches) {
+      const prop = match[1];
+      if (!this.#bindings.has(prop)) {
+        this.#bindings.set(prop, []);
+      }
+      this.#bindings.get(prop).push({
+        node: textNode,
+        template: text,
+      });
+    }
+  }
+
+  /**
+   * Updates all text nodes bound to a given property.
+   * @private
+   */
+  #updateBinding(prop, value) {
+    const entries = this.#bindings.get(prop);
+    if (!entries) return;
+
+    for (const { node, template } of entries) {
+      // Replace all {{ prop }} occurrences in the original template string
+      let result = template;
+      for (const [p, v] of this.#getAllBoundValues()) {
+        result = result.replace(
+          new RegExp(`\\{\\{\\s*${p}\\s*\\}\\}`, 'g'),
+          v ?? '',
+        );
+      }
+      node.textContent = result;
+    }
+  }
+
+  /**
+   * Gets current values for all bound properties.
+   * @private
+   */
+  #getAllBoundValues() {
+    const entries = [];
+    for (const prop of this.#bindings.keys()) {
+      entries.push([prop, this[prop]]);
+    }
+    return entries;
+  }
+
+  /**
+   * Notify that a property changed — schedules binding updates.
+   * Call this from reactive setters or manually after state changes.
+   */
+  _notifyChange(prop, value) {
+    if (this.#bindings.has(prop)) {
+      scheduleUpdate(() => this.#updateBinding(prop, value));
     }
   }
 }
