@@ -255,4 +255,35 @@ export class NgElement extends HTMLElement {
       scheduleUpdate(() => this.#updateBinding(prop, value));
     }
   }
+
+  // ─── Event Emission ────────────────────────────────────────────────────────
+
+  /**
+   * Emit a custom event that bubbles through Shadow DOM.
+   * Equivalent to AngularJS's `&` scope binding (output callback).
+   *
+   * @param {string} name - Event name (will be kebab-cased by convention)
+   * @param {*} detail - Data to pass with the event
+   * @param {Object} [options] - Additional event options
+   * @returns {boolean} Whether the event was not cancelled
+   *
+   * @example
+   * // Child component:
+   * this.emit('item-selected', { id: 42 });
+   *
+   * // Parent listens:
+   * childEl.addEventListener('item-selected', (e) => {
+   *   console.log(e.detail.id); // 42
+   * });
+   */
+  emit(name, detail = null, options = {}) {
+    const event = new CustomEvent(name, {
+      detail,
+      bubbles: true,
+      composed: true, // crosses Shadow DOM boundary
+      cancelable: true,
+      ...options,
+    });
+    return this.dispatchEvent(event);
+  }
 }

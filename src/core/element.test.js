@@ -53,8 +53,12 @@ class MockShadowRoot {
 }
 
 class MockHTMLElement {
-  constructor() { this.parentElement = null; }
+  constructor() { this.parentElement = null; this._events = []; }
   attachShadow() { return new MockShadowRoot(); }
+  dispatchEvent(event) {
+    this._events.push(event);
+    return !event.defaultPrevented;
+  }
 }
 
 class MockTemplateElement {
@@ -113,6 +117,18 @@ globalThis.document = {
 globalThis.fetch = async (url) => ({
   text: async () => `<div>fetched from ${url}</div>`,
 });
+
+globalThis.CustomEvent = class CustomEvent {
+  constructor(name, options = {}) {
+    this.type = name;
+    this.detail = options.detail ?? null;
+    this.bubbles = options.bubbles ?? false;
+    this.composed = options.composed ?? false;
+    this.cancelable = options.cancelable ?? false;
+    this.defaultPrevented = false;
+  }
+  preventDefault() { this.defaultPrevented = true; }
+};
 
 // Import after shims
 const { NgElement } = await import('./element.js');
@@ -297,6 +313,52 @@ describe('NgElement', () => {
       const comp = new DestroyComp();
       comp.disconnectedCallback();
       assert.equal(destroyed, true);
+    });
+  });
+
+  describe('emit() — event emission', () => {
+    it('dispatches a CustomEvent with detail', () => {
+      class EmitComp extends NgElement {
+        static template = '';
+      }
+      const comp = new EmitComp();
+      comp.emit('item-selected', { id: 42 });
+
+      const event = comp._events[0];
+      assert.equal(event.type, 'item-selected');
+      assert.deepEqual(event.detail, { id: 42 });
+    });
+
+    it('sets bubbles and composed to true (crosses Shadow DOM)', () => {
+      class BubbleComp extends NgElement {
+        static template = '';
+      }
+      const comp = new BubbleComp();
+      comp.emit('change', { value: 'x' });
+
+      const event = comp._events[0];
+      assert.equal(event.bubbles, true);
+      assert.equal(event.composed, true);
+    });
+
+    it('returns true if event was not cancelled', () => {
+      class OkComp extends NgElement {
+        static template = '';
+      }
+      const comp = new OkComp();
+      const result = comp.emit('action');
+      assert.equal(result, true);
+    });
+
+    it('supports cancelable events', () => {
+      class CancelComp extends NgElement {
+        static template = '';
+      }
+      const comp = new CancelComp();
+      comp.emit('navigate', { path: '/home' }, { cancelable: true });
+
+      const event = comp._events[0];
+      assert.equal(event.cancelable, true);
     });
   });
 });
