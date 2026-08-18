@@ -169,4 +169,84 @@ describe('Http', () => {
       assert.deepEqual(result, { users: ['A'] });
     });
   });
+
+  describe('request cancellation', () => {
+    it('cancels request via AbortSignal', async () => {
+      // Make fetch that respects signal
+      globalThis.fetch = (url, options) => {
+        return new Promise((resolve, reject) => {
+          if (options.signal?.aborted) {
+            reject(new DOMException('Aborted', 'AbortError'));
+            return;
+          }
+          options.signal?.addEventListener('abort', () => {
+            reject(new DOMException('Aborted', 'AbortError'));
+          });
+        });
+      };
+
+      const http = new Http();
+      const controller = new AbortController();
+
+      const promise = http.get('/slow', { signal: controller.signal });
+
+      // Abort after starting
+      controller.abort();
+
+      await assert.rejects(
+        () => promise,
+        (err) => {
+          assert.equal(err.name, 'AbortError');
+          return true;
+        },
+      );
+
+      // Restore
+      globalThis.fetch = async (url, options) => {
+        lastFetchUrl = url; lastFetchOptions = options;
+        return mockResponse;
+      };
+    });
+
+    it('cancelAll() aborts all in-flight requests', async () => {
+      let abortedCount = 0;
+      globalThis.fetch = (url, options) => {
+        return new Promise((_, reject) => {
+          options.signal.addEventListener('abort', () => {
+            abortedCount++;
+            reject(new DOMException('Aborted', 'AbortError'));
+          });
+        });
+      };
+
+      const http = new Http({ baseUrl: 'http://test' });
+
+      // Fire off requests (don't await)
+      http.get('/a').catch(() => {});
+      http.get('/b').catch(() => {});
+
+      assert.equal(http.pendingCount, 2);
+
+      http.cancelAll();
+      await new Promise(r => setTimeout(r, 5));
+
+      assert.equal(abortedCount, 2);
+      assert.equal(http.pendingCount, 0);
+
+      // Restore
+      globalThis.fetch = async (url, options) => {
+        lastFetchUrl = url; lastFetchOptions = options;
+        return mockResponse;
+      };
+    });
+
+    it('pendingCount tracks active requests', async () => {
+      setMockResponse({ ok: true });
+      const http = new Http();
+
+      assert.equal(http.pendingCount, 0);
+      await http.get('/fast');
+      assert.equal(http.pendingCount, 0); // completed
+    });
+  });
 });
