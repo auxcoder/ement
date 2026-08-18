@@ -249,4 +249,141 @@ describe('Http', () => {
       assert.equal(http.pendingCount, 0); // completed
     });
   });
+
+  describe('timeout', () => {
+    it('throws TimeoutError when request exceeds timeout', async () => {
+      // Fetch that hangs but respects abort signal
+      globalThis.fetch = (url, options) => new Promise((_, reject) => {
+        options.signal?.addEventListener('abort', () => {
+          reject(new DOMException('Aborted', 'AbortError'));
+        });
+      });
+
+      const http = new Http({ timeout: 50 });
+
+      await assert.rejects(
+        () => http.get('/slow'),
+        (err) => {
+          assert.equal(err.name, 'TimeoutError');
+          assert.ok(err.message.includes('50ms'));
+          return true;
+        },
+      );
+
+      // Restore
+      globalThis.fetch = async (url, options) => {
+        lastFetchUrl = url; lastFetchOptions = options;
+        return mockResponse;
+      };
+    });
+
+    it('per-request timeout overrides default', async () => {
+      globalThis.fetch = (url, options) => new Promise((_, reject) => {
+        options.signal?.addEventListener('abort', () => {
+          reject(new DOMException('Aborted', 'AbortError'));
+        });
+      });
+
+      const http = new Http({ timeout: 5000 }); // high default
+
+      await assert.rejects(
+        () => http.get('/slow', { timeout: 30 }), // low override
+        (err) => {
+          assert.equal(err.name, 'TimeoutError');
+          return true;
+        },
+      );
+
+      globalThis.fetch = async (url, options) => {
+        lastFetchUrl = url; lastFetchOptions = options;
+        return mockResponse;
+      };
+    });
+  });
+
+  describe('retry', () => {
+    it('retries on server error up to configured max', async () => {
+      let attempts = 0;
+      globalThis.fetch = async () => {
+        attempts++;
+        return {
+          ok: false,
+          status: 500,
+          statusText: 'Server Error',
+          headers: { get: () => null },
+          json: async () => ({}),
+        };
+      };
+
+      const http = new Http({ retries: 2, retryDelay: 10 });
+
+      await assert.rejects(
+        () => http.get('/failing'),
+        (err) => err.status === 500,
+      );
+
+      // 1 initial + 2 retries = 3 attempts
+      assert.equal(attempts, 3);
+
+      globalThis.fetch = async (url, options) => {
+        lastFetchUrl = url; lastFetchOptions = options;
+        return mockResponse;
+      };
+    });
+
+    it('does not retry on 4xx client errors', async () => {
+      let attempts = 0;
+      globalThis.fetch = async () => {
+        attempts++;
+        return {
+          ok: false,
+          status: 422,
+          statusText: 'Unprocessable',
+          headers: { get: () => null },
+          json: async () => ({}),
+        };
+      };
+
+      const http = new Http({ retries: 3, retryDelay: 10 });
+
+      await assert.rejects(
+        () => http.post('/bad-data', {}),
+        (err) => err.status === 422,
+      );
+
+      assert.equal(attempts, 1); // no retries
+      
+      globalThis.fetch = async (url, options) => {
+        lastFetchUrl = url; lastFetchOptions = options;
+        return mockResponse;
+      };
+    });
+
+    it('succeeds if retry recovers', async () => {
+      let attempts = 0;
+      globalThis.fetch = async () => {
+        attempts++;
+        if (attempts < 3) {
+          throw new Error('Network error');
+        }
+        return {
+          ok: true,
+          status: 200,
+          headers: { get: () => null },
+          json: async () => ({ recovered: true }),
+        };
+      };
+
+      const http = new Http({ retries: 3, retryDelay: 10 });
+      const result = await http.get('/flaky');
+
+      assert.equal(attempts, 3);
+      assert.deepEqual(result, { recovered: true });
+
+      globalThis.fetch = async (url, options) => {
+        lastFetchUrl = url; lastFetchOptions = options;
+        return mockResponse;
+      };
+    });
+  });
 });
