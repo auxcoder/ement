@@ -699,13 +699,136 @@ describe("ElElement", () => {
     });
   });
 
+  describe("bind() — property binding", () => {
+    it("pushes inputs (getter values) to child element", async () => {
+      class ParentComp extends ElElement {
+        static template = '<div class="child"></div>';
+        user = { name: "Alice", id: 1 };
+
+        onInit() {
+          // Simulate child element
+          const child = { className: "child" };
+          this.shadowRoot.children.push(child);
+          this.shadowRoot.querySelectorAll = (sel) =>
+            sel === ".child" ? [child] : [];
+
+          this.bind(".child", {
+            user: () => this.user,
+          });
+        }
+      }
+      const comp = new ParentComp();
+      await comp.connectedCallback();
+
+      const child = comp.shadowRoot.children.find(
+        (c) => c.className === "child",
+      );
+      assert.deepEqual(child.user, { name: "Alice", id: 1 });
+    });
+
+    it("sets outputs (callbacks) on child element", async () => {
+      class ParentComp2 extends ElElement {
+        static template = '<div class="child"></div>';
+        deleted = null;
+
+        onInit() {
+          const child = { className: "child" };
+          this.shadowRoot.children.push(child);
+          this.shadowRoot.querySelectorAll = (sel) =>
+            sel === ".child" ? [child] : [];
+
+          this.bind(".child", {
+            onDelete: (data) => {
+              this.deleted = data;
+            },
+          });
+        }
+      }
+      const comp = new ParentComp2();
+      await comp.connectedCallback();
+
+      const child = comp.shadowRoot.children.find(
+        (c) => c.className === "child",
+      );
+
+      // Child calls the callback
+      child.onDelete({ id: 42 });
+      assert.deepEqual(comp.deleted, { id: 42 });
+    });
+
+    it("distinguishes inputs (0 args) from outputs (1+ args)", async () => {
+      class ParentComp3 extends ElElement {
+        static template = '<div class="child"></div>';
+        value = "hello";
+
+        onInit() {
+          const child = { className: "child" };
+          this.shadowRoot.children.push(child);
+          this.shadowRoot.querySelectorAll = (sel) =>
+            sel === ".child" ? [child] : [];
+
+          this.bind(".child", {
+            value: () => this.value, // 0 args = input
+            onAction: (data) => {}, // 1 arg = output
+          });
+        }
+      }
+      const comp = new ParentComp3();
+      await comp.connectedCallback();
+
+      const child = comp.shadowRoot.children.find(
+        (c) => c.className === "child",
+      );
+
+      // Input was set from getter
+      assert.equal(child.value, "hello");
+      // Output was set as function
+      assert.equal(typeof child.onAction, "function");
+    });
+
+    it("re-syncs inputs when parent state changes", async () => {
+      class SyncComp extends ElElement {
+        static template = "{{ name }}";
+        name = "Alice";
+
+        onInit() {
+          const child = { className: "target" };
+          this.shadowRoot.children.push(child);
+          this.shadowRoot.querySelectorAll = (sel) =>
+            sel === ".target" ? [child] : [];
+
+          this.bind(".target", {
+            name: () => this.name,
+          });
+        }
+      }
+      const comp = new SyncComp();
+      await comp.connectedCallback();
+
+      const child = comp.shadowRoot.children.find(
+        (c) => c.className === "target",
+      );
+      assert.equal(child.name, "Alice");
+
+      // Parent changes
+      comp.name = "Bob";
+      const { flushUpdates } = await import("./scheduler.js");
+      flushUpdates();
+
+      // Child should be updated
+      assert.equal(child.name, "Bob");
+    });
+  });
+
   describe("onChanges lifecycle hook", () => {
     it("fires with correct previous/current values", async () => {
       let receivedChanges;
       class ChangesComp extends ElElement {
         static template = "{{ name }}";
         name = "Alice";
-        onChanges(changes) { receivedChanges = changes; }
+        onChanges(changes) {
+          receivedChanges = changes;
+        }
       }
       const comp = new ChangesComp();
       await comp.connectedCallback();
@@ -726,7 +849,10 @@ describe("ElElement", () => {
         static template = "{{ first }} {{ last }}";
         first = "A";
         last = "B";
-        onChanges(changes) { callCount++; receivedChanges = changes; }
+        onChanges(changes) {
+          callCount++;
+          receivedChanges = changes;
+        }
       }
       const comp = new BatchComp();
       await comp.connectedCallback();
@@ -748,7 +874,9 @@ describe("ElElement", () => {
       class FirstComp extends ElElement {
         static template = "{{ score }}";
         score = undefined;
-        onChanges(changes) { receivedChanges = changes; }
+        onChanges(changes) {
+          receivedChanges = changes;
+        }
       }
       const comp = new FirstComp();
       await comp.connectedCallback();
@@ -766,7 +894,9 @@ describe("ElElement", () => {
       class SameComp extends ElElement {
         static template = "{{ count }}";
         count = 5;
-        onChanges() { callCount++; }
+        onChanges() {
+          callCount++;
+        }
       }
       const comp = new SameComp();
       await comp.connectedCallback();
@@ -783,7 +913,9 @@ describe("ElElement", () => {
       class InitComp extends ElElement {
         static template = "{{ value }}";
         value = "initial";
-        onChanges() { callCount++; }
+        onChanges() {
+          callCount++;
+        }
       }
       const comp = new InitComp();
       await comp.connectedCallback();

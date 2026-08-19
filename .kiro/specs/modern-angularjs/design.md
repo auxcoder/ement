@@ -301,7 +301,13 @@ export class NgElement extends HTMLElement {
     const oldPropValue = this[prop];
     this[prop] = newValue;
     // Notify onChanges lifecycle hook
-    this.onChanges?.({ [prop]: { previous: oldPropValue, current: newValue, firstChange: oldValue === null } });
+    this.onChanges?.({
+      [prop]: {
+        previous: oldPropValue,
+        current: newValue,
+        firstChange: oldValue === null,
+      },
+    });
   }
 
   /**
@@ -388,6 +394,46 @@ export class NgElement extends HTMLElement {
 - Shadow DOM gives us encapsulation that AngularJS required `scope: { ... }` isolation for.
 - We lose AngularJS's template-level logic (`ng-if`, `ng-repeat`) — these become methods or separate helper elements.
 - Templates are real `.html` files with full tooling support — just like AngularJS's `templateUrl`, but with `import.meta.url` for explicit co-location instead of string paths.
+
+### Property Binding — `bind()`
+
+Replaces AngularJS's `<` (one-way) and `&` (expression) scope bindings. One method handles both directions:
+
+```javascript
+class UserPage extends ElElement {
+  static template = "<item-card></item-card>";
+
+  user = { name: "Alice", id: 42 };
+  items = [];
+
+  onInit() {
+    this.bind("item-card", {
+      // Inputs (0 args = getter): parent state → child property (synced)
+      user: () => this.user,
+      items: () => this.items,
+
+      // Outputs (1+ args = callback): child calls → parent handles
+      onDelete: (data) => this.removeUser(data.id),
+      onSelect: (data) => (this.selected = data),
+    });
+  }
+}
+```
+
+**How it maps to AngularJS:**
+
+| AngularJS       | Ement bind()                                                         |
+| --------------- | -------------------------------------------------------------------- |
+| `user: '<'`     | `user: () => this.user`                                              |
+| `onDelete: '&'` | `onDelete: (data) => this.handle(data)`                              |
+| `label: '@'`    | `static observedAttributes = ['label']` (strings stay as attributes) |
+
+**Key behaviors:**
+
+- Inputs re-sync automatically when parent state changes (no stale references)
+- Outputs are just function references — child calls them directly (no events needed)
+- Callbacks don't trigger `onChanges` — they're communication channels, not data
+- Works with multiple instances (querySelectorAll)
 
 ---
 

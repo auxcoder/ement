@@ -62,7 +62,9 @@ One API, one code path, two runtime behaviors depending on whether a build step 
 | `$scope`                           | Component state container       | **Class fields** on Custom Element                                          |
 | Dirty checking / digest cycle      | Detect changes to plain objects | **`Proxy`** for deep observation                                            |
 | `$watch` / `$watchCollection`      | Observe value changes           | **`Proxy`** traps + **`MutationObserver`** for DOM                          |
-| `$onChanges` (component lifecycle) | React to input/binding changes  | **`onChanges(changes)` lifecycle hook** on ElElement                         |
+| `$onChanges` (component lifecycle) | React to input/binding changes  | **`onChanges(changes)` lifecycle hook** on ElElement                        |
+| `<` (one-way binding)              | Pass any value parent→child     | **`bind()` method** — getter functions synced to child properties           |
+| `&` (expression binding)           | Parent passes callback to child | **`bind()` method** — callback functions set on child, child calls directly |
 | Two-way binding (`ng-model`)       | Sync form inputs ↔ model        | **Unidirectional flow**: state → view (reactive), view → state (events up)  |
 | `$apply` / `$digest`               | Trigger change detection        | Automatic via Proxy traps (synchronous) or **microtask** batching           |
 | Expression evaluation (`{{expr}}`) | Interpolate model into view     | **Tagged Template Literals** or manual `textContent` updates                |
