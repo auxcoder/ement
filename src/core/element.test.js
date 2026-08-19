@@ -2,7 +2,7 @@
  * Tests for core/element.js
  * Run with: node --test src/core/element.test.js
  *
- * Uses a minimal DOM shim since NgElement relies on browser APIs.
+ * Uses a minimal DOM shim since ElElement relies on browser APIs.
  */
 
 import { describe, it } from "node:test";
@@ -173,7 +173,7 @@ const { ElElement } = await import("./element.js");
 
 // ─── Tests ─────────────────────────────────────────────────────────────────────
 
-describe("NgElement", () => {
+describe("ElElement", () => {
   describe("template resolution", () => {
     it("uses inline template string when available", async () => {
       class InlineComp extends ElElement {
@@ -236,7 +236,7 @@ describe("NgElement", () => {
       assert.equal(textNode.textContent, "Hello World");
     });
 
-    it("updates binding when _notifyChange is called", async () => {
+    it("updates binding automatically when property is set", async () => {
       class UpdateComp extends ElElement {
         static template = "{{ name }}";
         name = "Alice";
@@ -248,9 +248,8 @@ describe("NgElement", () => {
       const boundNode = shadow.children.find((c) => c.textContent === "Alice");
       assert.ok(boundNode, 'Initial binding should render "Alice"');
 
-      // Update
+      // Set property — should auto-update (no _notifyChange needed)
       comp.name = "Bob";
-      comp._notifyChange("name", "Bob");
 
       const { flushUpdates } = await import("./scheduler.js");
       flushUpdates();
@@ -342,6 +341,28 @@ describe("NgElement", () => {
       const comp = new StrComp();
       comp.attributeChangedCallback("label", null, "42");
       assert.equal(comp.label, "42"); // string, not number
+    });
+
+    it("attribute change auto-updates template binding (end-to-end)", async () => {
+      class AttrBindComp extends ElElement {
+        static template = "{{ userName }}";
+        static observedAttributes = ["user-name"];
+        userName = "Initial";
+      }
+      const comp = new AttrBindComp();
+      await comp.connectedCallback();
+
+      const shadow = comp.shadowRoot;
+      const node = shadow.children.find((c) => c.textContent === "Initial");
+      assert.ok(node, "Initial render should show 'Initial'");
+
+      // Simulate attribute change (as if DOM setAttribute was called)
+      comp.attributeChangedCallback("user-name", "Initial", "Updated");
+
+      const { flushUpdates } = await import("./scheduler.js");
+      flushUpdates();
+
+      assert.equal(node.textContent, "Updated");
     });
   });
 

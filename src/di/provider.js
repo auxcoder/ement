@@ -2,7 +2,7 @@
  * DI container integration with the DOM.
  *
  * Provides:
- * 1. `<ng-provider>` element — attaches a Container to a DOM subtree
+ * 1. `<ng-provider>` element — attaches an ElContainer to a DOM subtree
  * 2. `resolveContainer(element)` — walks up the DOM to find the nearest container
  *
  * This is how components access services without importing implementations directly.
@@ -21,7 +21,7 @@ const CONTAINER_KEY = Symbol("__ngContainer");
  * Any descendant can resolve services from this container.
  *
  * @param {HTMLElement} element - The DOM element to provide from
- * @param {Container} container - The container instance
+ * @param {ElContainer} container - The container instance
  *
  * @example
  * const container = new ElContainer();
@@ -37,7 +37,7 @@ export function provideContainer(element, container) {
  * Checks the element itself, then ancestors, crossing Shadow DOM boundaries.
  *
  * @param {HTMLElement} element - Starting element
- * @returns {Container} The nearest container
+ * @returns {ElContainer} The nearest container
  * @throws {Error} If no container found in any ancestor
  *
  * @example

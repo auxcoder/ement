@@ -11,7 +11,7 @@
 import { ElContainer } from "../../src/di/container.js";
 import { HttpToken, StorageToken } from "../../src/di/tokens.js";
 
-// ─── DI Container Setup ────────────────────────────────────────────────────────
+// ─── DI ElContainer Setup ────────────────────────────────────────────────────────
 
 export const container = new ElContainer();
 
@@ -82,4 +82,4 @@ container.register(TodoServiceToken, (c) => {
   };
 });
 
-console.log("[TodoMVC] App bootstrapped. Container ready.");
+console.log("[Ement] TodoMVC bootstrapped.");

@@ -3,7 +3,7 @@
  * Run with: node --test src/core/slots.test.js
  *
  * Slots are a native Shadow DOM feature — no framework code needed.
- * These tests document the pattern and prove it works with NgElement.
+ * These tests document the pattern and prove it works with ElElement.
  *
  * In a real browser:
  *   <my-card>

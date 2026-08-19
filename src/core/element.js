@@ -16,12 +16,12 @@
  */
 
 import { resolveContainer } from "../di/provider.js";
-import { reactive } from "./reactive.js";
 import { scheduleUpdate } from "./scheduler.js";
 
 export class ElElement extends HTMLElement {
   #shadow;
   #bindings = new Map(); // prop → [{ node, template }]
+  #state = {};           // backing store for reactive properties
 
   constructor() {
     super();
@@ -44,11 +44,12 @@ export class ElElement extends HTMLElement {
 
   /**
    * Called by the browser when the element is added to the DOM.
-   * Resolves template/styles, renders, then calls onInit().
+   * Resolves template/styles, renders, installs reactivity, then calls onInit().
    */
   async connectedCallback() {
     await this.constructor._ensureResources();
     this.#render();
+    this.#installReactiveProperties();
     this.onInit?.();
   }
 
@@ -65,7 +66,7 @@ export class ElElement extends HTMLElement {
    * Supports type coercion via static `propTypes` declaration.
    *
    * @example
-   * class MyComp extends NgElement {
+   * class MyComp extends ElElement {
    *   static observedAttributes = ['user-name', 'is-active', 'count'];
    *   static propTypes = { isActive: Boolean, count: Number };
    * }
@@ -170,6 +171,35 @@ export class ElElement extends HTMLElement {
     // Initial render of all bindings
     for (const [prop] of this.#bindings) {
       this.#updateBinding(prop, this[prop]);
+    }
+  }
+
+  // ─── Reactive Properties ───────────────────────────────────────────────────
+
+  /**
+   * Installs getter/setter pairs on the instance for all bound properties.
+   * After this, setting `this.name = 'Bob'` automatically updates the template.
+   * No manual _notifyChange() needed.
+   * @private
+   */
+  #installReactiveProperties() {
+    for (const prop of this.#bindings.keys()) {
+      // Capture current value
+      const currentValue = this[prop];
+      this.#state[prop] = currentValue;
+
+      // Replace the property with a getter/setter
+      Object.defineProperty(this, prop, {
+        get: () => this.#state[prop],
+        set: (value) => {
+          const old = this.#state[prop];
+          if (Object.is(old, value)) return;
+          this.#state[prop] = value;
+          scheduleUpdate(() => this.#updateBinding(prop, value));
+        },
+        enumerable: true,
+        configurable: true,
+      });
     }
   }
 

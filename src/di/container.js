@@ -9,10 +9,10 @@
  */
 
 /**
- * DI Container — register and resolve services by token.
+ * DI ElContainer — register and resolve services by token.
  *
  * @example
- * const container = new Container();
+ * const container = new ElContainer();
  * container.register(HttpToken, () => new Http({ baseUrl: '/api' }));
  * const http = container.resolve(HttpToken);
  */
@@ -36,7 +36,7 @@ export class ElContainer {
    * @param {Function} factory - Factory function: (container) => instance
    * @param {Object} [options]
    * @param {boolean} [options.singleton=true] - Shared instance (true) or new per resolve (false)
-   * @returns {Container} this (for chaining)
+   * @returns {ElContainer} this (for chaining)
    *
    * @example
    * container.register(HttpToken, (c) => new Http({ baseUrl: '/api' }));
@@ -112,7 +112,7 @@ export class ElContainer {
    * Create a child container that inherits this container's registrations.
    * Child can override tokens without mutating the parent.
    *
-   * @returns {Container}
+   * @returns {ElContainer}
    *
    * @example
    * const child = container.createChild();

@@ -1,6 +1,6 @@
 /**
  * Application bootstrap helper.
- * Sugar over Container + Http + Router setup.
+ * Sugar over ElContainer + ElHttp + ElRouter setup.
  *
  * @module core/bootstrap
  */
@@ -21,7 +21,7 @@ import { provideContainer } from "../di/provider.js";
  * @param {Object} [config.http] - Http configuration (baseUrl, interceptors, timeout, retries)
  * @param {Function} [config.routes] - (router) => void — configure routes and hooks
  * @param {string} [config.outlet] - CSS selector for route-outlet (default: 'route-outlet')
- * @returns {{ container: Container, router: Router|null, http: Http }}
+ * @returns {{ container: ElContainer, router: ElRouter|null, http: ElHttp }}
  *
  * @example
  * const app = bootstrap('#app', {
@@ -61,7 +61,7 @@ export function bootstrap(root, config = {}) {
   // Create container
   const container = new ElContainer();
 
-  // Register Http
+  // Register ElHttp
   const httpInstance = new ElHttp(httpConfig || {});
   container.register(HttpToken, () => httpInstance);
 

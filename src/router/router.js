@@ -31,7 +31,7 @@ export class ElRouter extends EventTarget {
    * @param {string} name - Group name
    * @param {Object} options
    * @param {Function} options.resolve - async (params) => data
-   * @returns {Router} this
+   * @returns {ElRouter} this
    */
   group(name, { resolve } = {}) {
     this.#groups.set(name, { resolve, data: null, resolved: false });
@@ -46,7 +46,7 @@ export class ElRouter extends EventTarget {
    * @param {Object} [options]
    * @param {Function} [options.resolve] - async (params) => data
    * @param {string} [options.group] - Group name for shared resolve
-   * @returns {Router} this
+   * @returns {ElRouter} this
    */
   route(pattern, component, { resolve, group } = {}) {
     const urlPattern = new URLPattern({ pathname: pattern });
@@ -59,7 +59,7 @@ export class ElRouter extends EventTarget {
    * Return undefined to continue, false to cancel, or a string to redirect.
    *
    * @param {Function} hookFn - async (from, to) => undefined | false | string
-   * @returns {Router} this
+   * @returns {ElRouter} this
    */
   onBefore(hookFn) {
     this.#hooks.onBefore.push(hookFn);
@@ -70,7 +70,7 @@ export class ElRouter extends EventTarget {
    * Register a hook that runs AFTER successful navigation.
    *
    * @param {Function} hookFn - async (from, to, data) => void
-   * @returns {Router} this
+   * @returns {ElRouter} this
    */
   onSuccess(hookFn) {
     this.#hooks.onSuccess.push(hookFn);
@@ -81,7 +81,7 @@ export class ElRouter extends EventTarget {
    * Register a hook that runs when navigation fails (resolve error, etc.).
    *
    * @param {Function} hookFn - async (error, from, to) => void
-   * @returns {Router} this
+   * @returns {ElRouter} this
    */
   onError(hookFn) {
     this.#hooks.onError.push(hookFn);

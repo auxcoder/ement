@@ -1,13 +1,13 @@
 /**
  * <route-outlet> custom element.
  * Mounts/unmounts components based on active route.
- * Acts as the mounting point for the Router.
+ * Acts as the mounting point for the ElRouter.
  *
  * Usage:
  *   <route-outlet></route-outlet>
  *
  *   const outlet = document.querySelector('route-outlet');
- *   const router = new Router(outlet);
+ *   const router = new ElRouter(outlet);
  *
  * @module router/route-outlet
  */
@@ -31,7 +31,7 @@ export class RouteOutlet extends BaseElement {
 
   /**
    * Mount a component by clearing the outlet and appending the new element.
-   * Called internally by the Router.
+   * Called internally by the ElRouter.
    *
    * @param {HTMLElement} element - The component element to mount
    */

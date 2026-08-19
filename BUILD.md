@@ -33,7 +33,7 @@ API proxy is configured for `/api` → `http://localhost:8080` (adjust in `vite.
 dist/
 ├── ement.js          # Main entry (re-exports all)
 ├── core/
-│   ├── element.js        # NgElement base class
+│   ├── element.js        # ElElement base class
 │   ├── reactive.js       # Proxy reactivity
 │   └── scheduler.js      # Microtask batching
 ├── di/
@@ -73,7 +73,7 @@ The custom Rollup plugin (`vite-plugins/inline-templates.js`) transforms compone
 **Before (source):**
 
 ```javascript
-class UserCard extends NgElement {
+class UserCard extends ElElement {
   static templateUrl = new URL("./user-card.html", import.meta.url);
   static stylesUrl = new URL("./user-card.css", import.meta.url);
 }
@@ -82,7 +82,7 @@ class UserCard extends NgElement {
 **After (built):**
 
 ```javascript
-class UserCard extends NgElement {
+class UserCard extends ElElement {
   static template = '<div class="card"><slot></slot></div>';
   static styles = ":host { display: block; }";
 }

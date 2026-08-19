@@ -135,7 +135,7 @@ console.log(`
   │ Content projection      │ ng-transclude               │ <slot> (native)               │
   │ Conditional             │ ng-if (declarative)         │ this.show() / this.when()     │
   │ List rendering          │ ng-repeat (declarative)     │ this.repeat() (imperative)    │
-  │ Data binding            │ {{ expr }} (auto)           │ {{ prop }} + _notifyChange    │
+  │ Data binding            │ {{ expr }} (auto)           │ {{ prop }} (auto-reactive)    │
   │ Registration            │ angular.module().directive  │ customElements.define()       │
   │ Interoperability        │ AngularJS only              │ Any framework / vanilla       │
   └─────────────────────────┴─────────────────────────────┴───────────────────────────────┘
@@ -151,7 +151,7 @@ console.log(`
   • Conditional/list rendering is imperative (method calls vs template directives)
   • No template-level expressions (ng-if="x > 5" has no equivalent)
   • More manual wiring (addEventListener vs declarative ng-click)
-  • Must call _notifyChange or use reactive() to trigger binding updates
+  • Bound properties auto-update on assignment (no manual calls needed)
 
   WHAT'S THE SAME:
   • Separate template files (HTML tooling works for both)

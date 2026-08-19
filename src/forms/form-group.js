@@ -1,5 +1,5 @@
 /**
- * FormGroup — aggregates multiple Field instances.
+ * ElFormGroup — aggregates multiple ElField instances.
  * Provides form-level state (valid, dirty, touched) as a read-only aggregate.
  * Replaces AngularJS form controller.
  *
@@ -30,11 +30,11 @@ export class ElFormGroup {
   }
 
   /**
-   * Register a Field with a name.
+   * Register an ElField with a name.
    *
    * @param {string} name - Field identifier
-   * @param {Field} field - The Field instance
-   * @returns {FormGroup} this
+   * @param {ElField} field - The Field instance
+   * @returns {ElFormGroup} this
    */
   addField(name, field) {
     this.#fields.set(name, field);
