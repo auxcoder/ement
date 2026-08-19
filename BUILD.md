@@ -31,7 +31,7 @@ API proxy is configured for `/api` → `http://localhost:8080` (adjust in `vite.
 
 ```
 dist/
-├── ng-modern.js          # Main entry (re-exports all)
+├── ement.js          # Main entry (re-exports all)
 ├── core/
 │   ├── element.js        # NgElement base class
 │   ├── reactive.js       # Proxy reactivity
@@ -92,7 +92,7 @@ In development, templates are fetched at runtime (no plugin transformation). The
 
 ## Integrating with an Existing AngularJS + Webpack App
 
-### 1. Install ng-modern as a local dependency
+### 1. Install ement as a local dependency
 
 ```bash
 # In your AngularJS app directory:
@@ -105,8 +105,8 @@ npm link ../path/to/ng-elements
 
 ```javascript
 // In your AngularJS app code:
-import "ng-modern/dist/core/element.js";
-import "ng-modern/dist/forms/field.js";
+import "ement/dist/core/element.js";
+import "ement/dist/forms/field.js";
 // Custom elements are now registered and available
 ```
 
@@ -117,11 +117,11 @@ import "ng-modern/dist/forms/field.js";
 <user-card user-name="{{ $ctrl.user.name }}"></user-card>
 ```
 
-### 4. Communication between AngularJS and ng-modern
+### 4. Communication between AngularJS and ement
 
-**AngularJS → ng-modern:** HTML attributes (AngularJS interpolation → `observedAttributes`)
+**AngularJS → ement:** HTML attributes (AngularJS interpolation → `observedAttributes`)
 
-**ng-modern → AngularJS:** CustomEvents
+**ement → AngularJS:** CustomEvents
 
 ```javascript
 // AngularJS directive to bridge events:

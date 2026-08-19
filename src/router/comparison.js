@@ -1,5 +1,5 @@
 /**
- * Comparative Example: ngRoute vs ui-router vs ng-modern Router
+ * Comparative Example: ngRoute vs ui-router vs ement Router
  *
  * Run with: node src/router/comparison.js
  *
@@ -92,13 +92,11 @@ console.log(`
   • Resolve inheritance hides data origin
 `);
 
-// ─── 3. ng-modern ────────────────────────────────────────────────────────────
+// ─── 3. ement ────────────────────────────────────────────────────────────
 
-console.log(
-  "─── 3. ng-modern Router ───────────────────────────────────────\n",
-);
+console.log("─── 3. ement Router ───────────────────────────────────────\n");
 console.log(`
-  import { Router } from 'ng-modern/router/router';
+  import { Router } from 'ement/router/router';
 
   const router = new Router(document.querySelector('route-outlet'));
 
@@ -143,18 +141,18 @@ console.log(`
 
 console.log("─── Summary Table ────────────────────────────────────────────\n");
 console.log(`
-  ┌──────────────────────┬────────────┬───────────┬────────────┐
-  │ Feature              │ ngRoute    │ ui-router │ ng-modern  │
-  ├──────────────────────┼────────────┼───────────┼────────────┤
-  │ Auth guards          │ ❌ hack     │ ✅ hooks   │ ✅ hooks    │
-  │ Shared resolve       │ ❌ manual   │ ✅ inherit │ ✅ groups   │
+  ┌──────────────────────┬─────────────┬────────────┬──────────────┐
+  │ Feature              │ ngRoute     │ ui-router  │ ement        │
+  ├──────────────────────┼─────────────┼────────────┼──────────────┤
+  │ Auth guards          │ ❌ hack     │ ✅ hooks   │ ✅ hooks     │
+  │ Shared resolve       │ ❌ manual   │ ✅ inherit │ ✅ groups    │
   │ Cache control        │ ❌          │ ❌         │ ✅ invalidate│
-  │ Redirect             │ ❌ $location│ ✅ target  │ ✅ string   │
-  │ URL-based            │ ✅          │ ⚠️ optional│ ✅          │
-  │ Complexity           │ Low        │ High      │ Medium     │
-  │ Learning curve       │ Low        │ High      │ Low        │
-  │ Lines of config      │ ~15        │ ~30       │ ~15        │
-  └──────────────────────┴────────────┴───────────┴────────────┘
+  │ Redirect             │ ❌ $location│ ✅ target  │ ✅ string    │
+  │ URL-based            │ ✅          │ ⚠️ optional│ ✅           │
+  │ Complexity           │ Low         │ High       │ Medium       │
+  │ Learning curve       │ Low         │ High       │ Low          │
+  │ Lines of config      │ ~15         │ ~30        │ ~15          │
+  └──────────────────────┴─────────────┴────────────┴──────────────┘
 `);
 
 console.log("═════════════════════════════════════════════════════════════");

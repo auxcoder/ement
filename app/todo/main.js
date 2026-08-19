@@ -1,6 +1,6 @@
 /**
  * TodoMVC Demo App — Bootstrap
- * Uses all ng-modern modules: components, DI, routing, HTTP, forms, animations.
+ * Uses all ement modules: components, DI, routing, HTTP, forms, animations.
  *
  * This is the entry point. In the browser:
  *   <script type="module" src="./app/todo/main.js"></script>
@@ -40,7 +40,7 @@ export { TodoServiceToken };
 
 container.register(TodoServiceToken, (c) => {
   const storage = c.resolve(StorageToken);
-  const STORAGE_KEY = "ng-modern-todos";
+  const STORAGE_KEY = "ement-todos";
   let nextId = Date.now();
 
   return {

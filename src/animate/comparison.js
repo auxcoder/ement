@@ -61,9 +61,9 @@ console.log(`
   • Hard to coordinate sequences
 `);
 
-console.log("─── 2. ng-modern (Web Animations API) ───────────────────────\n");
+console.log("─── 2. ement (Web Animations API) ───────────────────────\n");
 console.log(`
-  import { animateIn, animateOut, stagger, presets } from 'ng-modern/animate';
+  import { animateIn, animateOut, stagger, presets } from 'ement/animate';
 
   // Enter animation — one line:
   animateIn(element, presets.fadeIn, { duration: 300 });
@@ -105,14 +105,14 @@ console.log(`
 console.log("─── Summary ──────────────────────────────────────────────────\n");
 console.log(`
   ┌──────────────────────┬─────────────────────────┬─────────────────────────┐
-  │ Feature              │ ngAnimate               │ WAAPI (ng-modern)       │
+  │ Feature              │ ngAnimate               │ WAAPI (ement)           │
   ├──────────────────────┼─────────────────────────┼─────────────────────────┤
   │ Enter/leave          │ CSS classes             │ animateIn/animateOut    │
   │ Stagger              │ CSS hack                │ stagger() function      │
   │ JS control           │ jQuery .animate()       │ Native .animate()       │
-  │ Pause/resume         │ ❌                       │ ✅ anim.pause/play      │
-  │ Reverse              │ ❌                       │ ✅ anim.reverse()       │
-  │ Playback speed       │ ❌                       │ ✅ anim.playbackRate    │
+  │ Pause/resume         │ ❌                       │ ✅ anim.pause/play     │
+  │ Reverse              │ ❌                       │ ✅ anim.reverse()      │
+  │ Playback speed       │ ❌                       │ ✅ anim.playbackRate   │
   │ Sequencing           │ Manual callbacks        │ onfinish / .finished    │
   │ Hardware accelerated │ CSS transitions only    │ ✅ All animations       │
   │ Framework coupling   │ AngularJS only          │ None (standard API)     │

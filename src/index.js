@@ -1,5 +1,5 @@
 /**
- * ng-modern — AngularJS reimagined with modern browser APIs.
+ * ement — AngularJS reimagined with modern browser APIs.
  *
  * Main entry point. Re-exports all public modules.
  */

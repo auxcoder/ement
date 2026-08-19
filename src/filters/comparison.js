@@ -33,7 +33,7 @@ console.log(`
   • No plural rules, no list formatting
 `);
 
-console.log("─── ng-modern (Intl APIs) ───────────────────────────────────\n");
+console.log("─── ement (Intl APIs) ───────────────────────────────────\n");
 
 const now = new Date("2026-08-18T12:00:00");
 

@@ -13,7 +13,7 @@ import { interceptLinks } from "../router/links.js";
 import { provideContainer } from "../di/provider.js";
 
 /**
- * Bootstrap an ng-modern application.
+ * Bootstrap an ement application.
  *
  * @param {string|HTMLElement} root - CSS selector or element to attach the app to
  * @param {Object} config

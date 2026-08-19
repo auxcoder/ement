@@ -1,6 +1,6 @@
 /**
  * Comparative Example: Dependency Injection
- * AngularJS ($inject) vs ng-modern (Container) vs vi.mock()
+ * AngularJS ($inject) vs ement (Container) vs vi.mock()
  *
  * Run with: node src/di/comparison.js
  *
@@ -89,9 +89,9 @@ console.log(`
   • Factory runs once — shared state between tests (pollution)
 `);
 
-// ─── 3. ng-modern Approach (Container) ───────────────────────────────────────
+// ─── 3. ement Approach (Container) ───────────────────────────────────────
 
-console.log("─── 3. ng-modern (Interface-based Container) ────────────────\n");
+console.log("─── 3. ement (Interface-based Container) ────────────────\n");
 
 const HttpToken = Symbol("Http");
 const UserServiceToken = Symbol("UserService");

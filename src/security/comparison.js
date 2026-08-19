@@ -7,7 +7,7 @@
  */
 
 console.log("═════════════════════════════════════════════════════════════");
-console.log("  Comparative Example: AngularJS Security vs ng-modern");
+console.log("  Comparative Example: AngularJS Security vs ement");
 console.log("═════════════════════════════════════════════════════════════\n");
 
 console.log("─── 1. AngularJS ($sce + $sanitize) ─────────────────────────\n");
@@ -39,9 +39,9 @@ console.log(`
   • No integration with browser's Trusted Types API
 `);
 
-console.log("─── 2. ng-modern (DOMParser + CSP-safe) ─────────────────────\n");
+console.log("─── 2. ement (DOMParser + CSP-safe) ─────────────────────\n");
 console.log(`
-  import { sanitizeHTML, escapeHTML } from 'ng-modern/security/sanitize';
+  import { sanitizeHTML, escapeHTML } from 'ement/security/sanitize';
 
   // Sanitize untrusted HTML (DOMParser-based):
   const clean = sanitizeHTML(userContent, {
@@ -86,7 +86,7 @@ console.log(`
   ❌ $parse service uses new Function() internally
   ❌ Workaround: use angular-csp.js (limited functionality)
 
-  ng-modern:
+  ement:
   ✅ WORKS — no eval, no new Function, no dynamic code generation
   ✅ Template bindings resolve via property lookup, not expression parsing
   ✅ Shadow DOM styles use <style> in shadow root (no external CSS issues)
@@ -94,18 +94,18 @@ console.log(`
 
 console.log("─── Summary ──────────────────────────────────────────────────\n");
 console.log(`
-  ┌──────────────────────┬─────────────────────────┬─────────────────────────┐
-  │ Feature              │ AngularJS               │ ng-modern               │
-  ├──────────────────────┼─────────────────────────┼─────────────────────────┤
-  │ HTML sanitization    │ $sanitize (custom parser)│ DOMParser (browser)    │
-  │ Trust mechanism      │ $sce.trustAsHtml()      │ None (always sanitize)  │
-  │ XSS via parser diff  │ ⚠️ Possible (mXSS)      │ ✅ Not possible         │
-  │ CSP compatible       │ ❌ Needs unsafe-eval     │ ✅ Fully compatible     │
-  │ Template expressions │ Eval-based ($parse)     │ Property lookup only    │
-  │ Style isolation      │ ❌ Global CSS            │ ✅ Shadow DOM           │
-  │ Trusted Types        │ ❌ Not supported         │ ✅ Can integrate        │
-  │ Escape utility       │ ❌ (use ng-bind)         │ ✅ escapeHTML()         │
-  └──────────────────────┴─────────────────────────┴─────────────────────────┘
+  ┌──────────────────────┬───────────────────────────┬─────────────────────────┐
+  │ Feature              │ AngularJS                 │ ement                   │
+  ├──────────────────────┼───────────────────────────┼─────────────────────────┤
+  │ HTML sanitization    │ $sanitize (custom parser) │ DOMParser (browser)     │
+  │ Trust mechanism      │ $sce.trustAsHtml()        │ None (always sanitize)  │
+  │ XSS via parser diff  │ ⚠️ Possible (mXSS)        │ ✅ Not possible         │
+  │ CSP compatible       │ ❌ Needs unsafe-eval      │ ✅ Fully compatible     │
+  │ Template expressions │ Eval-based ($parse)       │ Property lookup only    │
+  │ Style isolation      │ ❌ Global CSS             │ ✅ Shadow DOM           │
+  │ Trusted Types        │ ❌ Not supported          │ ✅ Can integrate        │
+  │ Escape utility       │ ❌ (use ng-bind)          │ ✅ escapeHTML()         │
+  └──────────────────────┴───────────────────────────┴─────────────────────────┘
 `);
 
 console.log("═════════════════════════════════════════════════════════════");

@@ -39,10 +39,8 @@ const modules = [
 ];
 
 console.log("═══════════════════════════════════════════════════════════════");
-console.log("  ng-modern — Bundle Size Analysis (Source)");
-console.log(
-  "═══════════════════════════════════════════════════════════════\n",
-);
+console.log("  ement — Bundle Size Analysis (Source)");
+console.log("══════════════════════════════════════════════════════════════\n");
 
 let totalBytes = 0;
 const results = [];
@@ -100,13 +98,13 @@ console.log(`
 
   ─── Comparison ───────────────────────────────────────────────
 
-  ng-modern (full):        ~${((totalBytes * 0.15) / 1024).toFixed(1)}KB gzipped (estimated)
+  ement (full):             ~${((totalBytes * 0.15) / 1024).toFixed(1)}KB gzipped (estimated)
   AngularJS 1.8 (min):      170KB  (60KB gzipped)
   Vue 3 (runtime):          50KB   (16KB gzipped)
   Preact:                   11KB   (4KB gzipped)
   Lit:                      16KB   (6KB gzipped)
 
-  Note: ng-modern is a learning framework, not competing on features
+  Note: ement is a learning framework, not competing on features
   with production frameworks. The comparison shows scale.
 `);
 

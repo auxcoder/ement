@@ -135,7 +135,7 @@ export class ElField {
    * Supports two validator formats:
    * 1. Object (AngularJS-compatible): { key: (modelValue, viewValue) => boolean }
    *    true = valid, false = invalid. Key becomes the error name.
-   * 2. Array (ng-modern): [(modelValue, viewValue) => errorKey | null]
+   * 2. Array (ement): [(modelValue, viewValue) => errorKey | null]
    *    Returns null if valid, or an error key string if invalid.
    *
    * @private
@@ -231,13 +231,13 @@ export class ElField {
     const cl = this.#input.classList;
     if (!cl) return;
 
-    cl.toggle("ng-valid", this.#state.valid);
-    cl.toggle("ng-invalid", !this.#state.valid);
-    cl.toggle("ng-dirty", this.#state.dirty);
-    cl.toggle("ng-pristine", !this.#state.dirty);
-    cl.toggle("ng-touched", this.#state.touched);
-    cl.toggle("ng-untouched", !this.#state.touched);
-    cl.toggle("ng-pending", this.#state.pending);
+    cl.toggle("el-valid", this.#state.valid);
+    cl.toggle("el-invalid", !this.#state.valid);
+    cl.toggle("el-dirty", this.#state.dirty);
+    cl.toggle("el-pristine", !this.#state.dirty);
+    cl.toggle("el-touched", this.#state.touched);
+    cl.toggle("el-untouched", !this.#state.touched);
+    cl.toggle("el-pending", this.#state.pending);
   }
 
   // ─── Public Accessors (read-only state) ────────────────────────────────────

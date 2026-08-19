@@ -247,43 +247,43 @@ describe("Field — async validators", () => {
 });
 
 describe("Field — CSS classes", () => {
-  it("applies ng-dirty, ng-pristine classes", () => {
+  it("applies el-dirty, el-pristine classes", () => {
     const input = makeInput();
     const field = new ElField(input);
 
     // Before any interaction, no classes yet (sync happens on events)
     // Type to trigger dirty
     input.type("x");
-    assert.ok(input._classes.has("ng-dirty"));
-    assert.ok(!input._classes.has("ng-pristine"));
+    assert.ok(input._classes.has("el-dirty"));
+    assert.ok(!input._classes.has("el-pristine"));
 
     // Reset to pristine
     field.markPristine();
-    assert.ok(!input._classes.has("ng-dirty"));
-    assert.ok(input._classes.has("ng-pristine"));
+    assert.ok(!input._classes.has("el-dirty"));
+    assert.ok(input._classes.has("el-pristine"));
   });
 
-  it("applies ng-touched on blur", () => {
+  it("applies el-touched on blur", () => {
     const input = makeInput();
     const field = new ElField(input);
 
-    assert.ok(!input._classes.has("ng-touched"));
+    assert.ok(!input._classes.has("el-touched"));
     input.blur();
-    assert.ok(input._classes.has("ng-touched"));
-    assert.ok(!input._classes.has("ng-untouched"));
+    assert.ok(input._classes.has("el-touched"));
+    assert.ok(!input._classes.has("el-untouched"));
   });
 
-  it("applies ng-valid / ng-invalid", () => {
+  it("applies el-valid / el-invalid", () => {
     const input = makeInput();
     const field = new ElField(input, {
       validators: [(v) => (!v ? "required" : null)],
     });
 
     input.type("");
-    assert.ok(input._classes.has("ng-invalid"));
+    assert.ok(input._classes.has("el-invalid"));
 
     input.type("x");
-    assert.ok(input._classes.has("ng-valid"));
+    assert.ok(input._classes.has("el-valid"));
   });
 });
 

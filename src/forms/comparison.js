@@ -62,16 +62,16 @@ console.log(`
         "What changed this value?" — impossible to answer.
 `);
 
-// ─── 2. ng-modern Field ──────────────────────────────────────────────────────
+// ─── 2. ement Field ──────────────────────────────────────────────────────
 
-console.log("─── 2. ng-modern Field ───────────────────────────────────────\n");
+console.log("─── 2. ement Field ───────────────────────────────────────\n");
 console.log(`
   // Component
-  import { Field } from 'ng-modern/forms/field';
-  import { FormGroup } from 'ng-modern/forms/form-group';
-  import { trim, lowercase, stripNonDigits, toNumber } from 'ng-modern/forms/parsers';
-  import { phone as phoneFmt } from 'ng-modern/forms/formatters';
-  import { required, min } from 'ng-modern/forms/validators';
+  import { Field } from 'ement/forms/field';
+  import { FormGroup } from 'ement/forms/form-group';
+  import { trim, lowercase, stripNonDigits, toNumber } from 'ement/forms/parsers';
+  import { phone as phoneFmt } from 'ement/forms/formatters';
+  import { required, min } from 'ement/forms/validators';
 
   class RegForm extends NgElement {
     email = '';
@@ -125,7 +125,7 @@ console.log(`
   │ input  │          │ pipeline │           │(explicit)│
   └────────┘          └──────────┘           └─────────┘
        ▲                                          │
-       │            writeValue()                   │
+       │            writeValue()                  │
        └──────────────────────────────────────────┘
         One-way: DOM → pipeline → explicit callback → state.
         State → DOM only via explicit writeValue().
@@ -136,22 +136,22 @@ console.log(`
 
 console.log("─── Key Differences ──────────────────────────────────────────\n");
 console.log(`
-  ┌───────────────────────────┬─────────────────────────┬─────────────────────────┐
-  │ Aspect                    │ NgModelController       │ Field                   │
-  ├───────────────────────────┼─────────────────────────┼─────────────────────────┤
-  │ Data flow                 │ Two-way (implicit)      │ One-way (explicit)      │
-  │ $parsers / parsers        │ ✅ Array pipeline        │ ✅ Array pipeline        │
-  │ $formatters / formatters  │ ✅ Array pipeline        │ ✅ via writeValue()      │
-  │ $validators               │ ✅ Sync                  │ ✅ Sync                  │
-  │ $asyncValidators          │ ✅ But NO cancellation   │ ✅ WITH AbortController  │
-  │ Race condition on async   │ ❌ Possible (stale wins) │ ✅ Impossible (aborted)  │
+  ┌───────────────────────────┬──────────────────────────┬─────────────────────────┐
+  │ Aspect                    │ NgModelController        │ Field                   │
+  ├───────────────────────────┼──────────────────────────┼─────────────────────────┤
+  │ Data flow                 │ Two-way (implicit)       │ One-way (explicit)      │
+  │ $parsers / parsers        │ ✅ Array pipeline        │ ✅ Array pipeline       │
+  │ $formatters / formatters  │ ✅ Array pipeline        │ ✅ via writeValue()     │
+  │ $validators               │ ✅ Sync                  │ ✅ Sync                 │
+  │ $asyncValidators          │ ✅ But NO cancellation   │ ✅ WITH AbortController │
+  │ Race condition on async   │ ❌ Possible (stale wins) │ ✅ Impossible (aborted) │
   │ Debounce                  │ ng-model-options         │ Built-in option         │
-  │ State tracking            │ $dirty, $touched, etc.  │ dirty, touched, etc.    │
-  │ CSS classes               │ ng-valid, ng-dirty      │ ng-valid, ng-dirty      │
-  │ "Who changed this?"       │ ❓ Unknown (two-way)     │ ✅ Always the onChange   │
-  │ Testing                   │ $compile + $digest      │ new Field(mockInput)    │
-  │ Framework coupling        │ AngularJS only          │ Zero — plain JS class   │
-  └───────────────────────────┴─────────────────────────┴─────────────────────────┘
+  │ State tracking            │ $dirty, $touched, etc.   │ dirty, touched, etc.    │
+  │ CSS classes               │ el-valid, el-dirty       │ el-valid, el-dirty      │
+  │ "Who changed this?"       │ ❓ Unknown (two-way)     │ ✅ Always the onChange  │
+  │ Testing                   │ $compile + $digest       │ new Field(mockInput)    │
+  │ Framework coupling        │ AngularJS only           │ Zero — plain JS class   │
+  └───────────────────────────┴──────────────────────────┴─────────────────────────┘
 
   THE RACE CONDITION NgModelController HAD:
 

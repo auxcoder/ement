@@ -1,7 +1,7 @@
 {
-  "name": "ng-modern",
+  "name": "ement",
   "version": "0.1.0",
-  "description": "AngularJS reimagined with modern browser APIs",
+  "description": "Modern web framework — Custom Elements + native browser APIs",
   "type": "module",
   "main": "./dist/index.js",
   "scripts": {

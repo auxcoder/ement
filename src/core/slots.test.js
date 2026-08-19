@@ -74,9 +74,9 @@ describe("Slot-based content projection (design)", () => {
 
     // Key differences:
     // - AngularJS: ng-transclude is a directive, needs transclusion scope management
-    // - ng-modern: <slot> is native browser, zero framework code, no scope issues
+    // - ement: <slot> is native browser, zero framework code, no scope issues
     // - AngularJS multi-slot: configuration object + slot attributes
-    // - ng-modern multi-slot: just name attributes on <slot> elements
+    // - ement multi-slot: just name attributes on <slot> elements
     assert.ok(comparison.angularjs.directive);
     assert.ok(comparison.ngModern.directive);
   });
