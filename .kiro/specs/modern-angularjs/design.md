@@ -791,37 +791,37 @@ This architecture was **genuinely excellent** — Express-style middleware for f
 We preserve the dual-value model and middleware pipelines, but replace implicit two-way binding with explicit `onChange` propagation:
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
+┌───────────────────────────────────────────────────────────────────┐
 │                         Field                                     │
 │                                                                   │
 │   VIEW (DOM)                              MODEL (component state) │
-│   ┌──────────┐                           ┌──────────┐           │
-│   │viewValue │                           │modelValue│           │
-│   └────┬─────┘                           └────┬─────┘           │
-│        │                                      │                  │
-│        ▼ (user types)                         ▼ (code calls      │
-│   ┌──────────┐                           ┌──────────┐ writeValue)│
-│   │ parsers  │ ──── view → model ────►   │formatters│           │
+│   ┌──────────┐                           ┌──────────┐             │
+│   │viewValue │                           │modelValue│             │
+│   └────┬─────┘                           └────┬─────┘             │
+│        │                                      │                   │
+│        ▼ (user types)                         ▼ (code calls       │
+│   ┌──────────┐                           ┌──────────┐ writeValue) │
+│   │ parsers  │ ──── view → model ────►   │formatters│             │
 │   │(pipeline)│                           │(pipeline)│ ◄── model → view
-│   └──────────┘                           └──────────┘           │
-│        │                                                         │
-│        ▼                                                         │
-│   ┌────────────────────┐                                         │
-│   │ validators (sync)  │                                         │
-│   │ asyncValidators    │ ← with AbortController cancellation     │
-│   └────────────────────┘                                         │
-│        │                                                         │
-│        ▼                                                         │
-│   ┌──────────────────────────────────────┐                       │
-│   │ valid, dirty, touched, errors, pending│                      │
-│   └──────────────────────────────────────┘                       │
-│        │                                                         │
-│        ▼                                                         │
-│   ┌──────────────────────────────────────┐                       │
-│   │ onChange(modelValue, state)           │ ← EXPLICIT (not auto)│
-│   │ Developer decides what to do         │                       │
-│   └──────────────────────────────────────┘                       │
-└─────────────────────────────────────────────────────────────────┘
+│   └──────────┘                           └──────────┘             │
+│        │                                                          │
+│        ▼                                                          │
+│   ┌────────────────────┐                                          │
+│   │ validators (sync)  │                                          │
+│   │ asyncValidators    │ ← with AbortController cancellation      │
+│   └────────────────────┘                                          │
+│        │                                                          │
+│        ▼                                                          │
+│   ┌──────────────────────────────────────┐                        │
+│   │ valid, dirty, touched, errors, pending│                       │
+│   └──────────────────────────────────────┘                        │
+│        │                                                          │
+│        ▼                                                          │
+│   ┌──────────────────────────────────────┐                        │
+│   │ onChange(modelValue, state)           │ ← EXPLICIT (not auto) │
+│   │ Developer decides what to do         │                        │
+│   └──────────────────────────────────────┘                        │
+└───────────────────────────────────────────────────────────────────┘
 ```
 
 **Key difference from NgModelController**: The pipeline runs the same way, but the result hits `onChange` instead of being pushed into scope automatically. The developer is always in control of state mutations.
@@ -1534,6 +1534,7 @@ export function sanitizeHTML(
 ### Why Vite?
 
 Vite is the natural choice for this project because it mirrors our philosophy:
+
 - **Dev mode**: Serves native ES modules directly — no bundling. Matches our "no build step for development" principle.
 - **Build mode**: Uses Rollup under the hood — mature, well-understood, excellent tree-shaking.
 - **Plugin system**: Rollup plugins are simple transform functions — we write two small plugins for template/style inlining.
@@ -1599,8 +1600,8 @@ Vite is the natural choice for this project because it mirrors our philosophy:
 ```javascript
 // vite-plugins/inline-templates.js
 
-import { readFileSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { readFileSync } from "fs";
+import { resolve, dirname } from "path";
 
 /**
  * Rollup plugin that inlines templateUrl/stylesUrl at build time.
@@ -1611,11 +1612,11 @@ import { resolve, dirname } from 'path';
  */
 export function inlineTemplates() {
   return {
-    name: 'ng-modern-inline-templates',
-    enforce: 'pre',
+    name: "ng-modern-inline-templates",
+    enforce: "pre",
 
     transform(code, id) {
-      if (!id.endsWith('.js')) return null;
+      if (!id.endsWith(".js")) return null;
 
       // Match: static templateUrl = new URL('./path.html', import.meta.url)
       const templateUrlRegex =
@@ -1628,26 +1629,32 @@ export function inlineTemplates() {
       let hasChanges = false;
 
       // Inline templates
-      transformed = transformed.replace(templateUrlRegex, (match, relativePath) => {
-        const filePath = resolve(dirname(id), relativePath);
-        const content = readFileSync(filePath, 'utf-8')
-          .replace(/\s+/g, ' ')    // collapse whitespace
-          .replace(/> </g, '><')   // remove gaps between tags
-          .trim();
-        hasChanges = true;
-        return `static template = ${JSON.stringify(content)}`;
-      });
+      transformed = transformed.replace(
+        templateUrlRegex,
+        (match, relativePath) => {
+          const filePath = resolve(dirname(id), relativePath);
+          const content = readFileSync(filePath, "utf-8")
+            .replace(/\s+/g, " ") // collapse whitespace
+            .replace(/> </g, "><") // remove gaps between tags
+            .trim();
+          hasChanges = true;
+          return `static template = ${JSON.stringify(content)}`;
+        },
+      );
 
       // Inline styles
-      transformed = transformed.replace(stylesUrlRegex, (match, relativePath) => {
-        const filePath = resolve(dirname(id), relativePath);
-        const content = readFileSync(filePath, 'utf-8')
-          .replace(/\s+/g, ' ')    // collapse whitespace
-          .replace(/\/\*.*?\*\//g, '') // remove comments
-          .trim();
-        hasChanges = true;
-        return `static styles = ${JSON.stringify(content)}`;
-      });
+      transformed = transformed.replace(
+        stylesUrlRegex,
+        (match, relativePath) => {
+          const filePath = resolve(dirname(id), relativePath);
+          const content = readFileSync(filePath, "utf-8")
+            .replace(/\s+/g, " ") // collapse whitespace
+            .replace(/\/\*.*?\*\//g, "") // remove comments
+            .trim();
+          hasChanges = true;
+          return `static styles = ${JSON.stringify(content)}`;
+        },
+      );
 
       return hasChanges ? { code: transformed, map: null } : null;
     },
@@ -1659,8 +1666,8 @@ export function inlineTemplates() {
 
 ```javascript
 // vite.config.js
-import { defineConfig } from 'vite';
-import { inlineTemplates } from './vite-plugins/inline-templates.js';
+import { defineConfig } from "vite";
+import { inlineTemplates } from "./vite-plugins/inline-templates.js";
 
 export default defineConfig({
   plugins: [inlineTemplates()],
@@ -1668,26 +1675,26 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
-        'ng-modern': './src/index.js',
-        'core/element': './src/core/element.js',
-        'core/reactive': './src/core/reactive.js',
-        'di/container': './src/di/container.js',
-        'router/router': './src/router/router.js',
-        'http/http': './src/http/http.js',
-        'forms/field': './src/forms/field.js',
-        'forms/form-group': './src/forms/form-group.js',
+        "ng-modern": "./src/index.js",
+        "core/element": "./src/core/element.js",
+        "core/reactive": "./src/core/reactive.js",
+        "di/container": "./src/di/container.js",
+        "router/router": "./src/router/router.js",
+        "http/http": "./src/http/http.js",
+        "forms/field": "./src/forms/field.js",
+        "forms/form-group": "./src/forms/form-group.js",
       },
-      formats: ['es'], // ES modules only — host app bundles further if needed
+      formats: ["es"], // ES modules only — host app bundles further if needed
     },
     rollupOptions: {
       output: {
         preserveModules: false,
-        entryFileNames: '[name].js',
+        entryFileNames: "[name].js",
       },
     },
     sourcemap: true,
-    minify: 'terser',
-    target: 'es2020', // Custom Elements + Proxy + ESM
+    minify: "terser",
+    target: "es2020", // Custom Elements + Proxy + ESM
   },
 
   // Dev server
@@ -1695,8 +1702,8 @@ export default defineConfig({
     port: 3000,
     open: true,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
+      "/api": {
+        target: "http://localhost:8080",
         changeOrigin: true,
       },
     },
@@ -1727,13 +1734,13 @@ When plugging ng-modern into an existing AngularJS + Webpack 5 application:
 module.exports = {
   resolve: {
     alias: {
-      'ng-modern': path.resolve(__dirname, 'node_modules/ng-modern/dist'),
+      "ng-modern": path.resolve(__dirname, "node_modules/ng-modern/dist"),
     },
   },
 };
 
 // In an AngularJS component that wants to use ng-modern components:
-import 'ng-modern/components/fancy-widget/fancy-widget.js';
+import "ng-modern/components/fancy-widget/fancy-widget.js";
 
 // Now <fancy-widget> is available as a Custom Element
 // Use it in AngularJS templates:
@@ -1741,19 +1748,20 @@ import 'ng-modern/components/fancy-widget/fancy-widget.js';
 ```
 
 **Coexistence strategy**: Custom Elements and AngularJS directives can coexist in the same DOM. AngularJS sees `<fancy-widget>` as an unknown element and leaves it alone. The Custom Element registers itself and manages its own Shadow DOM. Communication happens via:
+
 - **AngularJS → ng-modern**: HTML attributes (AngularJS interpolation → `observedAttributes`)
 - **ng-modern → AngularJS**: CustomEvents (ng-modern dispatches, AngularJS listens via directive)
 
 ### Design Decisions
 
-| Decision | Rationale |
-|----------|-----------|
-| Vite over Webpack | Vite's dev server uses native ESM (matches our principle). Rollup produces cleaner output than Webpack for libraries. |
-| Custom Rollup plugins (not loader) | Plugins are simpler, framework-agnostic, and reusable. A Webpack loader would tie us to the host's build tool. |
-| ES module output only | Target apps use modern bundlers. No need for UMD/CommonJS. ES modules enable host-side tree-shaking. |
-| Library mode with multiple entries | Allows host app to import individual modules (`ng-modern/forms/field`) without pulling the full framework. |
-| Source maps in production | Critical for debugging when ng-modern runs inside the host AngularJS app. |
-| Template inlining as Rollup plugin | Zero runtime cost in production. Dev mode still uses fetch (validates both paths). |
+| Decision                           | Rationale                                                                                                             |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Vite over Webpack                  | Vite's dev server uses native ESM (matches our principle). Rollup produces cleaner output than Webpack for libraries. |
+| Custom Rollup plugins (not loader) | Plugins are simpler, framework-agnostic, and reusable. A Webpack loader would tie us to the host's build tool.        |
+| ES module output only              | Target apps use modern bundlers. No need for UMD/CommonJS. ES modules enable host-side tree-shaking.                  |
+| Library mode with multiple entries | Allows host app to import individual modules (`ng-modern/forms/field`) without pulling the full framework.            |
+| Source maps in production          | Critical for debugging when ng-modern runs inside the host AngularJS app.                                             |
+| Template inlining as Rollup plugin | Zero runtime cost in production. Dev mode still uses fetch (validates both paths).                                    |
 
 ---
 

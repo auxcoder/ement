@@ -31,9 +31,9 @@ API proxy is configured for `/api` → `http://localhost:8080` (adjust in `vite.
 
 ```
 dist/
-├── ng-modern.js          # Main entry (re-exports all)
+├── ement.js          # Main entry (re-exports all)
 ├── core/
-│   ├── element.js        # NgElement base class
+│   ├── element.js        # ElElement base class
 │   ├── reactive.js       # Proxy reactivity
 │   └── scheduler.js      # Microtask batching
 ├── di/
@@ -59,30 +59,32 @@ dist/
 
 ### Bundle Size
 
-| Metric | Size |
-|--------|------|
-| Raw minified (all modules) | ~30KB |
-| Gzipped (all modules) | ~13KB |
-| Budget | < 15KB gzipped |
-| Status | ✅ Within budget |
+| Metric                     | Size             |
+| -------------------------- | ---------------- |
+| Raw minified (all modules) | ~30KB            |
+| Gzipped (all modules)      | ~13KB            |
+| Budget                     | < 15KB gzipped   |
+| Status                     | ✅ Within budget |
 
 ## Template Inlining Plugin
 
 The custom Rollup plugin (`vite-plugins/inline-templates.js`) transforms component files at build time:
 
 **Before (source):**
+
 ```javascript
-class UserCard extends NgElement {
-  static templateUrl = new URL('./user-card.html', import.meta.url);
-  static stylesUrl = new URL('./user-card.css', import.meta.url);
+class UserCard extends ElElement {
+  static templateUrl = new URL("./user-card.html", import.meta.url);
+  static stylesUrl = new URL("./user-card.css", import.meta.url);
 }
 ```
 
 **After (built):**
+
 ```javascript
-class UserCard extends NgElement {
+class UserCard extends ElElement {
   static template = '<div class="card"><slot></slot></div>';
-  static styles = ':host { display: block; }';
+  static styles = ":host { display: block; }";
 }
 ```
 
@@ -90,7 +92,7 @@ In development, templates are fetched at runtime (no plugin transformation). The
 
 ## Integrating with an Existing AngularJS + Webpack App
 
-### 1. Install ng-modern as a local dependency
+### 1. Install ement as a local dependency
 
 ```bash
 # In your AngularJS app directory:
@@ -103,8 +105,8 @@ npm link ../path/to/ng-elements
 
 ```javascript
 // In your AngularJS app code:
-import 'ng-modern/dist/core/element.js';
-import 'ng-modern/dist/forms/field.js';
+import "ement/dist/core/element.js";
+import "ement/dist/forms/field.js";
 // Custom elements are now registered and available
 ```
 
@@ -115,22 +117,23 @@ import 'ng-modern/dist/forms/field.js';
 <user-card user-name="{{ $ctrl.user.name }}"></user-card>
 ```
 
-### 4. Communication between AngularJS and ng-modern
+### 4. Communication between AngularJS and ement
 
-**AngularJS → ng-modern:** HTML attributes (AngularJS interpolation → `observedAttributes`)
+**AngularJS → ement:** HTML attributes (AngularJS interpolation → `observedAttributes`)
 
-**ng-modern → AngularJS:** CustomEvents
+**ement → AngularJS:** CustomEvents
+
 ```javascript
 // AngularJS directive to bridge events:
-angular.module('app').directive('ngModernBridge', function() {
+angular.module("app").directive("ngModernBridge", function () {
   return {
-    link: function(scope, element, attrs) {
-      element[0].addEventListener('user-select', function(e) {
-        scope.$apply(function() {
+    link: function (scope, element, attrs) {
+      element[0].addEventListener("user-select", function (e) {
+        scope.$apply(function () {
           scope.$eval(attrs.onUserSelect, { $event: e.detail });
         });
       });
-    }
+    },
   };
 });
 ```

@@ -95,12 +95,3 @@ export function trackAccess(path) {
     activeTracker.add(path);
   }
 }
-
-/**
- * Check if there's an active computation tracking dependencies.
- *
- * @returns {boolean}
- */
-export function isTracking() {
-  return activeTracker !== null;
-}

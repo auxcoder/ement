@@ -1,23 +1,20 @@
 /**
- * FormGroup — aggregates multiple Field instances.
+ * ElFormGroup — aggregates multiple ElField instances.
  * Provides form-level state (valid, dirty, touched) as a read-only aggregate.
  * Replaces AngularJS form controller.
  *
  * @module forms/form-group
  */
 
-export class FormGroup {
+export class ElFormGroup {
   #fields = new Map();
-  #formElement;
 
   /**
    * @param {HTMLFormElement} formElement - The form element to manage
    */
   constructor(formElement) {
-    this.#formElement = formElement;
-
     if (formElement?.addEventListener) {
-      formElement.addEventListener('submit', (e) => {
+      formElement.addEventListener("submit", (e) => {
         if (!this.valid) {
           e.preventDefault();
           // Mark all fields touched to show errors
@@ -30,11 +27,11 @@ export class FormGroup {
   }
 
   /**
-   * Register a Field with a name.
+   * Register an ElField with a name.
    *
    * @param {string} name - Field identifier
-   * @param {Field} field - The Field instance
-   * @returns {FormGroup} this
+   * @param {ElField} field - The Field instance
+   * @returns {ElFormGroup} this
    */
   addField(name, field) {
     this.#fields.set(name, field);
@@ -58,7 +55,7 @@ export class FormGroup {
    * Get a field by name.
    *
    * @param {string} name
-   * @returns {Field|undefined}
+   * @returns {ElField|undefined}
    */
   field(name) {
     return this.#fields.get(name);

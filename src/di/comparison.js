@@ -1,6 +1,6 @@
 /**
  * Comparative Example: Dependency Injection
- * AngularJS ($inject) vs ng-modern (Container) vs vi.mock()
+ * AngularJS ($inject) vs ement (Container) vs vi.mock()
  *
  * Run with: node src/di/comparison.js
  *
@@ -10,15 +10,15 @@
  * @module di/comparison
  */
 
-import { Container } from './container.js';
+import { Container } from "./container.js";
 
-console.log('═══════════════════════════════════════════════════════════════');
-console.log('  Comparative Example: Dependency Injection Approaches');
-console.log('═══════════════════════════════════════════════════════════════\n');
+console.log("═════════════════════════════════════════════════════════════");
+console.log("  Comparative Example: Dependency Injection Approaches");
+console.log("══════════════════════════════════════════════════════════════n");
 
-// ─── 1. AngularJS Approach ─────────────────────────────────────────────────────
+// ─── 1. AngularJS Approach ───────────────────────────────────────────────────
 
-console.log('─── 1. AngularJS ($inject / $provide) ─────────────────────────\n');
+console.log("─── 1. AngularJS ($inject / $provide) ────────────────────────n");
 console.log(`
   // Registration (app module):
   angular.module('app')
@@ -57,7 +57,7 @@ console.log(`
 
 // ─── 2. vi.mock() / jest.mock() Approach ───────────────────────────────────────
 
-console.log('─── 2. vi.mock() / jest.mock() ────────────────────────────────\n');
+console.log("─── 2. vi.mock() / jest.mock() ──────────────────────────────\n");
 console.log(`
   // Production code:
   import { httpService } from '../services/http.js';
@@ -89,17 +89,17 @@ console.log(`
   • Factory runs once — shared state between tests (pollution)
 `);
 
-// ─── 3. ng-modern Approach (Container) ─────────────────────────────────────────
+// ─── 3. ement Approach (Container) ───────────────────────────────────────
 
-console.log('─── 3. ng-modern (Interface-based Container) ──────────────────\n');
+console.log("─── 3. ement (Interface-based Container) ────────────────\n");
 
-const HttpToken = Symbol('Http');
-const UserServiceToken = Symbol('UserService');
+const HttpToken = Symbol("Http");
+const UserServiceToken = Symbol("UserService");
 
 // Production setup
 const appContainer = new Container();
 appContainer.register(HttpToken, () => ({
-  getUsers: async () => ({ data: [{ name: 'Real User' }] }),
+  getUsers: async () => ({ data: [{ name: "Real User" }] }),
 }));
 appContainer.register(UserServiceToken, (c) => ({
   list: async () => {
@@ -112,7 +112,7 @@ appContainer.register(UserServiceToken, (c) => ({
 // Test setup — swap Http for a fake, UserService uses it transparently
 const testContainer = new Container();
 testContainer.register(HttpToken, () => ({
-  getUsers: async () => ({ data: [{ name: 'Alice' }, { name: 'Bob' }] }),
+  getUsers: async () => ({ data: [{ name: "Alice" }, { name: "Bob" }] }),
 }));
 testContainer.register(UserServiceToken, (c) => ({
   list: async () => {
@@ -175,5 +175,5 @@ async function demo() {
 }
 
 demo().then(() => {
-  console.log('═══════════════════════════════════════════════════════════════');
+  console.log("═════════════════════════════════════════════════════════════");
 });

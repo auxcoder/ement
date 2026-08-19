@@ -1,18 +1,18 @@
 /**
- * Comparative Example: AngularJS $http vs ng-modern Http
+ * Comparative Example: AngularJS $http vs ement Http
  *
  * Run with: node src/http/comparison.js
  *
  * @module http/comparison
  */
 
-console.log('═══════════════════════════════════════════════════════════════');
-console.log('  Comparative Example: $http vs ng-modern Http');
-console.log('═══════════════════════════════════════════════════════════════\n');
+console.log("═════════════════════════════════════════════════════════════");
+console.log("  Comparative Example: $http vs ement Http");
+console.log("═════════════════════════════════════════════════════════════\n");
 
-// ─── 1. AngularJS $http ────────────────────────────────────────────────────────
+// ─── 1. AngularJS $http ─────────────────────────────────────────────────────────
 
-console.log('─── 1. AngularJS $http ─────────────────────────────────────────\n');
+console.log("─── 1. AngularJS $http ──────────────────────────────────────\n");
 console.log(`
   // Configuration
   angular.module('app').config(function($httpProvider) {
@@ -53,12 +53,12 @@ console.log(`
   • JSONP support adds complexity nobody uses anymore
 `);
 
-// ─── 2. ng-modern Http ─────────────────────────────────────────────────────────
+// ─── 2. ement Http ──────────────────────────────────────────────────────────
 
-console.log('─── 2. ng-modern Http (fetch wrapper) ─────────────────────────\n');
+console.log("─── 2. ement Http (fetch wrapper) ───────────────────────\n");
 console.log(`
   // Configuration
-  import { Http } from 'ng-modern/http/http';
+  import { Http } from 'ement/http/http';
 
   const http = new Http({
     baseUrl: '/api',
@@ -107,24 +107,24 @@ console.log(`
   • async/await (no .then() chains, no $q)
 `);
 
-// ─── Summary ───────────────────────────────────────────────────────────────────
+// ─── Summary ─────────────────────────────────────────────────────────────────
 
-console.log('─── Summary ────────────────────────────────────────────────────\n');
+console.log("─── Summary ──────────────────────────────────────────────────\n");
 console.log(`
-  ┌──────────────────────┬──────────────────────┬──────────────────────┐
-  │ Feature              │ $http                │ ng-modern Http       │
-  ├──────────────────────┼──────────────────────┼──────────────────────┤
-  │ Base API             │ XMLHttpRequest       │ fetch()              │
-  │ Response format      │ { data, status, ... }│ Parsed JSON directly │
-  │ Async model          │ $q promises          │ native async/await   │
-  │ Digest integration   │ Required ($apply)    │ Not needed (Proxy)   │
-  │ Interceptors         │ Named services (DI)  │ Plain objects        │
-  │ Cancellation         │ $q.defer + timeout   │ AbortController      │
-  │ Timeout              │ Config option        │ Built-in + per-request│
+  ┌──────────────────────┬───────────────────────┬───────────────────────┐
+  │ Feature              │ $http                 │ ement Http            │
+  ├──────────────────────┼───────────────────────┼───────────────────────┤
+  │ Base API             │ XMLHttpRequest        │ fetch()               │
+  │ Response format      │ { data, status, ... } │ Parsed JSON directly  │
+  │ Async model          │ $q promises           │ native async/await    │
+  │ Digest integration   │ Required ($apply)     │ Not needed (Proxy)    │
+  │ Interceptors         │ Named services (DI)   │ Plain objects         │
+  │ Cancellation         │ $q.defer + timeout    │ AbortController       │
+  │ Timeout              │ Config option         │ Built-in + per-request│
   │ Retry                │ ❌ Manual             │ ✅ Built-in + backoff │
   │ cancelAll()          │ ❌                    │ ✅                    │
   │ Streaming            │ ❌                    │ ✅ (fetch supports it)│
-  └──────────────────────┴──────────────────────┴──────────────────────┘
+  └──────────────────────┴───────────────────────┴───────────────────────┘
 `);
 
-console.log('═══════════════════════════════════════════════════════════════');
+console.log("═════════════════════════════════════════════════════════════");

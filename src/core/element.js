@@ -1,5 +1,5 @@
 /**
- * NgElement — Custom Element base class.
+ * ElElement — Custom Element base class.
  * Replaces AngularJS directives + $compile.
  *
  * Features:
@@ -15,17 +15,17 @@
  * @module core/element
  */
 
-import { resolveContainer } from '../di/provider.js';
-import { reactive } from './reactive.js';
-import { scheduleUpdate } from './scheduler.js';
+import { resolveContainer } from "../di/provider.js";
+import { scheduleUpdate } from "./scheduler.js";
 
-export class NgElement extends HTMLElement {
+export class ElElement extends HTMLElement {
   #shadow;
   #bindings = new Map(); // prop → [{ node, template }]
+  #state = {}; // backing store for reactive properties
 
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: 'open' });
+    this.#shadow = this.attachShadow({ mode: "open" });
   }
 
   /**
@@ -44,11 +44,12 @@ export class NgElement extends HTMLElement {
 
   /**
    * Called by the browser when the element is added to the DOM.
-   * Resolves template/styles, renders, then calls onInit().
+   * Resolves template/styles, renders, installs reactivity, then calls onInit().
    */
   async connectedCallback() {
     await this.constructor._ensureResources();
     this.#render();
+    this.#installReactiveProperties();
     this.onInit?.();
   }
 
@@ -65,7 +66,7 @@ export class NgElement extends HTMLElement {
    * Supports type coercion via static `propTypes` declaration.
    *
    * @example
-   * class MyComp extends NgElement {
+   * class MyComp extends ElElement {
    *   static observedAttributes = ['user-name', 'is-active', 'count'];
    *   static propTypes = { isActive: Boolean, count: Number };
    * }
@@ -77,7 +78,7 @@ export class NgElement extends HTMLElement {
     const prop = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
     const coerced = this.#coerceValue(prop, newValue, name);
     this[prop] = coerced;
-    this._notifyChange(prop, coerced);
+    this._notifyChange(prop);
   }
 
   /**
@@ -94,14 +95,19 @@ export class NgElement extends HTMLElement {
       // Boolean attributes: presence = true, absence = false
       // <el active> → true, <el active="false"> → false, removal → false
       if (value === null) return false;
-      if (value === 'false' || value === '0') return false;
+      if (value === "false" || value === "0") return false;
       return true;
     }
 
     if (type === Number) {
-      if (value === null || value === '') return null;
+      if (value === null || value === "") return null;
       const num = Number(value);
-      return Number.isNaN(num) ? null : num;
+      if (Number.isNaN(num)) {
+        const msg = `[ElElement] Attribute "${attrName}" received non-numeric value "${value}" (expected Number for property "${prop}"). Defaulting to null.`;
+        console.warn(msg);
+        return null;
+      }
+      return num;
     }
 
     return value;
@@ -119,18 +125,18 @@ export class NgElement extends HTMLElement {
     if (this._resolvedTemplate !== undefined) return;
 
     // Template
-    if (typeof this.template === 'string') {
+    if (typeof this.template === "string") {
       // Build step already inlined it
       this._resolvedTemplate = this.template;
     } else if (this.templateUrl) {
       const res = await fetch(this.templateUrl);
       this._resolvedTemplate = await res.text();
     } else {
-      this._resolvedTemplate = '';
+      this._resolvedTemplate = "";
     }
 
     // Styles
-    if (typeof this.styles === 'string') {
+    if (typeof this.styles === "string") {
       this._resolvedStyles = this.styles;
     } else if (this.stylesUrl) {
       const res = await fetch(this.stylesUrl);
@@ -153,14 +159,14 @@ export class NgElement extends HTMLElement {
 
     // Add scoped styles
     if (styles) {
-      const styleEl = document.createElement('style');
+      const styleEl = document.createElement("style");
       styleEl.textContent = styles;
       this.#shadow.appendChild(styleEl);
     }
 
     // Parse and append template
     if (template) {
-      const tpl = document.createElement('template');
+      const tpl = document.createElement("template");
       tpl.innerHTML = template;
       const content = tpl.content.cloneNode(true);
       this.#parseBindings(content);
@@ -169,7 +175,36 @@ export class NgElement extends HTMLElement {
 
     // Initial render of all bindings
     for (const [prop] of this.#bindings) {
-      this.#updateBinding(prop, this[prop]);
+      this.#updateBinding(prop);
+    }
+  }
+
+  // ─── Reactive Properties ───────────────────────────────────────────────────
+
+  /**
+   * Installs getter/setter pairs on the instance for all bound properties.
+   * After this, setting `this.name = 'Bob'` automatically updates the template.
+   * No manual _notifyChange() needed.
+   * @private
+   */
+  #installReactiveProperties() {
+    for (const prop of this.#bindings.keys()) {
+      // Capture current value
+      const currentValue = this[prop];
+      this.#state[prop] = currentValue;
+
+      // Replace the property with a getter/setter
+      Object.defineProperty(this, prop, {
+        get: () => this.#state[prop],
+        set: (value) => {
+          const old = this.#state[prop];
+          if (Object.is(old, value)) return;
+          this.#state[prop] = value;
+          scheduleUpdate(() => this.#updateBinding(prop));
+        },
+        enumerable: true,
+        configurable: true,
+      });
     }
   }
 
@@ -182,8 +217,11 @@ export class NgElement extends HTMLElement {
    */
   #parseBindings(root) {
     // TreeWalker for text nodes
-    if (typeof document !== 'undefined' && document.createTreeWalker) {
-      const walker = document.createTreeWalker(root, 4 /* NodeFilter.SHOW_TEXT */);
+    if (typeof document !== "undefined" && document.createTreeWalker) {
+      const walker = document.createTreeWalker(
+        root,
+        4 /* NodeFilter.SHOW_TEXT */,
+      );
       while (walker.nextNode()) {
         this.#processTextNode(walker.currentNode);
       }
@@ -196,7 +234,7 @@ export class NgElement extends HTMLElement {
    */
   #processTextNode(textNode) {
     const text = textNode.textContent;
-    if (!text || !text.includes('{{')) return;
+    if (!text || !text.includes("{{")) return;
 
     const matches = [...text.matchAll(/\{\{\s*(\w+)\s*\}\}/g)];
     if (matches.length === 0) return;
@@ -217,7 +255,7 @@ export class NgElement extends HTMLElement {
    * Updates all text nodes bound to a given property.
    * @private
    */
-  #updateBinding(prop, value) {
+  #updateBinding(prop) {
     const entries = this.#bindings.get(prop);
     if (!entries) return;
 
@@ -226,8 +264,8 @@ export class NgElement extends HTMLElement {
       let result = template;
       for (const [p, v] of this.#getAllBoundValues()) {
         result = result.replace(
-          new RegExp(`\\{\\{\\s*${p}\\s*\\}\\}`, 'g'),
-          v ?? '',
+          new RegExp(`\\{\\{\\s*${p}\\s*\\}\\}`, "g"),
+          v ?? "",
         );
       }
       node.textContent = result;
@@ -250,9 +288,9 @@ export class NgElement extends HTMLElement {
    * Notify that a property changed — schedules binding updates.
    * Call this from reactive setters or manually after state changes.
    */
-  _notifyChange(prop, value) {
+  _notifyChange(prop) {
     if (this.#bindings.has(prop)) {
-      scheduleUpdate(() => this.#updateBinding(prop, value));
+      scheduleUpdate(() => this.#updateBinding(prop));
     }
   }
 
@@ -273,7 +311,7 @@ export class NgElement extends HTMLElement {
   show(selector, condition) {
     const el = this.#shadow.querySelector?.(selector);
     if (el) {
-      el.style.display = condition ? '' : 'none';
+      el.style.display = condition ? "" : "none";
     }
   }
 
@@ -299,7 +337,7 @@ export class NgElement extends HTMLElement {
     if (!container) return null;
 
     // Track what we've inserted with a data attribute
-    const marker = `__ng_when_${selector}`;
+    const marker = `__el_when_${selector}`;
 
     if (condition) {
       // Only create if not already present
@@ -345,7 +383,7 @@ export class NgElement extends HTMLElement {
     if (!container) return;
 
     // Track existing nodes by key
-    const marker = `__ng_repeat_${selector}`;
+    const marker = `__el_repeat_${selector}`;
     const existingMap = container[marker] || new Map(); // key → node
     const newMap = new Map();
 
@@ -362,7 +400,7 @@ export class NgElement extends HTMLElement {
       } else {
         // Create new node
         const node = templateFn(item, i);
-        node.__ngKey = key;
+        node.__elKey = key;
         newMap.set(key, node);
       }
       fragment.push(newMap.get(key));
@@ -374,7 +412,7 @@ export class NgElement extends HTMLElement {
     }
 
     // Clear and re-append in order
-    if (container.innerHTML !== undefined) container.innerHTML = '';
+    if (container.innerHTML !== undefined) container.innerHTML = "";
     if (container.childNodes) container.childNodes.length = 0;
     for (const node of fragment) {
       container.appendChild(node);

@@ -5,7 +5,7 @@
  * @module router/router
  */
 
-export class Router extends EventTarget {
+export class ElRouter extends EventTarget {
   #routes = [];
   #groups = new Map();
   #hooks = { onBefore: [], onSuccess: [], onError: [] };
@@ -19,8 +19,8 @@ export class Router extends EventTarget {
     super();
     this.#outlet = outlet;
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('popstate', () => this.#resolve());
+    if (typeof window !== "undefined") {
+      window.addEventListener("popstate", () => this.#resolve());
     }
   }
 
@@ -31,7 +31,7 @@ export class Router extends EventTarget {
    * @param {string} name - Group name
    * @param {Object} options
    * @param {Function} options.resolve - async (params) => data
-   * @returns {Router} this
+   * @returns {ElRouter} this
    */
   group(name, { resolve } = {}) {
     this.#groups.set(name, { resolve, data: null, resolved: false });
@@ -46,7 +46,7 @@ export class Router extends EventTarget {
    * @param {Object} [options]
    * @param {Function} [options.resolve] - async (params) => data
    * @param {string} [options.group] - Group name for shared resolve
-   * @returns {Router} this
+   * @returns {ElRouter} this
    */
   route(pattern, component, { resolve, group } = {}) {
     const urlPattern = new URLPattern({ pathname: pattern });
@@ -59,7 +59,7 @@ export class Router extends EventTarget {
    * Return undefined to continue, false to cancel, or a string to redirect.
    *
    * @param {Function} hookFn - async (from, to) => undefined | false | string
-   * @returns {Router} this
+   * @returns {ElRouter} this
    */
   onBefore(hookFn) {
     this.#hooks.onBefore.push(hookFn);
@@ -70,7 +70,7 @@ export class Router extends EventTarget {
    * Register a hook that runs AFTER successful navigation.
    *
    * @param {Function} hookFn - async (from, to, data) => void
-   * @returns {Router} this
+   * @returns {ElRouter} this
    */
   onSuccess(hookFn) {
     this.#hooks.onSuccess.push(hookFn);
@@ -81,7 +81,7 @@ export class Router extends EventTarget {
    * Register a hook that runs when navigation fails (resolve error, etc.).
    *
    * @param {Function} hookFn - async (error, from, to) => void
-   * @returns {Router} this
+   * @returns {ElRouter} this
    */
   onError(hookFn) {
     this.#hooks.onError.push(hookFn);
@@ -94,8 +94,8 @@ export class Router extends EventTarget {
    * @param {string} path - The URL path to navigate to
    */
   navigate(path) {
-    if (typeof history !== 'undefined') {
-      history.pushState(null, '', path);
+    if (typeof history !== "undefined") {
+      history.pushState(null, "", path);
     }
     this.#resolve(path);
   }
@@ -127,7 +127,7 @@ export class Router extends EventTarget {
    * Useful for initial page load.
    */
   start() {
-    if (typeof location !== 'undefined') {
+    if (typeof location !== "undefined") {
       this.#resolve(location.pathname + location.search);
     }
   }
@@ -135,8 +135,10 @@ export class Router extends EventTarget {
   // ─── Internal ────────────────────────────────────────────────────────────────
 
   async #resolve(overridePath) {
-    const path = overridePath || (typeof location !== 'undefined' ? location.pathname : '/');
-    const url = new URL(path, 'http://localhost');
+    const path =
+      overridePath ||
+      (typeof location !== "undefined" ? location.pathname : "/");
+    const url = new URL(path, "http://localhost");
 
     for (const route of this.#routes) {
       const match = route.urlPattern.exec(url);
@@ -151,7 +153,7 @@ export class Router extends EventTarget {
         for (const hook of this.#hooks.onBefore) {
           const result = await hook(from, to);
           if (result === false) return; // cancel
-          if (typeof result === 'string') {
+          if (typeof result === "string") {
             this.navigate(result); // redirect
             return;
           }
@@ -186,7 +188,7 @@ export class Router extends EventTarget {
         }
 
         this.dispatchEvent(
-          new CustomEvent('navigate', { detail: { from, to, data } }),
+          new CustomEvent("navigate", { detail: { from, to, data } }),
         );
       } catch (error) {
         for (const hook of this.#hooks.onError) {
@@ -202,13 +204,14 @@ export class Router extends EventTarget {
 
     // Clear outlet
     if (this.#outlet.innerHTML !== undefined) {
-      this.#outlet.innerHTML = '';
+      this.#outlet.innerHTML = "";
     }
 
     // Create and configure component element
-    const el = typeof document !== 'undefined'
-      ? document.createElement(component)
-      : { tagName: component, params: null, routeData: null };
+    const el =
+      typeof document !== "undefined"
+        ? document.createElement(component)
+        : { tagName: component, params: null, routeData: null };
 
     el.params = params;
     el.routeData = data;

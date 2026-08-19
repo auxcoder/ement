@@ -9,20 +9,20 @@
  * @module core/comparison
  */
 
-console.log('═══════════════════════════════════════════════════════════════');
-console.log('  Comparative Example: AngularJS Directive vs NgElement');
-console.log('═══════════════════════════════════════════════════════════════\n');
+console.log("═════════════════════════════════════════════════════════════");
+console.log("  Comparative Example: AngularJS Directive vs NgElement");
+console.log("═════════════════════════════════════════════════════════════\n");
 
 // ─── The Component: A User Card ────────────────────────────────────────────────
 
-console.log('─── Component: User Card ───────────────────────────────────────\n');
+console.log("─── Component: User Card ─────────────────────────────────────\n");
 console.log('  A card that displays a user name, shows a "verified" badge');
-console.log('  conditionally, renders a list of roles, and emits an event');
-console.log('  when clicked.\n');
+console.log("  conditionally, renders a list of roles, and emits an event");
+console.log("  when clicked.\n");
 
 // ─── AngularJS Version ─────────────────────────────────────────────────────────
 
-console.log('─── AngularJS Directive ─────────────────────────────────────────\n');
+console.log("─── AngularJS Directive ──────────────────────────────────────\n");
 console.log(`
   // user-card.directive.js
   angular.module('app').directive('userCard', function() {
@@ -63,12 +63,12 @@ console.log(`
   </user-card>
 `);
 
-// ─── ng-modern Version ─────────────────────────────────────────────────────────
+// ─── ement Version ───────────────────────────────────────────────────────
 
-console.log('─── ng-modern NgElement ────────────────────────────────────────\n');
+console.log("─── ement NgElement ──────────────────────────────────────\n");
 console.log(`
   // user-card/user-card.js
-  import { NgElement } from 'ng-modern';
+  import { NgElement } from 'ement';
 
   class UserCard extends NgElement {
     static templateUrl = new URL('./user-card.html', import.meta.url);
@@ -123,35 +123,35 @@ console.log(`
 
 // ─── Analysis ──────────────────────────────────────────────────────────────────
 
-console.log('─── Analysis ─────────────────────────────────────────────────────\n');
+console.log("─── Analysis ─────────────────────────────────────────────────\n");
 console.log(`
-  ┌─────────────────────────┬────────────────────────────┬──────────────────────────────┐
-  │ Aspect                  │ AngularJS                  │ ng-modern                    │
-  ├─────────────────────────┼────────────────────────────┼──────────────────────────────┤
-  │ Template file           │ ✅ Separate .html           │ ✅ Separate .html              │
-  │ Style encapsulation     │ ❌ Global CSS (leak)        │ ✅ Shadow DOM (isolated)       │
-  │ Input (props)           │ scope: { name: '<' }       │ observedAttributes + propTypes│
-  │ Output (events)         │ scope: { onX: '&' }        │ this.emit() + addEventListener│
-  │ Content projection      │ ng-transclude              │ <slot> (native)              │
-  │ Conditional             │ ng-if (declarative)        │ this.show() / this.when()    │
-  │ List rendering          │ ng-repeat (declarative)    │ this.repeat() (imperative)   │
-  │ Data binding            │ {{ expr }} (auto)          │ {{ prop }} + _notifyChange   │
-  │ Registration            │ angular.module().directive │ customElements.define()      │
-  │ Interoperability        │ AngularJS only             │ Any framework / vanilla      │
-  └─────────────────────────┴────────────────────────────┴──────────────────────────────┘
+  ┌─────────────────────────┬─────────────────────────────┬───────────────────────────────┐
+  │ Aspect                  │ AngularJS                   │ ement                         │
+  ├─────────────────────────┼─────────────────────────────┼───────────────────────────────┤
+  │ Template file           │ ✅ Separate .html           │ ✅ Separate .html             │
+  │ Style encapsulation     │ ❌ Global CSS (leak)        │ ✅ Shadow DOM (isolated)      │
+  │ Input (props)           │ scope: { name: '<' }        │ observedAttributes + propTypes│
+  │ Output (events)         │ scope: { onX: '&' }         │ this.emit() + addEventListener│
+  │ Content projection      │ ng-transclude               │ <slot> (native)               │
+  │ Conditional             │ ng-if (declarative)         │ this.show() / this.when()     │
+  │ List rendering          │ ng-repeat (declarative)     │ this.repeat() (imperative)    │
+  │ Data binding            │ {{ expr }} (auto)           │ {{ prop }} (auto-reactive)    │
+  │ Registration            │ angular.module().directive  │ customElements.define()       │
+  │ Interoperability        │ AngularJS only              │ Any framework / vanilla       │
+  └─────────────────────────┴─────────────────────────────┴───────────────────────────────┘
 
-  WHAT'S SIMPLER in ng-modern:
+  WHAT'S SIMPLER in ement:
   • Style encapsulation — free with Shadow DOM, no BEM/naming conventions
   • Content projection — native <slot>, no transclusion scope complexity
   • Events — standard CustomEvent, no '&' binding magic
   • No $digest — changes propagate without manual triggers
   • Interop — works with React, Vue, vanilla, anything that speaks DOM
 
-  WHAT'S HARDER in ng-modern:
+  WHAT'S HARDER in ement:
   • Conditional/list rendering is imperative (method calls vs template directives)
   • No template-level expressions (ng-if="x > 5" has no equivalent)
   • More manual wiring (addEventListener vs declarative ng-click)
-  • Must call _notifyChange or use reactive() to trigger binding updates
+  • Bound properties auto-update on assignment (no manual calls needed)
 
   WHAT'S THE SAME:
   • Separate template files (HTML tooling works for both)
@@ -160,4 +160,4 @@ console.log(`
   • Props in, events out (unidirectional when using '<' bindings)
 `);
 
-console.log('═══════════════════════════════════════════════════════════════');
+console.log("═════════════════════════════════════════════════════════════");

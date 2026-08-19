@@ -20,7 +20,7 @@ import { resolve, dirname } from 'path';
  */
 export function inlineTemplates() {
   return {
-    name: 'ng-modern-inline-templates',
+    name: 'ement-inline-templates',
     enforce: 'pre',
 
     transform(code, id) {
