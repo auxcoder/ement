@@ -8,19 +8,13 @@ export default defineConfig({
     lib: {
       entry: './src/index.js',
       formats: ['es'],
-      fileName: 'ng-modern',
-    },
-    rollupOptions: {
-      output: {
-        entryFileNames: '[name].js',
-      },
+      fileName: 'index',
     },
     sourcemap: true,
     minify: true,
     target: 'es2020',
   },
 
-  // Dev server — serves native ES modules, no bundling
   server: {
     port: 3000,
     open: true,
