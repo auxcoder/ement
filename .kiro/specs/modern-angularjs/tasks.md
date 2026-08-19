@@ -163,9 +163,21 @@ A working DI container with hierarchy, used by all subsequent modules for servic
   - Same component in AngularJS directive syntax and NgElement
   - Document what's simpler, what's harder, what's the same
 
+- [ ] **Task 3.9**: Implement `onChanges` lifecycle hook
+  - Called when reactive properties change (after the setter fires)
+  - Receives a changes object: `{ propName: { previous, current, firstChange } }`
+  - Called for attribute changes (via `attributeChangedCallback`)
+  - Called for programmatic property sets (via reactive getter/setter)
+  - Batched via microtask (multiple changes in same tick → one `onChanges` call with all changes)
+  - Equivalent to AngularJS `$onChanges` / Angular `ngOnChanges`
+  - Test: `onChanges` fires with correct previous/current values
+  - Test: multiple property changes in same tick are batched into one call
+  - Test: `firstChange` is true on initial attribute set
+  - Test: `onChanges` not called if value is the same (Object.is)
+
 ### Phase 3 Deliverable
 
-A working component base class that renders templates, binds data, handles slots, resolves services from the DI container, and manages lifecycle. Multiple example components demonstrating the API.
+A working component base class that renders templates, binds data, handles slots, resolves services from the DI container, manages lifecycle (onInit, onChanges, onDestroy), and reacts to property changes. Multiple example components demonstrating the API.
 
 ---
 

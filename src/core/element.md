@@ -81,3 +81,63 @@ Private fields (`#shadow`, `#bindings`, `#state`) are stored on the _target_ obj
 > Reassign the property to trigger reactivity. Mutating nested objects in place is invisible.
 
 This is well-understood — React's `setState`, Solid's `setSignal`, Svelte's reassignment rule — all follow this same principle. It enables simple, predictable change detection without the memory and performance overhead of deep observation.
+
+---
+
+## onChanges Lifecycle Hook
+
+### What it does
+
+`onChanges(changes)` is called whenever one or more reactive properties change. It receives an object describing what changed:
+
+```javascript
+class UserCard extends ElElement {
+  static template = '<h1>{{ name }}</h1>';
+  static observedAttributes = ['user-id'];
+  static propTypes = { userId: Number };
+
+  name = '';
+  userId = null;
+
+  onChanges(changes) {
+    // changes = {
+    //   userId: { previous: null, current: 42, firstChange: true }
+    // }
+    if (changes.userId) {
+      this.loadUser(changes.userId.current);
+    }
+  }
+
+  async loadUser(id) {
+    const http = this.container.resolve(HttpToken);
+    const user = await http.get(`/users/${id}`);
+    this.name = user.name;
+  }
+}
+```
+
+### How it differs from AngularJS `$onChanges`
+
+| Aspect | AngularJS `$onChanges` | Ement `onChanges` |
+|--------|------------------------|-------------------|
+| Triggered by | One-way binding changes from parent | Reactive property set (any source) |
+| Batching | Per digest cycle | Per microtask |
+| `firstChange` | On initial binding | On first attribute set |
+| Deep changes | No (reference only) | No (reassignment only, same as reactivity) |
+
+### When it fires
+
+1. **Attribute changes** — `<user-card user-id="42">` → attribute parsed → property set → `onChanges` called
+2. **Programmatic property sets** — `this.userId = 42` → reactive setter → `onChanges` called
+3. **NOT on initial render** — `onInit` handles that. `onChanges` fires on subsequent changes only.
+
+### Batching
+
+Multiple property changes in the same synchronous block produce ONE `onChanges` call:
+
+```javascript
+// This triggers onChanges ONCE with both changes:
+this.firstName = 'Jane';
+this.lastName = 'Doe';
+// → onChanges({ firstName: {...}, lastName: {...} })
+```
