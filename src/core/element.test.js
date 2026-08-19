@@ -698,4 +698,98 @@ describe("ElElement", () => {
       assert.equal(container.childNodes.length, 2);
     });
   });
+
+  describe("onChanges lifecycle hook", () => {
+    it("fires with correct previous/current values", async () => {
+      let receivedChanges;
+      class ChangesComp extends ElElement {
+        static template = "{{ name }}";
+        name = "Alice";
+        onChanges(changes) { receivedChanges = changes; }
+      }
+      const comp = new ChangesComp();
+      await comp.connectedCallback();
+
+      comp.name = "Bob";
+      const { flushUpdates } = await import("./scheduler.js");
+      flushUpdates();
+
+      assert.ok(receivedChanges);
+      assert.equal(receivedChanges.name.previous, "Alice");
+      assert.equal(receivedChanges.name.current, "Bob");
+    });
+
+    it("batches multiple changes in same tick into one call", async () => {
+      let callCount = 0;
+      let receivedChanges;
+      class BatchComp extends ElElement {
+        static template = "{{ first }} {{ last }}";
+        first = "A";
+        last = "B";
+        onChanges(changes) { callCount++; receivedChanges = changes; }
+      }
+      const comp = new BatchComp();
+      await comp.connectedCallback();
+
+      comp.first = "X";
+      comp.last = "Y";
+      const { flushUpdates } = await import("./scheduler.js");
+      flushUpdates();
+
+      assert.equal(callCount, 1); // one call, not two
+      assert.ok(receivedChanges.first);
+      assert.ok(receivedChanges.last);
+      assert.equal(receivedChanges.first.current, "X");
+      assert.equal(receivedChanges.last.current, "Y");
+    });
+
+    it("firstChange is true when previous was undefined", async () => {
+      let receivedChanges;
+      class FirstComp extends ElElement {
+        static template = "{{ score }}";
+        score = undefined;
+        onChanges(changes) { receivedChanges = changes; }
+      }
+      const comp = new FirstComp();
+      await comp.connectedCallback();
+
+      comp.score = 100;
+      const { flushUpdates } = await import("./scheduler.js");
+      flushUpdates();
+
+      assert.equal(receivedChanges.score.firstChange, true);
+      assert.equal(receivedChanges.score.current, 100);
+    });
+
+    it("does not fire if value is the same (Object.is)", async () => {
+      let callCount = 0;
+      class SameComp extends ElElement {
+        static template = "{{ count }}";
+        count = 5;
+        onChanges() { callCount++; }
+      }
+      const comp = new SameComp();
+      await comp.connectedCallback();
+
+      comp.count = 5; // same value
+      const { flushUpdates } = await import("./scheduler.js");
+      flushUpdates();
+
+      assert.equal(callCount, 0);
+    });
+
+    it("does not fire during initial setup (before onInit completes)", async () => {
+      let callCount = 0;
+      class InitComp extends ElElement {
+        static template = "{{ value }}";
+        value = "initial";
+        onChanges() { callCount++; }
+      }
+      const comp = new InitComp();
+      await comp.connectedCallback();
+
+      // onChanges should NOT have fired during setup
+      assert.equal(callCount, 0);
+    });
+  });
 });

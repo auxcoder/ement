@@ -21,7 +21,9 @@ import { scheduleUpdate } from "./scheduler.js";
 export class ElElement extends HTMLElement {
   #shadow;
   #bindings = new Map(); // prop → [{ node, template }]
-  #state = {}; // backing store for reactive properties
+  #state = {};           // backing store for reactive properties
+  #pendingChanges = null; // batched changes for onChanges
+  #initialized = false;  // true after onInit — onChanges only fires after init
 
   constructor() {
     super();
@@ -51,6 +53,7 @@ export class ElElement extends HTMLElement {
     this.#render();
     this.#installReactiveProperties();
     this.onInit?.();
+    this.#initialized = true;
   }
 
   /**
@@ -201,11 +204,35 @@ export class ElElement extends HTMLElement {
           if (Object.is(old, value)) return;
           this.#state[prop] = value;
           scheduleUpdate(() => this.#updateBinding(prop));
+          this.#queueChange(prop, old, value);
         },
         enumerable: true,
         configurable: true,
       });
     }
+  }
+
+  /**
+   * Queue a property change for batched onChanges notification.
+   * Multiple changes in the same microtask are merged into one onChanges call.
+   * @private
+   */
+  #queueChange(prop, previous, current) {
+    if (!this.#initialized) return; // don't fire during initial setup
+    if (!this.onChanges) return;    // no hook defined, skip
+
+    const firstChange = previous === undefined;
+
+    if (!this.#pendingChanges) {
+      this.#pendingChanges = {};
+      scheduleUpdate(() => {
+        const changes = this.#pendingChanges;
+        this.#pendingChanges = null;
+        this.onChanges(changes);
+      });
+    }
+
+    this.#pendingChanges[prop] = { previous, current, firstChange };
   }
 
   // ─── Template Bindings ({{ prop }}) ────────────────────────────────────────

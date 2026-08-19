@@ -298,7 +298,10 @@ export class NgElement extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     const prop = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+    const oldPropValue = this[prop];
     this[prop] = newValue;
+    // Notify onChanges lifecycle hook
+    this.onChanges?.({ [prop]: { previous: oldPropValue, current: newValue, firstChange: oldValue === null } });
   }
 
   /**
