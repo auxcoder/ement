@@ -22,6 +22,9 @@ export class ElElement extends HTMLElement {
   #shadow;
   #bindings = new Map(); // prop → [{ node, template }]
   #state = {}; // backing store for reactive properties
+  #pendingChanges = null; // batched changes for onChanges
+  #initialized = false; // true after onInit — onChanges only fires after init
+  #childBindings = []; // tracked bind() registrations for sync and cleanup
 
   constructor() {
     super();
@@ -51,6 +54,7 @@ export class ElElement extends HTMLElement {
     this.#render();
     this.#installReactiveProperties();
     this.onInit?.();
+    this.#initialized = true;
   }
 
   /**
@@ -201,11 +205,35 @@ export class ElElement extends HTMLElement {
           if (Object.is(old, value)) return;
           this.#state[prop] = value;
           scheduleUpdate(() => this.#updateBinding(prop));
+          this.#queueChange(prop, old, value);
         },
         enumerable: true,
         configurable: true,
       });
     }
+  }
+
+  /**
+   * Queue a property change for batched onChanges notification.
+   * Multiple changes in the same microtask are merged into one onChanges call.
+   * @private
+   */
+  #queueChange(prop, previous, current) {
+    if (!this.#initialized) return; // don't fire during initial setup
+    if (!this.onChanges) return; // no hook defined, skip
+
+    const firstChange = previous === undefined;
+
+    if (!this.#pendingChanges) {
+      this.#pendingChanges = {};
+      scheduleUpdate(() => {
+        const changes = this.#pendingChanges;
+        this.#pendingChanges = null;
+        this.onChanges(changes);
+      });
+    }
+
+    this.#pendingChanges[prop] = { previous, current, firstChange };
   }
 
   // ─── Template Bindings ({{ prop }}) ────────────────────────────────────────
@@ -451,5 +479,105 @@ export class ElElement extends HTMLElement {
       ...options,
     });
     return this.dispatchEvent(event);
+  }
+
+  // ─── Property Binding (Parent ↔ Child) ─────────────────────────────────────
+
+  /**
+   * Bind parent properties and callbacks to a child component.
+   * Handles both directions:
+   * - Inputs: getter functions → parent state synced to child property
+   * - Outputs: plain functions → set on child, child calls them directly
+   *
+   * Inputs are re-evaluated and pushed to the child whenever the parent's
+   * reactive state changes. No stale references.
+   *
+   * @param {string} selector - CSS selector for the child element(s)
+   * @param {Object} bindings - { propName: getter | callback }
+   *
+   * @example
+   * onInit() {
+   *   this.bind('item-card', {
+   *     user: () => this.user,                          // input (synced)
+   *     items: () => this.items,                        // input (synced)
+   *     onDelete: (data) => this.removeUser(data.id),   // output (callback)
+   *     onSelect: (data) => this.selected = data,       // output (callback)
+   *   });
+   * }
+   */
+  bind(selector, bindings) {
+    const elements = this.#shadow.querySelectorAll
+      ? [...this.#shadow.querySelectorAll(selector)]
+      : [this.#shadow.querySelector?.(selector)].filter(Boolean);
+
+    if (elements.length === 0) return;
+
+    // Separate inputs (getters) from outputs (callbacks)
+    const inputs = {};
+    const outputs = {};
+
+    for (const [key, fn] of Object.entries(bindings)) {
+      if (this.#isGetter(fn)) {
+        inputs[key] = fn;
+      } else {
+        outputs[key] = fn;
+      }
+    }
+
+    // Apply initial values and wire outputs
+    for (const el of elements) {
+      // Set outputs (callbacks) — one-time, they don't change
+      for (const [key, fn] of Object.entries(outputs)) {
+        el[key] = fn;
+      }
+
+      // Set inputs — initial push
+      for (const [key, getter] of Object.entries(inputs)) {
+        el[key] = getter();
+      }
+    }
+
+    // Track for re-sync when parent state changes
+    const binding = { selector, elements, inputs, outputs };
+    this.#childBindings.push(binding);
+
+    // Hook into parent's reactive system to re-push inputs on change
+    this.#syncBindingsOnChange(binding);
+  }
+
+  /**
+   * Determine if a binding value is a getter (input) or callback (output).
+   * Convention: if calling it with no args returns a value, it's a getter.
+   * If it expects arguments (length > 0), it's a callback.
+   * @private
+   */
+  #isGetter(fn) {
+    return fn.length === 0;
+  }
+
+  /**
+   * Wire parent reactive state to re-push inputs when parent changes.
+   * @private
+   */
+  #syncBindingsOnChange(binding) {
+    const self = this;
+    const existingOnChanges = this.onChanges;
+
+    this.onChanges = function (changes) {
+      // Push updated inputs to bound children
+      for (const el of binding.elements) {
+        for (const [key, getter] of Object.entries(binding.inputs)) {
+          const newValue = getter();
+          if (!Object.is(el[key], newValue)) {
+            el[key] = newValue;
+          }
+        }
+      }
+
+      // Call original onChanges if defined
+      if (existingOnChanges && existingOnChanges !== self.onChanges) {
+        existingOnChanges.call(self, changes);
+      }
+    };
   }
 }

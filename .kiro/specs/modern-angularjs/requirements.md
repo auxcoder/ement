@@ -57,15 +57,18 @@ One API, one code path, two runtime behaviors depending on whether a build step 
 
 ### 2. Data Binding & Reactivity (Scope / Digest Cycle)
 
-| AngularJS Feature                  | Original Problem                | Modern Replacement                                                         |
-| ---------------------------------- | ------------------------------- | -------------------------------------------------------------------------- |
-| `$scope`                           | Component state container       | **Class fields** on Custom Element                                         |
-| Dirty checking / digest cycle      | Detect changes to plain objects | **`Proxy`** for deep observation                                           |
-| `$watch` / `$watchCollection`      | Observe value changes           | **`Proxy`** traps + **`MutationObserver`** for DOM                         |
-| Two-way binding (`ng-model`)       | Sync form inputs ↔ model        | **Unidirectional flow**: state → view (reactive), view → state (events up) |
-| `$apply` / `$digest`               | Trigger change detection        | Automatic via Proxy traps (synchronous) or **microtask** batching          |
-| Expression evaluation (`{{expr}}`) | Interpolate model into view     | **Tagged Template Literals** or manual `textContent` updates               |
-| One-time binding (`::expr`)        | Optimize static data            | Straightforward: just set once, don't observe                              |
+| AngularJS Feature                  | Original Problem                | Modern Replacement                                                          |
+| ---------------------------------- | ------------------------------- | --------------------------------------------------------------------------- |
+| `$scope`                           | Component state container       | **Class fields** on Custom Element                                          |
+| Dirty checking / digest cycle      | Detect changes to plain objects | **`Proxy`** for deep observation                                            |
+| `$watch` / `$watchCollection`      | Observe value changes           | **`Proxy`** traps + **`MutationObserver`** for DOM                          |
+| `$onChanges` (component lifecycle) | React to input/binding changes  | **`onChanges(changes)` lifecycle hook** on ElElement                        |
+| `<` (one-way binding)              | Pass any value parent→child     | **`bind()` method** — getter functions synced to child properties           |
+| `&` (expression binding)           | Parent passes callback to child | **`bind()` method** — callback functions set on child, child calls directly |
+| Two-way binding (`ng-model`)       | Sync form inputs ↔ model        | **Unidirectional flow**: state → view (reactive), view → state (events up)  |
+| `$apply` / `$digest`               | Trigger change detection        | Automatic via Proxy traps (synchronous) or **microtask** batching           |
+| Expression evaluation (`{{expr}}`) | Interpolate model into view     | **Tagged Template Literals** or manual `textContent` updates                |
+| One-time binding (`::expr`)        | Optimize static data            | Straightforward: just set once, don't observe                               |
 
 **Learning Insight**: The digest cycle with dirty checking was an O(n) approach necessary because JavaScript had no way to intercept property access/mutation. `Proxy` (ES2015+) solves this in O(1) per mutation.
 
