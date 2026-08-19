@@ -21,7 +21,7 @@ import { scheduleUpdate } from "./scheduler.js";
 export class ElElement extends HTMLElement {
   #shadow;
   #bindings = new Map(); // prop → [{ node, template }]
-  #state = {};           // backing store for reactive properties
+  #state = {}; // backing store for reactive properties
 
   constructor() {
     super();
@@ -76,16 +76,16 @@ export class ElElement extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
     const prop = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-    const coerced = this.#coerceValue(prop, newValue);
+    const coerced = this.#coerceValue(prop, newValue, name);
     this[prop] = coerced;
-    this._notifyChange(prop, coerced);
+    this._notifyChange(prop);
   }
 
   /**
    * Coerce attribute string to the declared type.
    * @private
    */
-  #coerceValue(prop, value) {
+  #coerceValue(prop, value, attrName) {
     const types = this.constructor.propTypes;
     if (!types || !types[prop]) return value;
 
@@ -102,7 +102,12 @@ export class ElElement extends HTMLElement {
     if (type === Number) {
       if (value === null || value === "") return null;
       const num = Number(value);
-      return Number.isNaN(num) ? null : num;
+      if (Number.isNaN(num)) {
+        const msg = `[ElElement] Attribute "${attrName}" received non-numeric value "${value}" (expected Number for property "${prop}"). Defaulting to null.`;
+        console.warn(msg);
+        return null;
+      }
+      return num;
     }
 
     return value;
@@ -170,7 +175,7 @@ export class ElElement extends HTMLElement {
 
     // Initial render of all bindings
     for (const [prop] of this.#bindings) {
-      this.#updateBinding(prop, this[prop]);
+      this.#updateBinding(prop);
     }
   }
 
@@ -195,7 +200,7 @@ export class ElElement extends HTMLElement {
           const old = this.#state[prop];
           if (Object.is(old, value)) return;
           this.#state[prop] = value;
-          scheduleUpdate(() => this.#updateBinding(prop, value));
+          scheduleUpdate(() => this.#updateBinding(prop));
         },
         enumerable: true,
         configurable: true,
@@ -250,7 +255,7 @@ export class ElElement extends HTMLElement {
    * Updates all text nodes bound to a given property.
    * @private
    */
-  #updateBinding(prop, value) {
+  #updateBinding(prop) {
     const entries = this.#bindings.get(prop);
     if (!entries) return;
 
@@ -283,9 +288,9 @@ export class ElElement extends HTMLElement {
    * Notify that a property changed — schedules binding updates.
    * Call this from reactive setters or manually after state changes.
    */
-  _notifyChange(prop, value) {
+  _notifyChange(prop) {
     if (this.#bindings.has(prop)) {
-      scheduleUpdate(() => this.#updateBinding(prop, value));
+      scheduleUpdate(() => this.#updateBinding(prop));
     }
   }
 
