@@ -3,19 +3,19 @@
  * Run with: node --test src/di/container.test.js
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { Container } from './container.js';
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { Container } from "./container.js";
 
 // Test tokens
-const HttpToken = Symbol('Http');
-const LoggerToken = Symbol('Logger');
-const DbToken = Symbol('Db');
-const AuthToken = Symbol('Auth');
+const HttpToken = Symbol("Http");
+const LoggerToken = Symbol("Logger");
+const DbToken = Symbol("Db");
+const AuthToken = Symbol("Auth");
 
-describe('Container', () => {
-  describe('register + resolve', () => {
-    it('resolves a registered token', () => {
+describe("Container", () => {
+  describe("register + resolve", () => {
+    it("resolves a registered token", () => {
       const container = new Container();
       const mockHttp = { get: () => {} };
       container.register(HttpToken, () => mockHttp);
@@ -24,7 +24,7 @@ describe('Container', () => {
       assert.strictEqual(result, mockHttp);
     });
 
-    it('throws when resolving an unregistered token', () => {
+    it("throws when resolving an unregistered token", () => {
       const container = new Container();
 
       assert.throws(
@@ -33,7 +33,7 @@ describe('Container', () => {
       );
     });
 
-    it('passes the container to the factory (for resolving dependencies)', () => {
+    it("passes the container to the factory (for resolving dependencies)", () => {
       const container = new Container();
       container.register(LoggerToken, () => ({ log: () => {} }));
       container.register(HttpToken, (c) => {
@@ -47,8 +47,8 @@ describe('Container', () => {
     });
   });
 
-  describe('singleton lifetime', () => {
-    it('returns the same instance on multiple resolves (default: singleton)', () => {
+  describe("singleton lifetime", () => {
+    it("returns the same instance on multiple resolves (default: singleton)", () => {
       const container = new Container();
       let callCount = 0;
       container.register(HttpToken, () => {
@@ -63,13 +63,17 @@ describe('Container', () => {
       assert.equal(callCount, 1);
     });
 
-    it('returns different instances when singleton: false (transient)', () => {
+    it("returns different instances when singleton: false (transient)", () => {
       const container = new Container();
       let callCount = 0;
-      container.register(HttpToken, () => {
-        callCount++;
-        return { id: callCount };
-      }, { singleton: false });
+      container.register(
+        HttpToken,
+        () => {
+          callCount++;
+          return { id: callCount };
+        },
+        { singleton: false },
+      );
 
       const first = container.resolve(HttpToken);
       const second = container.resolve(HttpToken);
@@ -81,8 +85,8 @@ describe('Container', () => {
     });
   });
 
-  describe('circular dependency detection', () => {
-    it('throws on circular dependency', () => {
+  describe("circular dependency detection", () => {
+    it("throws on circular dependency", () => {
       const container = new Container();
 
       // A depends on B, B depends on A
@@ -100,10 +104,10 @@ describe('Container', () => {
     });
   });
 
-  describe('container hierarchy', () => {
-    it('child resolves from parent when not overridden', () => {
+  describe("container hierarchy", () => {
+    it("child resolves from parent when not overridden", () => {
       const parent = new Container();
-      const mockHttp = { get: () => 'parent-http' };
+      const mockHttp = { get: () => "parent-http" };
       parent.register(HttpToken, () => mockHttp);
 
       const child = parent.createChild();
@@ -111,10 +115,10 @@ describe('Container', () => {
       assert.strictEqual(child.resolve(HttpToken), mockHttp);
     });
 
-    it('child override shadows parent without affecting parent', () => {
+    it("child override shadows parent without affecting parent", () => {
       const parent = new Container();
-      const parentHttp = { source: 'parent' };
-      const childHttp = { source: 'child' };
+      const parentHttp = { source: "parent" };
+      const childHttp = { source: "child" };
 
       parent.register(HttpToken, () => parentHttp);
       const child = parent.createChild();
@@ -124,7 +128,7 @@ describe('Container', () => {
       assert.strictEqual(parent.resolve(HttpToken), parentHttp);
     });
 
-    it('resolution walks up the chain: child → parent → grandparent', () => {
+    it("resolution walks up the chain: child → parent → grandparent", () => {
       const grandparent = new Container();
       const logger = { log: () => {} };
       grandparent.register(LoggerToken, () => logger);
@@ -135,7 +139,7 @@ describe('Container', () => {
       assert.strictEqual(child.resolve(LoggerToken), logger);
     });
 
-    it('child throws when token is not in any ancestor', () => {
+    it("child throws when token is not in any ancestor", () => {
       const parent = new Container();
       const child = parent.createChild();
 
@@ -146,8 +150,8 @@ describe('Container', () => {
     });
   });
 
-  describe('has()', () => {
-    it('returns true for registered tokens', () => {
+  describe("has()", () => {
+    it("returns true for registered tokens", () => {
       const container = new Container();
       container.register(HttpToken, () => ({}));
 
@@ -155,7 +159,7 @@ describe('Container', () => {
       assert.equal(container.has(LoggerToken), false);
     });
 
-    it('checks parent containers', () => {
+    it("checks parent containers", () => {
       const parent = new Container();
       parent.register(HttpToken, () => ({}));
       const child = parent.createChild();
@@ -165,8 +169,8 @@ describe('Container', () => {
     });
   });
 
-  describe('re-registration', () => {
-    it('replaces previous registration', () => {
+  describe("re-registration", () => {
+    it("replaces previous registration", () => {
       const container = new Container();
       container.register(HttpToken, () => ({ version: 1 }));
       const v1 = container.resolve(HttpToken);

@@ -17,7 +17,7 @@ export class FormGroup {
     this.#formElement = formElement;
 
     if (formElement?.addEventListener) {
-      formElement.addEventListener('submit', (e) => {
+      formElement.addEventListener("submit", (e) => {
         if (!this.valid) {
           e.preventDefault();
           // Mark all fields touched to show errors

@@ -8,14 +8,14 @@
  * @module router/comparison
  */
 
-console.log('═══════════════════════════════════════════════════════════════');
-console.log('  Comparative Example: Router Approaches');
-console.log('  Scenario: Admin section with auth guard + shared permissions');
-console.log('═══════════════════════════════════════════════════════════════\n');
+console.log("═════════════════════════════════════════════════════════════");
+console.log("  Comparative Example: Router Approaches");
+console.log("  Scenario: Admin section with auth guard + shared permissions");
+console.log("═════════════════════════════════════════════════════════════\n");
 
-// ─── 1. ngRoute ────────────────────────────────────────────────────────────────
+// ─── 1. ngRoute ──────────────────────────────────────────────────────────────
 
-console.log('─── 1. ngRoute ─────────────────────────────────────────────────\n');
+console.log("─── 1. ngRoute ───────────────────────────────────────────────\n");
 console.log(`
   $routeProvider
     .when('/', { template: '<home>', controller: 'HomeCtrl' })
@@ -48,9 +48,9 @@ console.log(`
   • Flat routes only — no grouping concept
 `);
 
-// ─── 2. ui-router ──────────────────────────────────────────────────────────────
+// ─── 2. ui-router ────────────────────────────────────────────────────────────
 
-console.log('─── 2. ui-router ───────────────────────────────────────────────\n');
+console.log("─── 2. ui-router ─────────────────────────────────────────────\n");
 console.log(`
   $stateProvider
     .state('home', { url: '/', component: 'home' })
@@ -92,9 +92,11 @@ console.log(`
   • Resolve inheritance hides data origin
 `);
 
-// ─── 3. ng-modern ──────────────────────────────────────────────────────────────
+// ─── 3. ng-modern ────────────────────────────────────────────────────────────
 
-console.log('─── 3. ng-modern Router ─────────────────────────────────────────\n');
+console.log(
+  "─── 3. ng-modern Router ───────────────────────────────────────\n",
+);
 console.log(`
   import { Router } from 'ng-modern/router/router';
 
@@ -139,7 +141,7 @@ console.log(`
   • Native URLPattern — powerful matching without custom parser
 `);
 
-console.log('─── Summary Table ──────────────────────────────────────────────\n');
+console.log("─── Summary Table ────────────────────────────────────────────\n");
 console.log(`
   ┌──────────────────────┬────────────┬───────────┬────────────┐
   │ Feature              │ ngRoute    │ ui-router │ ng-modern  │
@@ -155,4 +157,4 @@ console.log(`
   └──────────────────────┴────────────┴───────────┴────────────┘
 `);
 
-console.log('═══════════════════════════════════════════════════════════════');
+console.log("═════════════════════════════════════════════════════════════");

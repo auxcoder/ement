@@ -1,4 +1,15 @@
 /**
+  JSON.stringify is the default
+  FormData is for:
+  - File uploads (multipart/form-data)
+  - Traditional HTML form submissions
+  - Sending binary data mixed with text
+  FormData can't represent nested objects, arrays, or typed values cleanly:
+  { user: { name: 'Alice', roles: ['admin', 'editor'] } }
+  As FormData: user[name]=Alice&user[roles][0]=admin... ugly, non-standard
+*/
+
+/**
  * HTTP client wrapping fetch() with interceptor pipeline.
  * Replaces AngularJS's $http service.
  *
@@ -23,7 +34,14 @@ export class Http {
    * @param {number} [options.retries=0] - Default retry count on failure
    * @param {number} [options.retryDelay=1000] - Base delay between retries (exponential backoff)
    */
-  constructor({ baseUrl = '', interceptors = [], headers = {}, timeout = 0, retries = 0, retryDelay = 1000 } = {}) {
+  constructor({
+    baseUrl = "",
+    interceptors = [],
+    headers = {},
+    timeout = 0,
+    retries = 0,
+    retryDelay = 1000,
+  } = {}) {
     this.#baseUrl = baseUrl;
     this.#interceptors = interceptors;
     this.#defaultHeaders = headers;
@@ -54,14 +72,19 @@ export class Http {
         lastError = error;
 
         // Don't retry on abort or client errors (4xx)
-        if (error.name === 'AbortError') throw error;
-        if (error.name === 'TimeoutError') throw error;
-        if (error instanceof HttpError && error.status >= 400 && error.status < 500) throw error;
+        if (error.name === "AbortError") throw error;
+        if (error.name === "TimeoutError") throw error;
+        if (
+          error instanceof HttpError &&
+          error.status >= 400 &&
+          error.status < 500
+        )
+          throw error;
 
         // Retry with exponential backoff
         if (attempt < maxRetries) {
           const delay = this.#retryDelay * Math.pow(2, attempt);
-          await new Promise(r => setTimeout(r, delay));
+          await new Promise((r) => setTimeout(r, delay));
         }
       }
     }
@@ -82,9 +105,11 @@ export class Http {
     if (options.signal) {
       if (options.signal.aborted) {
         this.#activeRequests.delete(internalController);
-        throw new DOMException('Aborted', 'AbortError');
+        throw new DOMException("Aborted", "AbortError");
       }
-      options.signal.addEventListener('abort', () => internalController.abort());
+      options.signal.addEventListener("abort", () =>
+        internalController.abort(),
+      );
     }
 
     // Timeout: abort after N ms
@@ -118,9 +143,13 @@ export class Http {
       this.#activeRequests.delete(internalController);
 
       // Convert abort due to timeout into a TimeoutError
-      if (timeout > 0 && error.name === 'AbortError' && !options.signal?.aborted) {
+      if (
+        timeout > 0 &&
+        error.name === "AbortError" &&
+        !options.signal?.aborted
+      ) {
         const timeoutError = new Error(`Request timeout after ${timeout}ms`);
-        timeoutError.name = 'TimeoutError';
+        timeoutError.name = "TimeoutError";
         throw timeoutError;
       }
 
@@ -142,7 +171,11 @@ export class Http {
     if (!response.ok) {
       clearTimeout(timeoutId);
       this.#activeRequests.delete(internalController);
-      const error = new HttpError(response.status, response.statusText, response);
+      const error = new HttpError(
+        response.status,
+        response.statusText,
+        response,
+      );
 
       for (const interceptor of this.#interceptors) {
         if (interceptor.responseError) {
@@ -182,45 +215,52 @@ export class Http {
    * GET request. Returns parsed JSON by default.
    */
   async get(url, options = {}) {
-    const response = await this.request(url, { ...options, method: 'GET' });
+    const response = await this.request(url, { ...options, method: "GET" });
     return response.json();
   }
 
   /**
    * POST request with JSON body.
    */
+  /**
+   * POST request. Auto-serializes plain objects as JSON.
+   * FormData, Blob, string, and other body types are sent as-is.
+   */
   async post(url, body, options = {}) {
+    const { serialized, headers } = this.#prepareBody(body);
     const response = await this.request(url, {
       ...options,
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: { 'Content-Type': 'application/json', ...options.headers },
+      method: "POST",
+      body: serialized,
+      headers: { ...headers, ...options.headers },
     });
     return response.json();
   }
 
   /**
-   * PUT request with JSON body.
+   * PUT request. Auto-serializes plain objects as JSON.
    */
   async put(url, body, options = {}) {
+    const { serialized, headers } = this.#prepareBody(body);
     const response = await this.request(url, {
       ...options,
-      method: 'PUT',
-      body: JSON.stringify(body),
-      headers: { 'Content-Type': 'application/json', ...options.headers },
+      method: "PUT",
+      body: serialized,
+      headers: { ...headers, ...options.headers },
     });
     return response.json();
   }
 
   /**
-   * PATCH request with JSON body.
+   * PATCH request. Auto-serializes plain objects as JSON.
    */
   async patch(url, body, options = {}) {
+    const { serialized, headers } = this.#prepareBody(body);
     const response = await this.request(url, {
       ...options,
-      method: 'PATCH',
-      body: JSON.stringify(body),
-      headers: { 'Content-Type': 'application/json', ...options.headers },
+      method: "PATCH",
+      body: serialized,
+      headers: { ...headers, ...options.headers },
     });
     return response.json();
   }
@@ -229,9 +269,53 @@ export class Http {
    * DELETE request.
    */
   async delete(url, options = {}) {
-    const response = await this.request(url, { ...options, method: 'DELETE' });
-    if (response.headers?.get?.('content-length') === '0') return null;
+    const response = await this.request(url, { ...options, method: "DELETE" });
+    if (response.headers?.get?.("content-length") === "0") return null;
     return response.json().catch(() => null);
+  }
+
+  // ─── Internal ──────────────────────────────────────────────────────────────
+
+  /**
+   * Detect body type and prepare for fetch.
+   * - Plain objects → JSON.stringify + Content-Type: application/json
+   * - FormData, Blob, string, ArrayBuffer, etc. → sent as-is (no Content-Type override)
+   * @private
+   */
+  #prepareBody(body) {
+    // null/undefined — no body
+    if (body == null) return { serialized: null, headers: {} };
+
+    // Already a string — send as-is with JSON content type (assume JSON string)
+    if (typeof body === "string") {
+      return {
+        serialized: body,
+        headers: { "Content-Type": "application/json" },
+      };
+    }
+
+    // FormData — let browser set Content-Type (includes boundary)
+    if (typeof FormData !== "undefined" && body instanceof FormData) {
+      return { serialized: body, headers: {} };
+    }
+
+    // Blob / ArrayBuffer / ReadableStream / URLSearchParams — send as-is
+    if (
+      (typeof Blob !== "undefined" && body instanceof Blob) ||
+      (typeof ArrayBuffer !== "undefined" && body instanceof ArrayBuffer) ||
+      (typeof ReadableStream !== "undefined" &&
+        body instanceof ReadableStream) ||
+      (typeof URLSearchParams !== "undefined" &&
+        body instanceof URLSearchParams)
+    ) {
+      return { serialized: body, headers: {} };
+    }
+
+    // Plain object or array → JSON
+    return {
+      serialized: JSON.stringify(body),
+      headers: { "Content-Type": "application/json" },
+    };
   }
 }
 
@@ -241,7 +325,7 @@ export class Http {
 export class HttpError extends Error {
   constructor(status, statusText, response) {
     super(`HTTP ${status}: ${statusText}`);
-    this.name = 'HttpError';
+    this.name = "HttpError";
     this.status = status;
     this.response = response;
   }

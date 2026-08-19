@@ -15,9 +15,9 @@
  * @module core/element
  */
 
-import { resolveContainer } from '../di/provider.js';
-import { reactive } from './reactive.js';
-import { scheduleUpdate } from './scheduler.js';
+import { resolveContainer } from "../di/provider.js";
+import { reactive } from "./reactive.js";
+import { scheduleUpdate } from "./scheduler.js";
 
 export class NgElement extends HTMLElement {
   #shadow;
@@ -25,7 +25,7 @@ export class NgElement extends HTMLElement {
 
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: 'open' });
+    this.#shadow = this.attachShadow({ mode: "open" });
   }
 
   /**
@@ -94,12 +94,12 @@ export class NgElement extends HTMLElement {
       // Boolean attributes: presence = true, absence = false
       // <el active> → true, <el active="false"> → false, removal → false
       if (value === null) return false;
-      if (value === 'false' || value === '0') return false;
+      if (value === "false" || value === "0") return false;
       return true;
     }
 
     if (type === Number) {
-      if (value === null || value === '') return null;
+      if (value === null || value === "") return null;
       const num = Number(value);
       return Number.isNaN(num) ? null : num;
     }
@@ -119,18 +119,18 @@ export class NgElement extends HTMLElement {
     if (this._resolvedTemplate !== undefined) return;
 
     // Template
-    if (typeof this.template === 'string') {
+    if (typeof this.template === "string") {
       // Build step already inlined it
       this._resolvedTemplate = this.template;
     } else if (this.templateUrl) {
       const res = await fetch(this.templateUrl);
       this._resolvedTemplate = await res.text();
     } else {
-      this._resolvedTemplate = '';
+      this._resolvedTemplate = "";
     }
 
     // Styles
-    if (typeof this.styles === 'string') {
+    if (typeof this.styles === "string") {
       this._resolvedStyles = this.styles;
     } else if (this.stylesUrl) {
       const res = await fetch(this.stylesUrl);
@@ -153,14 +153,14 @@ export class NgElement extends HTMLElement {
 
     // Add scoped styles
     if (styles) {
-      const styleEl = document.createElement('style');
+      const styleEl = document.createElement("style");
       styleEl.textContent = styles;
       this.#shadow.appendChild(styleEl);
     }
 
     // Parse and append template
     if (template) {
-      const tpl = document.createElement('template');
+      const tpl = document.createElement("template");
       tpl.innerHTML = template;
       const content = tpl.content.cloneNode(true);
       this.#parseBindings(content);
@@ -182,8 +182,11 @@ export class NgElement extends HTMLElement {
    */
   #parseBindings(root) {
     // TreeWalker for text nodes
-    if (typeof document !== 'undefined' && document.createTreeWalker) {
-      const walker = document.createTreeWalker(root, 4 /* NodeFilter.SHOW_TEXT */);
+    if (typeof document !== "undefined" && document.createTreeWalker) {
+      const walker = document.createTreeWalker(
+        root,
+        4 /* NodeFilter.SHOW_TEXT */,
+      );
       while (walker.nextNode()) {
         this.#processTextNode(walker.currentNode);
       }
@@ -196,7 +199,7 @@ export class NgElement extends HTMLElement {
    */
   #processTextNode(textNode) {
     const text = textNode.textContent;
-    if (!text || !text.includes('{{')) return;
+    if (!text || !text.includes("{{")) return;
 
     const matches = [...text.matchAll(/\{\{\s*(\w+)\s*\}\}/g)];
     if (matches.length === 0) return;
@@ -226,8 +229,8 @@ export class NgElement extends HTMLElement {
       let result = template;
       for (const [p, v] of this.#getAllBoundValues()) {
         result = result.replace(
-          new RegExp(`\\{\\{\\s*${p}\\s*\\}\\}`, 'g'),
-          v ?? '',
+          new RegExp(`\\{\\{\\s*${p}\\s*\\}\\}`, "g"),
+          v ?? "",
         );
       }
       node.textContent = result;
@@ -273,7 +276,7 @@ export class NgElement extends HTMLElement {
   show(selector, condition) {
     const el = this.#shadow.querySelector?.(selector);
     if (el) {
-      el.style.display = condition ? '' : 'none';
+      el.style.display = condition ? "" : "none";
     }
   }
 
@@ -374,7 +377,7 @@ export class NgElement extends HTMLElement {
     }
 
     // Clear and re-append in order
-    if (container.innerHTML !== undefined) container.innerHTML = '';
+    if (container.innerHTML !== undefined) container.innerHTML = "";
     if (container.childNodes) container.childNodes.length = 0;
     for (const node of fragment) {
       container.appendChild(node);

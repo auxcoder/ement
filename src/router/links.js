@@ -27,34 +27,39 @@ export function interceptLinks(router, root) {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
     // Find the nearest <a> ancestor
-    const anchor = e.target?.closest?.('a[href]');
+    const anchor = e.target?.closest?.("a[href]");
     if (!anchor) return;
 
     // Skip external links (opt-out)
-    if (anchor.hasAttribute('data-external')) return;
+    if (anchor.hasAttribute("data-external")) return;
 
     // Skip links with target attribute (e.g., target="_blank")
-    if (anchor.getAttribute('target')) return;
+    if (anchor.getAttribute("target")) return;
 
     // Skip non-http links (mailto:, tel:, etc.)
-    const href = anchor.getAttribute('href');
-    if (!href || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) return;
+    const href = anchor.getAttribute("href");
+    if (
+      !href ||
+      href.startsWith("mailto:") ||
+      href.startsWith("tel:") ||
+      href.startsWith("#")
+    )
+      return;
 
     // Skip cross-origin links
     if (anchor.origin && anchor.origin !== location?.origin) return;
 
     // Intercept: prevent default navigation, use router
     e.preventDefault();
-    const path = anchor.pathname + (anchor.search || '');
+    const path = anchor.pathname + (anchor.search || "");
     router.navigate(path);
   };
 
-  (root || (typeof document !== 'undefined' ? document : null))
-    ?.addEventListener('click', handler);
+  const target = root || (typeof document !== "undefined" ? document : null);
+  target?.addEventListener("click", handler);
 
   // Return cleanup function
   return () => {
-    (root || (typeof document !== 'undefined' ? document : null))
-      ?.removeEventListener('click', handler);
+    target?.removeEventListener("click", handler);
   };
 }

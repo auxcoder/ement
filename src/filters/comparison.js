@@ -6,13 +6,18 @@
  * @module filters/comparison
  */
 
-import { formatCurrency, formatNumber, formatDate, formatRelative } from './intl.js';
+import {
+  formatCurrency,
+  formatNumber,
+  formatDate,
+  formatRelative,
+} from "./intl.js";
 
-console.log('═══════════════════════════════════════════════════════════════');
-console.log('  Comparative Example: AngularJS Filters vs Intl APIs');
-console.log('═══════════════════════════════════════════════════════════════\n');
+console.log("═════════════════════════════════════════════════════════════");
+console.log("  Comparative Example: AngularJS Filters vs Intl APIs");
+console.log("═════════════════════════════════════════════════════════════\n");
 
-console.log('─── AngularJS Filters ──────────────────────────────────────────\n');
+console.log("─── AngularJS Filters ───────────────────────────────────────\n");
 console.log(`
   {{ 1234.5 | currency }}              → $1,234.50
   {{ 1234.5 | currency:'EUR' }}        → €1,234.50 (not locale-aware!)
@@ -28,25 +33,55 @@ console.log(`
   • No plural rules, no list formatting
 `);
 
-console.log('─── ng-modern (Intl APIs) ─────────────────────────────────────\n');
+console.log("─── ng-modern (Intl APIs) ───────────────────────────────────\n");
 
-const now = new Date('2026-08-18T12:00:00');
+const now = new Date("2026-08-18T12:00:00");
 
-console.log('  formatCurrency(1234.5, "USD", "en-US")  →', formatCurrency(1234.5, 'USD', 'en-US'));
-console.log('  formatCurrency(1234.5, "EUR", "de-DE")  →', formatCurrency(1234.5, 'EUR', 'de-DE'));
-console.log('  formatCurrency(1234.5, "JPY", "ja-JP")  →', formatCurrency(1234.5, 'JPY', 'ja-JP'));
-console.log('');
-console.log('  formatNumber(1234567, {}, "en-US")      →', formatNumber(1234567, {}, 'en-US'));
-console.log('  formatNumber(1234567, {}, "de-DE")      →', formatNumber(1234567, {}, 'de-DE'));
-console.log('');
-console.log('  formatDate(now, "short", "en-US")       →', formatDate(now, 'short', 'en-US'));
-console.log('  formatDate(now, "long", "es-ES")        →', formatDate(now, 'long', 'es-ES'));
-console.log('  formatDate(now, "full", "ja-JP")        →', formatDate(now, 'full', 'ja-JP'));
-console.log('');
+console.log(
+  '  formatCurrency(1234.5, "USD", "en-US")  →',
+  formatCurrency(1234.5, "USD", "en-US"),
+);
+console.log(
+  '  formatCurrency(1234.5, "EUR", "de-DE")  →',
+  formatCurrency(1234.5, "EUR", "de-DE"),
+);
+console.log(
+  '  formatCurrency(1234.5, "JPY", "ja-JP")  →',
+  formatCurrency(1234.5, "JPY", "ja-JP"),
+);
+console.log("");
+console.log(
+  '  formatNumber(1234567, {}, "en-US")      →',
+  formatNumber(1234567, {}, "en-US"),
+);
+console.log(
+  '  formatNumber(1234567, {}, "de-DE")      →',
+  formatNumber(1234567, {}, "de-DE"),
+);
+console.log("");
+console.log(
+  '  formatDate(now, "short", "en-US")       →',
+  formatDate(now, "short", "en-US"),
+);
+console.log(
+  '  formatDate(now, "long", "es-ES")        →',
+  formatDate(now, "long", "es-ES"),
+);
+console.log(
+  '  formatDate(now, "full", "ja-JP")        →',
+  formatDate(now, "full", "ja-JP"),
+);
+console.log("");
 const fiveMin = new Date(Date.now() - 5 * 60 * 1000);
 const threeDays = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-console.log('  formatRelative(5min ago)                →', formatRelative(fiveMin, 'en-US'));
-console.log('  formatRelative(3days ago)               →', formatRelative(threeDays, 'en-US'));
+console.log(
+  "  formatRelative(5min ago)                →",
+  formatRelative(fiveMin, "en-US"),
+);
+console.log(
+  "  formatRelative(3days ago)               →",
+  formatRelative(threeDays, "en-US"),
+);
 
 console.log(`
 
@@ -60,7 +95,7 @@ console.log(`
   • Zero dependencies — it's just the browser/Node runtime
 `);
 
-console.log('─── Summary ────────────────────────────────────────────────────\n');
+console.log("─── Summary ──────────────────────────────────────────────────\n");
 console.log(`
   ┌──────────────────┬─────────────────────────┬─────────────────────────┐
   │ Feature          │ AngularJS Filters       │ Intl APIs               │
@@ -76,4 +111,4 @@ console.log(`
   └──────────────────┴─────────────────────────┴─────────────────────────┘
 `);
 
-console.log('═══════════════════════════════════════════════════════════════');
+console.log("═════════════════════════════════════════════════════════════");

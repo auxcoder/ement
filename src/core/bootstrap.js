@@ -5,12 +5,12 @@
  * @module core/bootstrap
  */
 
-import { Container } from '../di/container.js';
-import { HttpToken, RouterToken } from '../di/tokens.js';
-import { Http } from '../http/http.js';
-import { Router } from '../router/router.js';
-import { interceptLinks } from '../router/links.js';
-import { provideContainer } from '../di/provider.js';
+import { Container } from "../di/container.js";
+import { HttpToken, RouterToken } from "../di/tokens.js";
+import { Http } from "../http/http.js";
+import { Router } from "../router/router.js";
+import { interceptLinks } from "../router/links.js";
+import { provideContainer } from "../di/provider.js";
 
 /**
  * Bootstrap an ng-modern application.
@@ -44,12 +44,15 @@ import { provideContainer } from '../di/provider.js';
  * });
  */
 export function bootstrap(root, config = {}) {
-  const { services = [], http: httpConfig, routes, outlet = 'route-outlet' } = config;
+  const {
+    services = [],
+    http: httpConfig,
+    routes,
+    outlet = "route-outlet",
+  } = config;
 
   // Resolve root element
-  const rootEl = typeof root === 'string'
-    ? document.querySelector(root)
-    : root;
+  const rootEl = typeof root === "string" ? document.querySelector(root) : root;
 
   if (!rootEl) {
     throw new Error(`bootstrap: root element "${root}" not found`);

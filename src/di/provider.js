@@ -11,10 +11,10 @@
  * @module di/provider
  */
 
-import { Container } from './container.js';
+import { Container } from "./container.js";
 
 // Symbol used to attach container to a DOM element
-const CONTAINER_KEY = Symbol('__ngContainer');
+const CONTAINER_KEY = Symbol("__ngContainer");
 
 /**
  * Attach a container to a DOM element.
@@ -57,8 +57,8 @@ export function resolveContainer(element) {
   }
 
   throw new Error(
-    'No DI container found in DOM ancestors. ' +
-    'Wrap your app with provideContainer(element, container).',
+    "No DI container found in DOM ancestors. " +
+      "Wrap your app with provideContainer(element, container).",
   );
 }
 
@@ -76,7 +76,7 @@ export function resolveContainer(element) {
  *   const provider = document.querySelector('ng-provider');
  *   provider.container.register(HttpToken, () => http);
  */
-const BaseElement = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
+const BaseElement = typeof HTMLElement !== "undefined" ? HTMLElement : class {};
 
 export class NgProvider extends BaseElement {
   #container;
@@ -104,6 +104,6 @@ export class NgProvider extends BaseElement {
 }
 
 // Only define if in browser environment (skip in Node tests)
-if (typeof customElements !== 'undefined') {
-  customElements.define('ng-provider', NgProvider);
+if (typeof customElements !== "undefined") {
+  customElements.define("ng-provider", NgProvider);
 }

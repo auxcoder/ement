@@ -19,8 +19,8 @@ export class Router extends EventTarget {
     super();
     this.#outlet = outlet;
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('popstate', () => this.#resolve());
+    if (typeof window !== "undefined") {
+      window.addEventListener("popstate", () => this.#resolve());
     }
   }
 
@@ -94,8 +94,8 @@ export class Router extends EventTarget {
    * @param {string} path - The URL path to navigate to
    */
   navigate(path) {
-    if (typeof history !== 'undefined') {
-      history.pushState(null, '', path);
+    if (typeof history !== "undefined") {
+      history.pushState(null, "", path);
     }
     this.#resolve(path);
   }
@@ -127,7 +127,7 @@ export class Router extends EventTarget {
    * Useful for initial page load.
    */
   start() {
-    if (typeof location !== 'undefined') {
+    if (typeof location !== "undefined") {
       this.#resolve(location.pathname + location.search);
     }
   }
@@ -135,8 +135,10 @@ export class Router extends EventTarget {
   // ─── Internal ────────────────────────────────────────────────────────────────
 
   async #resolve(overridePath) {
-    const path = overridePath || (typeof location !== 'undefined' ? location.pathname : '/');
-    const url = new URL(path, 'http://localhost');
+    const path =
+      overridePath ||
+      (typeof location !== "undefined" ? location.pathname : "/");
+    const url = new URL(path, "http://localhost");
 
     for (const route of this.#routes) {
       const match = route.urlPattern.exec(url);
@@ -151,7 +153,7 @@ export class Router extends EventTarget {
         for (const hook of this.#hooks.onBefore) {
           const result = await hook(from, to);
           if (result === false) return; // cancel
-          if (typeof result === 'string') {
+          if (typeof result === "string") {
             this.navigate(result); // redirect
             return;
           }
@@ -186,7 +188,7 @@ export class Router extends EventTarget {
         }
 
         this.dispatchEvent(
-          new CustomEvent('navigate', { detail: { from, to, data } }),
+          new CustomEvent("navigate", { detail: { from, to, data } }),
         );
       } catch (error) {
         for (const hook of this.#hooks.onError) {
@@ -202,13 +204,14 @@ export class Router extends EventTarget {
 
     // Clear outlet
     if (this.#outlet.innerHTML !== undefined) {
-      this.#outlet.innerHTML = '';
+      this.#outlet.innerHTML = "";
     }
 
     // Create and configure component element
-    const el = typeof document !== 'undefined'
-      ? document.createElement(component)
-      : { tagName: component, params: null, routeData: null };
+    const el =
+      typeof document !== "undefined"
+        ? document.createElement(component)
+        : { tagName: component, params: null, routeData: null };
 
     el.params = params;
     el.routeData = data;

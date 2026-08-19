@@ -10,8 +10,10 @@
 /**
  * Format a number as currency.
  */
-export function formatCurrency(value, currency = 'USD', locale = undefined) {
-  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value);
+export function formatCurrency(value, currency = "USD", locale = undefined) {
+  return new Intl.NumberFormat(locale, { style: "currency", currency }).format(
+    value,
+  );
 }
 
 /**
@@ -25,20 +27,22 @@ export function formatNumber(value, options = {}, locale = undefined) {
  * Format a number as percentage.
  */
 export function formatPercent(value, locale = undefined) {
-  return new Intl.NumberFormat(locale, { style: 'percent' }).format(value);
+  return new Intl.NumberFormat(locale, { style: "percent" }).format(value);
 }
 
 /**
  * Format a date with predefined styles.
  */
-export function formatDate(value, style = 'medium', locale = undefined) {
+export function formatDate(value, style = "medium", locale = undefined) {
   const styles = {
-    short: { dateStyle: 'short' },
-    medium: { dateStyle: 'medium' },
-    long: { dateStyle: 'long' },
-    full: { dateStyle: 'full' },
+    short: { dateStyle: "short" },
+    medium: { dateStyle: "medium" },
+    long: { dateStyle: "long" },
+    full: { dateStyle: "full" },
   };
-  return new Intl.DateTimeFormat(locale, styles[style] || styles.medium).format(new Date(value));
+  return new Intl.DateTimeFormat(locale, styles[style] || styles.medium).format(
+    new Date(value),
+  );
 }
 
 /**
@@ -51,12 +55,12 @@ export function formatRelative(date, locale = undefined) {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
-  if (days > 0) return rtf.format(-days, 'day');
-  if (hours > 0) return rtf.format(-hours, 'hour');
-  if (minutes > 0) return rtf.format(-minutes, 'minute');
-  return rtf.format(-seconds, 'second');
+  if (days > 0) return rtf.format(-days, "day");
+  if (hours > 0) return rtf.format(-hours, "hour");
+  if (minutes > 0) return rtf.format(-minutes, "minute");
+  return rtf.format(-seconds, "second");
 }
 
 /**
@@ -68,8 +72,8 @@ export function formatRelative(date, locale = undefined) {
  * @param {string} [locale] - BCP 47 locale
  * @returns {string}
  */
-export function formatList(items, type = 'conjunction', locale = undefined) {
-  return new Intl.ListFormat(locale, { style: 'long', type }).format(items);
+export function formatList(items, type = "conjunction", locale = undefined) {
+  return new Intl.ListFormat(locale, { style: "long", type }).format(items);
 }
 
 /**
@@ -87,6 +91,6 @@ export function formatList(items, type = 'conjunction', locale = undefined) {
  */
 export function formatPlural(count, forms, locale = undefined) {
   const rule = new Intl.PluralRules(locale).select(count);
-  const template = forms[rule] || forms.other || '';
-  return template.replace('#', String(count));
+  const template = forms[rule] || forms.other || "";
+  return template.replace("#", String(count));
 }

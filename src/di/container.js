@@ -92,7 +92,7 @@ export class Container {
 
     throw new Error(
       `No provider registered for ${token.toString()}. ` +
-      `Did you forget to register it in the container?`,
+        `Did you forget to register it in the container?`,
     );
   }
 

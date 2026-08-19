@@ -3,9 +3,9 @@
  * Run with: node --test src/http/http.test.js
  */
 
-import { describe, it, beforeEach } from 'node:test';
-import assert from 'node:assert/strict';
-import { Http, HttpError } from './http.js';
+import { describe, it, beforeEach } from "node:test";
+import assert from "node:assert/strict";
+import { Http, HttpError } from "./http.js";
 
 // ─── Mock fetch ────────────────────────────────────────────────────────────────
 
@@ -19,7 +19,10 @@ globalThis.fetch = async (url, options) => {
   return mockResponse;
 };
 
-function setMockResponse(body, { status = 200, statusText = 'OK', headers = {} } = {}) {
+function setMockResponse(
+  body,
+  { status = 200, statusText = "OK", headers = {} } = {},
+) {
   mockResponse = {
     ok: status >= 200 && status < 300,
     status,
@@ -32,155 +35,168 @@ function setMockResponse(body, { status = 200, statusText = 'OK', headers = {} }
 
 // ─── Tests ─────────────────────────────────────────────────────────────────────
 
-describe('Http', () => {
+describe("Http", () => {
   beforeEach(() => {
     lastFetchUrl = null;
     lastFetchOptions = null;
     setMockResponse({ success: true });
   });
 
-  describe('basic requests', () => {
-    it('GET returns parsed JSON', async () => {
-      setMockResponse({ users: [{ name: 'Alice' }] });
-      const http = new Http({ baseUrl: 'http://api.test' });
+  describe("basic requests", () => {
+    it("GET returns parsed JSON", async () => {
+      setMockResponse({ users: [{ name: "Alice" }] });
+      const http = new Http({ baseUrl: "http://api.test" });
 
-      const result = await http.get('/users');
+      const result = await http.get("/users");
 
-      assert.equal(lastFetchUrl, 'http://api.test/users');
-      assert.equal(lastFetchOptions.method, 'GET');
-      assert.deepEqual(result, { users: [{ name: 'Alice' }] });
+      assert.equal(lastFetchUrl, "http://api.test/users");
+      assert.equal(lastFetchOptions.method, "GET");
+      assert.deepEqual(result, { users: [{ name: "Alice" }] });
     });
 
-    it('POST sends JSON body', async () => {
+    it("POST sends JSON body", async () => {
       setMockResponse({ id: 1 });
-      const http = new Http({ baseUrl: 'http://api.test' });
+      const http = new Http({ baseUrl: "http://api.test" });
 
-      const result = await http.post('/users', { name: 'Bob' });
+      const result = await http.post("/users", { name: "Bob" });
 
-      assert.equal(lastFetchOptions.method, 'POST');
+      assert.equal(lastFetchOptions.method, "POST");
       assert.equal(lastFetchOptions.body, '{"name":"Bob"}');
-      assert.equal(lastFetchOptions.headers['Content-Type'], 'application/json');
+      assert.equal(
+        lastFetchOptions.headers["Content-Type"],
+        "application/json",
+      );
       assert.deepEqual(result, { id: 1 });
     });
 
-    it('PUT sends JSON body', async () => {
+    it("PUT sends JSON body", async () => {
       setMockResponse({ updated: true });
       const http = new Http();
 
-      await http.put('/items/1', { name: 'Updated' });
+      await http.put("/items/1", { name: "Updated" });
 
-      assert.equal(lastFetchOptions.method, 'PUT');
+      assert.equal(lastFetchOptions.method, "PUT");
       assert.equal(lastFetchOptions.body, '{"name":"Updated"}');
     });
 
-    it('PATCH sends JSON body', async () => {
+    it("PATCH sends JSON body", async () => {
       setMockResponse({ patched: true });
       const http = new Http();
 
-      await http.patch('/items/1', { status: 'done' });
+      await http.patch("/items/1", { status: "done" });
 
-      assert.equal(lastFetchOptions.method, 'PATCH');
+      assert.equal(lastFetchOptions.method, "PATCH");
       assert.equal(lastFetchOptions.body, '{"status":"done"}');
     });
 
-    it('DELETE sends request', async () => {
-      setMockResponse(null, { headers: { 'content-length': '0' } });
+    it("DELETE sends request", async () => {
+      setMockResponse(null, { headers: { "content-length": "0" } });
       const http = new Http();
 
-      const result = await http.delete('/items/1');
+      const result = await http.delete("/items/1");
 
-      assert.equal(lastFetchOptions.method, 'DELETE');
+      assert.equal(lastFetchOptions.method, "DELETE");
       assert.equal(result, null);
     });
   });
 
-  describe('baseUrl and headers', () => {
-    it('prepends baseUrl to all requests', async () => {
+  describe("baseUrl and headers", () => {
+    it("prepends baseUrl to all requests", async () => {
       setMockResponse({});
-      const http = new Http({ baseUrl: 'https://api.example.com/v2' });
+      const http = new Http({ baseUrl: "https://api.example.com/v2" });
 
-      await http.get('/users');
+      await http.get("/users");
 
-      assert.equal(lastFetchUrl, 'https://api.example.com/v2/users');
+      assert.equal(lastFetchUrl, "https://api.example.com/v2/users");
     });
 
-    it('sends default headers on all requests', async () => {
+    it("sends default headers on all requests", async () => {
       setMockResponse({});
-      const http = new Http({ headers: { 'X-App': 'my-app' } });
+      const http = new Http({ headers: { "X-App": "my-app" } });
 
-      await http.get('/data');
+      await http.get("/data");
 
-      assert.equal(lastFetchOptions.headers['X-App'], 'my-app');
+      assert.equal(lastFetchOptions.headers["X-App"], "my-app");
     });
   });
 
-  describe('error handling', () => {
-    it('throws HttpError on non-ok response', async () => {
-      setMockResponse({ error: 'Not Found' }, { status: 404, statusText: 'Not Found' });
+  describe("error handling", () => {
+    it("throws HttpError on non-ok response", async () => {
+      setMockResponse(
+        { error: "Not Found" },
+        { status: 404, statusText: "Not Found" },
+      );
       const http = new Http();
 
       await assert.rejects(
-        () => http.get('/missing'),
+        () => http.get("/missing"),
         (err) => {
           assert.ok(err instanceof HttpError);
           assert.equal(err.status, 404);
-          assert.equal(err.message, 'HTTP 404: Not Found');
+          assert.equal(err.message, "HTTP 404: Not Found");
           return true;
         },
       );
     });
   });
 
-  describe('interceptors', () => {
-    it('request interceptor can add auth headers', async () => {
-      setMockResponse({ data: 'secret' });
+  describe("interceptors", () => {
+    it("request interceptor can add auth headers", async () => {
+      setMockResponse({ data: "secret" });
       const http = new Http({
-        interceptors: [{
-          request: async (config) => {
-            config.headers['Authorization'] = 'Bearer token123';
-            return config;
+        interceptors: [
+          {
+            request: async (config) => {
+              config.headers["Authorization"] = "Bearer token123";
+              return config;
+            },
           },
-        }],
+        ],
       });
 
-      await http.get('/protected');
+      await http.get("/protected");
 
-      assert.equal(lastFetchOptions.headers['Authorization'], 'Bearer token123');
+      assert.equal(
+        lastFetchOptions.headers["Authorization"],
+        "Bearer token123",
+      );
     });
 
-    it('response interceptor can transform response', async () => {
-      setMockResponse({ wrapped: { users: ['A'] } });
+    it("response interceptor can transform response", async () => {
+      setMockResponse({ wrapped: { users: ["A"] } });
       const http = new Http({
-        interceptors: [{
-          response: async (response) => {
-            // Wrap json to unwrap .wrapped
-            const original = response.json;
-            response.json = async () => {
-              const data = await original();
-              return data.wrapped;
-            };
-            return response;
+        interceptors: [
+          {
+            response: async (response) => {
+              // Wrap json to unwrap .wrapped
+              const original = response.json;
+              response.json = async () => {
+                const data = await original();
+                return data.wrapped;
+              };
+              return response;
+            },
           },
-        }],
+        ],
       });
 
-      const result = await http.get('/users');
+      const result = await http.get("/users");
 
-      assert.deepEqual(result, { users: ['A'] });
+      assert.deepEqual(result, { users: ["A"] });
     });
   });
 
-  describe('request cancellation', () => {
-    it('cancels request via AbortSignal', async () => {
+  describe("request cancellation", () => {
+    it("cancels request via AbortSignal", async () => {
       // Make fetch that respects signal
       globalThis.fetch = (url, options) => {
         return new Promise((resolve, reject) => {
           if (options.signal?.aborted) {
-            reject(new DOMException('Aborted', 'AbortError'));
+            reject(new DOMException("Aborted", "AbortError"));
             return;
           }
-          options.signal?.addEventListener('abort', () => {
-            reject(new DOMException('Aborted', 'AbortError'));
+          options.signal?.addEventListener("abort", () => {
+            reject(new DOMException("Aborted", "AbortError"));
           });
         });
       };
@@ -188,7 +204,7 @@ describe('Http', () => {
       const http = new Http();
       const controller = new AbortController();
 
-      const promise = http.get('/slow', { signal: controller.signal });
+      const promise = http.get("/slow", { signal: controller.signal });
 
       // Abort after starting
       controller.abort();
@@ -196,120 +212,126 @@ describe('Http', () => {
       await assert.rejects(
         () => promise,
         (err) => {
-          assert.equal(err.name, 'AbortError');
+          assert.equal(err.name, "AbortError");
           return true;
         },
       );
 
       // Restore
       globalThis.fetch = async (url, options) => {
-        lastFetchUrl = url; lastFetchOptions = options;
+        lastFetchUrl = url;
+        lastFetchOptions = options;
         return mockResponse;
       };
     });
 
-    it('cancelAll() aborts all in-flight requests', async () => {
+    it("cancelAll() aborts all in-flight requests", async () => {
       let abortedCount = 0;
       globalThis.fetch = (url, options) => {
         return new Promise((_, reject) => {
-          options.signal.addEventListener('abort', () => {
+          options.signal.addEventListener("abort", () => {
             abortedCount++;
-            reject(new DOMException('Aborted', 'AbortError'));
+            reject(new DOMException("Aborted", "AbortError"));
           });
         });
       };
 
-      const http = new Http({ baseUrl: 'http://test' });
+      const http = new Http({ baseUrl: "http://test" });
 
       // Fire off requests (don't await)
-      http.get('/a').catch(() => {});
-      http.get('/b').catch(() => {});
+      http.get("/a").catch(() => {});
+      http.get("/b").catch(() => {});
 
       assert.equal(http.pendingCount, 2);
 
       http.cancelAll();
-      await new Promise(r => setTimeout(r, 5));
+      await new Promise((r) => setTimeout(r, 5));
 
       assert.equal(abortedCount, 2);
       assert.equal(http.pendingCount, 0);
 
       // Restore
       globalThis.fetch = async (url, options) => {
-        lastFetchUrl = url; lastFetchOptions = options;
+        lastFetchUrl = url;
+        lastFetchOptions = options;
         return mockResponse;
       };
     });
 
-    it('pendingCount tracks active requests', async () => {
+    it("pendingCount tracks active requests", async () => {
       setMockResponse({ ok: true });
       const http = new Http();
 
       assert.equal(http.pendingCount, 0);
-      await http.get('/fast');
+      await http.get("/fast");
       assert.equal(http.pendingCount, 0); // completed
     });
   });
 
-  describe('timeout', () => {
-    it('throws TimeoutError when request exceeds timeout', async () => {
+  describe("timeout", () => {
+    it("throws TimeoutError when request exceeds timeout", async () => {
       // Fetch that hangs but respects abort signal
-      globalThis.fetch = (url, options) => new Promise((_, reject) => {
-        options.signal?.addEventListener('abort', () => {
-          reject(new DOMException('Aborted', 'AbortError'));
+      globalThis.fetch = (url, options) =>
+        new Promise((_, reject) => {
+          options.signal?.addEventListener("abort", () => {
+            reject(new DOMException("Aborted", "AbortError"));
+          });
         });
-      });
 
       const http = new Http({ timeout: 50 });
 
       await assert.rejects(
-        () => http.get('/slow'),
+        () => http.get("/slow"),
         (err) => {
-          assert.equal(err.name, 'TimeoutError');
-          assert.ok(err.message.includes('50ms'));
+          assert.equal(err.name, "TimeoutError");
+          assert.ok(err.message.includes("50ms"));
           return true;
         },
       );
 
       // Restore
       globalThis.fetch = async (url, options) => {
-        lastFetchUrl = url; lastFetchOptions = options;
+        lastFetchUrl = url;
+        lastFetchOptions = options;
         return mockResponse;
       };
     });
 
-    it('per-request timeout overrides default', async () => {
-      globalThis.fetch = (url, options) => new Promise((_, reject) => {
-        options.signal?.addEventListener('abort', () => {
-          reject(new DOMException('Aborted', 'AbortError'));
+    it("per-request timeout overrides default", async () => {
+      globalThis.fetch = (url, options) =>
+        new Promise((_, reject) => {
+          options.signal?.addEventListener("abort", () => {
+            reject(new DOMException("Aborted", "AbortError"));
+          });
         });
-      });
 
       const http = new Http({ timeout: 5000 }); // high default
 
       await assert.rejects(
-        () => http.get('/slow', { timeout: 30 }), // low override
+        () => http.get("/slow", { timeout: 30 }), // low override
         (err) => {
-          assert.equal(err.name, 'TimeoutError');
+          assert.equal(err.name, "TimeoutError");
           return true;
         },
       );
 
       globalThis.fetch = async (url, options) => {
-        lastFetchUrl = url; lastFetchOptions = options;
+        lastFetchUrl = url;
+        lastFetchOptions = options;
         return mockResponse;
       };
     });
   });
 
-  describe('retry', () => {
-    it('retries on server error up to configured max', async () => {
+  describe("retry", () => {
+    it("retries on server error up to configured max", async () => {
       let attempts = 0;
       globalThis.fetch = async () => {
         attempts++;
         return {
           ok: false,
           status: 500,
-          statusText: 'Server Error',
+          statusText: "Server Error",
           headers: { get: () => null },
           json: async () => ({}),
         };
@@ -318,7 +340,7 @@ describe('Http', () => {
       const http = new Http({ retries: 2, retryDelay: 10 });
 
       await assert.rejects(
-        () => http.get('/failing'),
+        () => http.get("/failing"),
         (err) => err.status === 500,
       );
 
@@ -326,19 +348,20 @@ describe('Http', () => {
       assert.equal(attempts, 3);
 
       globalThis.fetch = async (url, options) => {
-        lastFetchUrl = url; lastFetchOptions = options;
+        lastFetchUrl = url;
+        lastFetchOptions = options;
         return mockResponse;
       };
     });
 
-    it('does not retry on 4xx client errors', async () => {
+    it("does not retry on 4xx client errors", async () => {
       let attempts = 0;
       globalThis.fetch = async () => {
         attempts++;
         return {
           ok: false,
           status: 422,
-          statusText: 'Unprocessable',
+          statusText: "Unprocessable",
           headers: { get: () => null },
           json: async () => ({}),
         };
@@ -347,24 +370,25 @@ describe('Http', () => {
       const http = new Http({ retries: 3, retryDelay: 10 });
 
       await assert.rejects(
-        () => http.post('/bad-data', {}),
+        () => http.post("/bad-data", {}),
         (err) => err.status === 422,
       );
 
       assert.equal(attempts, 1); // no retries
-      
+
       globalThis.fetch = async (url, options) => {
-        lastFetchUrl = url; lastFetchOptions = options;
+        lastFetchUrl = url;
+        lastFetchOptions = options;
         return mockResponse;
       };
     });
 
-    it('succeeds if retry recovers', async () => {
+    it("succeeds if retry recovers", async () => {
       let attempts = 0;
       globalThis.fetch = async () => {
         attempts++;
         if (attempts < 3) {
-          throw new Error('Network error');
+          throw new Error("Network error");
         }
         return {
           ok: true,
@@ -375,13 +399,14 @@ describe('Http', () => {
       };
 
       const http = new Http({ retries: 3, retryDelay: 10 });
-      const result = await http.get('/flaky');
+      const result = await http.get("/flaky");
 
       assert.equal(attempts, 3);
       assert.deepEqual(result, { recovered: true });
 
       globalThis.fetch = async (url, options) => {
-        lastFetchUrl = url; lastFetchOptions = options;
+        lastFetchUrl = url;
+        lastFetchOptions = options;
         return mockResponse;
       };
     });

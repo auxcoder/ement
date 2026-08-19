@@ -20,7 +20,7 @@ export class Field {
   #debounceTimeout;
   #abortController;
   #state = {
-    viewValue: '',
+    viewValue: "",
     modelValue: undefined,
     valid: true,
     dirty: false,
@@ -59,7 +59,7 @@ export class Field {
 
     // Bind DOM events
     if (input.addEventListener) {
-      input.addEventListener('input', (e) => {
+      input.addEventListener("input", (e) => {
         if (this.#debounceMs > 0) {
           clearTimeout(this.#debounceTimeout);
           this.#debounceTimeout = setTimeout(
@@ -70,7 +70,7 @@ export class Field {
           this.#handleInput(e.target.value);
         }
       });
-      input.addEventListener('blur', () => this.#markTouched());
+      input.addEventListener("blur", () => this.#markTouched());
     }
   }
 
@@ -120,7 +120,7 @@ export class Field {
     this.#state.viewValue = viewValue;
 
     if (this.#input.value !== undefined) {
-      this.#input.value = viewValue ?? '';
+      this.#input.value = viewValue ?? "";
     }
 
     this.#validate(modelValue);
@@ -131,24 +131,49 @@ export class Field {
 
   /**
    * Run sync validators, then async if sync passes.
+   *
+   * Supports two validator formats:
+   * 1. Object (AngularJS-compatible): { key: (modelValue, viewValue) => boolean }
+   *    true = valid, false = invalid. Key becomes the error name.
+   * 2. Array (ng-modern): [(modelValue, viewValue) => errorKey | null]
+   *    Returns null if valid, or an error key string if invalid.
+   *
    * @private
    */
   #validate(modelValue) {
     this.#state.errors = {};
 
-    for (const validator of this.#validators) {
-      const result = validator(modelValue, this.#state.viewValue);
-      if (result) {
-        this.#state.errors[result] = true;
+    if (Array.isArray(this.#validators)) {
+      // Array format: each fn returns errorKey or null
+      for (const validator of this.#validators) {
+        const result = validator(modelValue, this.#state.viewValue);
+        if (result) {
+          this.#state.errors[result] = true;
+        }
+      }
+    } else if (this.#validators && typeof this.#validators === 'object') {
+      // Object format (AngularJS-compatible): { key: fn returning boolean }
+      for (const [key, validator] of Object.entries(this.#validators)) {
+        const isValid = validator(modelValue, this.#state.viewValue);
+        if (!isValid) {
+          this.#state.errors[key] = true;
+        }
       }
     }
 
     this.#state.valid = Object.keys(this.#state.errors).length === 0;
 
     // Async validators only run if sync passes
-    if (this.#state.valid && this.#asyncValidators.length > 0) {
+    if (this.#state.valid && this.#hasAsyncValidators()) {
       this.#runAsyncValidators(modelValue);
     }
+  }
+
+  /** @private */
+  #hasAsyncValidators() {
+    if (Array.isArray(this.#asyncValidators)) return this.#asyncValidators.length > 0;
+    if (this.#asyncValidators && typeof this.#asyncValidators === 'object') return Object.keys(this.#asyncValidators).length > 0;
+    return false;
   }
 
   /**
@@ -163,11 +188,23 @@ export class Field {
     this.#state.pending = true;
     this.#syncCssClasses();
 
-    for (const validator of this.#asyncValidators) {
-      const result = await validator(modelValue, signal);
-      if (signal.aborted) return; // stale
-      if (result) {
-        this.#state.errors[result] = true;
+    if (Array.isArray(this.#asyncValidators)) {
+      // Array format: fn returns errorKey or null
+      for (const validator of this.#asyncValidators) {
+        const result = await validator(modelValue, signal);
+        if (signal.aborted) return;
+        if (result) {
+          this.#state.errors[result] = true;
+        }
+      }
+    } else if (this.#asyncValidators && typeof this.#asyncValidators === 'object') {
+      // Object format (AngularJS-compatible): { key: async fn returning boolean }
+      for (const [key, validator] of Object.entries(this.#asyncValidators)) {
+        const isValid = await validator(modelValue, signal);
+        if (signal.aborted) return;
+        if (!isValid) {
+          this.#state.errors[key] = true;
+        }
       }
     }
 
@@ -194,24 +231,38 @@ export class Field {
     const cl = this.#input.classList;
     if (!cl) return;
 
-    cl.toggle('ng-valid', this.#state.valid);
-    cl.toggle('ng-invalid', !this.#state.valid);
-    cl.toggle('ng-dirty', this.#state.dirty);
-    cl.toggle('ng-pristine', !this.#state.dirty);
-    cl.toggle('ng-touched', this.#state.touched);
-    cl.toggle('ng-untouched', !this.#state.touched);
-    cl.toggle('ng-pending', this.#state.pending);
+    cl.toggle("ng-valid", this.#state.valid);
+    cl.toggle("ng-invalid", !this.#state.valid);
+    cl.toggle("ng-dirty", this.#state.dirty);
+    cl.toggle("ng-pristine", !this.#state.dirty);
+    cl.toggle("ng-touched", this.#state.touched);
+    cl.toggle("ng-untouched", !this.#state.touched);
+    cl.toggle("ng-pending", this.#state.pending);
   }
 
   // ─── Public Accessors (read-only state) ────────────────────────────────────
 
-  get modelValue() { return this.#state.modelValue; }
-  get viewValue() { return this.#state.viewValue; }
-  get valid() { return this.#state.valid; }
-  get dirty() { return this.#state.dirty; }
-  get touched() { return this.#state.touched; }
-  get pending() { return this.#state.pending; }
-  get errors() { return { ...this.#state.errors }; }
+  get modelValue() {
+    return this.#state.modelValue;
+  }
+  get viewValue() {
+    return this.#state.viewValue;
+  }
+  get valid() {
+    return this.#state.valid;
+  }
+  get dirty() {
+    return this.#state.dirty;
+  }
+  get touched() {
+    return this.#state.touched;
+  }
+  get pending() {
+    return this.#state.pending;
+  }
+  get errors() {
+    return { ...this.#state.errors };
+  }
 
   /** Snapshot of all state (for onChange callback). */
   get snapshot() {
@@ -220,9 +271,17 @@ export class Field {
 
   // ─── Programmatic Controls ─────────────────────────────────────────────────
 
-  markDirty() { this.#state.dirty = true; this.#syncCssClasses(); }
-  markPristine() { this.#state.dirty = false; this.#syncCssClasses(); }
-  markTouched() { this.#markTouched(); }
+  markDirty() {
+    this.#state.dirty = true;
+    this.#syncCssClasses();
+  }
+  markPristine() {
+    this.#state.dirty = false;
+    this.#syncCssClasses();
+  }
+  markTouched() {
+    this.#markTouched();
+  }
 
   reset(modelValue) {
     this.#state.dirty = false;

@@ -9,7 +9,7 @@
  * @module core/benchmark
  */
 
-import { reactive } from './reactive.js';
+import { reactive } from "./reactive.js";
 
 // ─── Simulate AngularJS Digest Cycle ───────────────────────────────────────────
 
@@ -96,15 +96,17 @@ function runBenchmark(label, fn, iterations = 1000) {
 
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
-console.log('═══════════════════════════════════════════════════════════════');
-console.log('  Comparative Benchmark: Digest Cycle vs Proxy Reactivity');
-console.log('═══════════════════════════════════════════════════════════════\n');
+console.log("════════════════════════════════════════════════════════════");
+console.log("  Comparative Benchmark: Digest Cycle vs Proxy Reactivity");
+console.log("════════════════════════════════════════════════════════════\n");
 
 const WATCHER_COUNTS = [100, 1000, 5000];
 const MUTATIONS_PER_RUN = 1000;
 
 for (const count of WATCHER_COUNTS) {
-  console.log(`─── ${count} properties/watchers ───────────────────────────────\n`);
+  console.log(
+    `─── ${count} properties/watchers ───────────────────────────────\n`,
+  );
 
   // Benchmark 1: Digest cycle — change 1 property, run full digest
   const { scope, digest } = simulateDigestCycle(count);
@@ -128,37 +130,49 @@ for (const count of WATCHER_COUNTS) {
   );
 
   console.log(`  ${digestResult.label}`);
-  console.log(`    Total: ${digestResult.elapsed.toFixed(2)}ms | Per mutation: ${(digestResult.perOp * 1000).toFixed(2)}µs`);
-  console.log('');
+  console.log(
+    `    Total: ${digestResult.elapsed.toFixed(2)}ms | Per mutation: ${(digestResult.perOp * 1000).toFixed(2)}µs`,
+  );
+  console.log("");
   console.log(`  ${proxyResult.label}`);
-  console.log(`    Total: ${proxyResult.elapsed.toFixed(2)}ms | Per mutation: ${(proxyResult.perOp * 1000).toFixed(2)}µs`);
-  console.log('');
-  console.log(`  Proxy is ${(digestResult.elapsed / proxyResult.elapsed).toFixed(1)}x faster`);
-  console.log('');
+  console.log(
+    `    Total: ${proxyResult.elapsed.toFixed(2)}ms | Per mutation: ${(proxyResult.perOp * 1000).toFixed(2)}µs`,
+  );
+  console.log("");
+  console.log(
+    `  Proxy is ${(digestResult.elapsed / proxyResult.elapsed).toFixed(1)}x faster`,
+  );
+  console.log("");
 }
 
-console.log('─── Analysis ─────────────────────────────────────────────────\n');
-console.log('  WHERE PROXY WINS:');
-console.log('  • Single property change: O(1) vs O(n) — the more watchers, the bigger the gap');
-console.log('  • No manual $apply() needed — changes detected as they happen');
-console.log('  • No TTL risk — no cascading digest iterations');
+console.log("─── Analysis ─────────────────────────────────────────────────\n");
+console.log("  WHERE PROXY WINS:");
+console.log(
+  "  • Single property change: O(1) vs O(n) — the more watchers, the bigger the gap",
+);
+console.log("  • No manual $apply() needed — changes detected as they happen");
+console.log("  • No TTL risk — no cascading digest iterations");
 console.log('  • No "digest already in progress" errors');
-console.log('');
-console.log('  WHERE DIRTY-CHECKING WAS SIMPLER:');
-console.log('  • Can watch any expression (computed values, function results)');
-console.log('    → We solve this with computed()');
-console.log('  • Batches naturally (all watchers checked in one pass)');
-console.log('    → We solve this with the microtask scheduler');
-console.log('  • Works with plain objects from external libraries');
-console.log('    → Proxy requires wrapping; external objects need manual handling');
-console.log('  • Deep equality checks built-in ($watchCollection)');
-console.log('    → Deep nested proxies are lazy but add memory overhead');
-console.log('');
-console.log('  CONCLUSION:');
-console.log('  Proxy is fundamentally better for reactivity (O(1) vs O(n)),');
-console.log('  but requires complementary tools (scheduler, computed) to match');
-console.log('  the full digest cycle experience. The trade-off is worth it —');
-console.log('  AngularJS apps with 2000+ watchers became unusable, while');
-console.log('  Proxy-based systems stay constant-time regardless of scale.');
-console.log('');
-console.log('═══════════════════════════════════════════════════════════════');
+console.log("");
+console.log("  WHERE DIRTY-CHECKING WAS SIMPLER:");
+console.log("  • Can watch any expression (computed values, function results)");
+console.log("    → We solve this with computed()");
+console.log("  • Batches naturally (all watchers checked in one pass)");
+console.log("    → We solve this with the microtask scheduler");
+console.log("  • Works with plain objects from external libraries");
+console.log(
+  "    → Proxy requires wrapping; external objects need manual handling",
+);
+console.log("  • Deep equality checks built-in ($watchCollection)");
+console.log("    → Deep nested proxies are lazy but add memory overhead");
+console.log("");
+console.log("  CONCLUSION:");
+console.log("  Proxy is fundamentally better for reactivity (O(1) vs O(n)),");
+console.log(
+  "  but requires complementary tools (scheduler, computed) to match",
+);
+console.log("  the full digest cycle experience. The trade-off is worth it —");
+console.log("  AngularJS apps with 2000+ watchers became unusable, while");
+console.log("  Proxy-based systems stay constant-time regardless of scale.");
+console.log("");
+console.log("═══════════════════════════════════════════════════════════════");

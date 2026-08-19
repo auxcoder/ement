@@ -8,7 +8,7 @@
  * @module di/tokens
  */
 
-export const HttpToken = Symbol('Http');
-export const RouterToken = Symbol('Router');
-export const StorageToken = Symbol('Storage');
-export const AuthToken = Symbol('Auth');
+export const HttpToken = Symbol("Http");
+export const RouterToken = Symbol("Router");
+export const StorageToken = Symbol("Storage");
+export const AuthToken = Symbol("Auth");

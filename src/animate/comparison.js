@@ -6,11 +6,11 @@
  * @module animate/comparison
  */
 
-console.log('═══════════════════════════════════════════════════════════════');
-console.log('  Comparative Example: ngAnimate vs Web Animations API');
-console.log('═══════════════════════════════════════════════════════════════\n');
+console.log("═════════════════════════════════════════════════════════════");
+console.log("  Comparative Example: ngAnimate vs Web Animations API");
+console.log("═════════════════════════════════════════════════════════════\n");
 
-console.log('─── 1. AngularJS ngAnimate ─────────────────────────────────────\n');
+console.log("─── 1. AngularJS ngAnimate ──────────────────────────────────\n");
 console.log(`
   // CSS-class-based animations:
   .my-item.ng-enter {
@@ -61,7 +61,7 @@ console.log(`
   • Hard to coordinate sequences
 `);
 
-console.log('─── 2. ng-modern (Web Animations API) ─────────────────────────\n');
+console.log("─── 2. ng-modern (Web Animations API) ───────────────────────\n");
 console.log(`
   import { animateIn, animateOut, stagger, presets } from 'ng-modern/animate';
 
@@ -102,7 +102,7 @@ console.log(`
   • No jQuery dependency
 `);
 
-console.log('─── Summary ────────────────────────────────────────────────────\n');
+console.log("─── Summary ──────────────────────────────────────────────────\n");
 console.log(`
   ┌──────────────────────┬─────────────────────────┬─────────────────────────┐
   │ Feature              │ ngAnimate               │ WAAPI (ng-modern)       │
@@ -120,4 +120,4 @@ console.log(`
   └──────────────────────┴─────────────────────────┴─────────────────────────┘
 `);
 
-console.log('═══════════════════════════════════════════════════════════════');
+console.log("═════════════════════════════════════════════════════════════");

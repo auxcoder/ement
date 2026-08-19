@@ -9,20 +9,20 @@
  * @module core/comparison
  */
 
-console.log('═══════════════════════════════════════════════════════════════');
-console.log('  Comparative Example: AngularJS Directive vs NgElement');
-console.log('═══════════════════════════════════════════════════════════════\n');
+console.log("═════════════════════════════════════════════════════════════");
+console.log("  Comparative Example: AngularJS Directive vs NgElement");
+console.log("═════════════════════════════════════════════════════════════\n");
 
 // ─── The Component: A User Card ────────────────────────────────────────────────
 
-console.log('─── Component: User Card ───────────────────────────────────────\n');
+console.log("─── Component: User Card ─────────────────────────────────────\n");
 console.log('  A card that displays a user name, shows a "verified" badge');
-console.log('  conditionally, renders a list of roles, and emits an event');
-console.log('  when clicked.\n');
+console.log("  conditionally, renders a list of roles, and emits an event");
+console.log("  when clicked.\n");
 
 // ─── AngularJS Version ─────────────────────────────────────────────────────────
 
-console.log('─── AngularJS Directive ─────────────────────────────────────────\n');
+console.log("─── AngularJS Directive ──────────────────────────────────────\n");
 console.log(`
   // user-card.directive.js
   angular.module('app').directive('userCard', function() {
@@ -63,9 +63,9 @@ console.log(`
   </user-card>
 `);
 
-// ─── ng-modern Version ─────────────────────────────────────────────────────────
+// ─── ng-modern Version ───────────────────────────────────────────────────────
 
-console.log('─── ng-modern NgElement ────────────────────────────────────────\n');
+console.log("─── ng-modern NgElement ──────────────────────────────────────\n");
 console.log(`
   // user-card/user-card.js
   import { NgElement } from 'ng-modern';
@@ -123,7 +123,7 @@ console.log(`
 
 // ─── Analysis ──────────────────────────────────────────────────────────────────
 
-console.log('─── Analysis ─────────────────────────────────────────────────────\n');
+console.log("─── Analysis ─────────────────────────────────────────────────\n");
 console.log(`
   ┌─────────────────────────┬────────────────────────────┬──────────────────────────────┐
   │ Aspect                  │ AngularJS                  │ ng-modern                    │
@@ -160,4 +160,4 @@ console.log(`
   • Props in, events out (unidirectional when using '<' bindings)
 `);
 
-console.log('═══════════════════════════════════════════════════════════════');
+console.log("═════════════════════════════════════════════════════════════");

@@ -20,11 +20,11 @@
  * This is equivalent to AngularJS ng-transclude / transclusion.
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
 
-describe('Slot-based content projection (design)', () => {
-  it('documents default slot usage', () => {
+describe("Slot-based content projection (design)", () => {
+  it("documents default slot usage", () => {
     // Template with default slot:
     const template = `
       <div class="card">
@@ -35,10 +35,10 @@ describe('Slot-based content projection (design)', () => {
     // Usage: <my-card><p>Projected content</p></my-card>
     // Result: <p>Projected content</p> appears inside .card
 
-    assert.ok(template.includes('<slot></slot>'));
+    assert.ok(template.includes("<slot></slot>"));
   });
 
-  it('documents named slot usage', () => {
+  it("documents named slot usage", () => {
     // Template with named slots:
     const template = `
       <header><slot name="title"></slot></header>
@@ -55,10 +55,10 @@ describe('Slot-based content projection (design)', () => {
 
     assert.ok(template.includes('name="title"'));
     assert.ok(template.includes('name="actions"'));
-    assert.ok(template.includes('<slot></slot>')); // default slot
+    assert.ok(template.includes("<slot></slot>")); // default slot
   });
 
-  it('documents comparison: ng-transclude vs slot', () => {
+  it("documents comparison: ng-transclude vs slot", () => {
     const comparison = {
       angularjs: {
         directive: `transclude: true, template: '<div><ng-transclude></ng-transclude></div>'`,

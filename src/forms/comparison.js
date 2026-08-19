@@ -8,14 +8,14 @@
  * @module forms/comparison
  */
 
-console.log('═══════════════════════════════════════════════════════════════');
-console.log('  Comparative Example: NgModelController vs Field');
-console.log('  Scenario: Registration form — email, phone, age');
-console.log('═══════════════════════════════════════════════════════════════\n');
+console.log("═════════════════════════════════════════════════════════════");
+console.log("  Comparative Example: NgModelController vs Field");
+console.log("  Scenario: Registration form — email, phone, age");
+console.log("═════════════════════════════════════════════════════════════\n");
 
-// ─── 1. AngularJS NgModelController ────────────────────────────────────────────
+// ─── 1. AngularJS NgModelController ──────────────────────────────────────────
 
-console.log('─── 1. AngularJS NgModelController ─────────────────────────────\n');
+console.log("─── 1. AngularJS NgModelController ──────────────────────────\n");
 console.log(`
   // Template
   <form name="regForm">
@@ -62,9 +62,9 @@ console.log(`
         "What changed this value?" — impossible to answer.
 `);
 
-// ─── 2. ng-modern Field ────────────────────────────────────────────────────────
+// ─── 2. ng-modern Field ──────────────────────────────────────────────────────
 
-console.log('─── 2. ng-modern Field ─────────────────────────────────────────\n');
+console.log("─── 2. ng-modern Field ───────────────────────────────────────\n");
 console.log(`
   // Component
   import { Field } from 'ng-modern/forms/field';
@@ -132,9 +132,9 @@ console.log(`
         "What changed this value?" — always the onChange handler.
 `);
 
-// ─── Key Differences ───────────────────────────────────────────────────────────
+// ─── Key Differences ─────────────────────────────────────────────────────────
 
-console.log('─── Key Differences ────────────────────────────────────────────\n');
+console.log("─── Key Differences ──────────────────────────────────────────\n");
 console.log(`
   ┌───────────────────────────┬─────────────────────────┬─────────────────────────┐
   │ Aspect                    │ NgModelController       │ Field                   │
@@ -154,17 +154,17 @@ console.log(`
   └───────────────────────────┴─────────────────────────┴─────────────────────────┘
 
   THE RACE CONDITION NgModelController HAD:
-  
+
   1. User types "alice@mail.com" → async validator fires HTTP request
   2. User quickly types "bob@mail.com" → second async validator fires
   3. Second request responds first: "bob" is available ✅
   4. First request responds later: "alice" is taken ❌
   5. NgModelController applies the STALE result → shows "taken" for "bob"!
-  
+
   Field solves this with AbortController:
   - Step 2 aborts the request from step 1
   - The stale response is never processed
   - Only the latest validation result matters
 `);
 
-console.log('═══════════════════════════════════════════════════════════════');
+console.log("═════════════════════════════════════════════════════════════");

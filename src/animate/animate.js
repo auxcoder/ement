@@ -20,7 +20,7 @@
  * ]);
  */
 export function animateIn(element, keyframes, options = {}) {
-  const defaults = { duration: 300, easing: 'ease-in-out', fill: 'forwards' };
+  const defaults = { duration: 300, easing: "ease-in-out", fill: "forwards" };
   return element.animate(keyframes, { ...defaults, ...options });
 }
 
@@ -40,7 +40,7 @@ export function animateIn(element, keyframes, options = {}) {
  * // Element is removed after animation completes
  */
 export function animateOut(element, keyframes, options = {}) {
-  const defaults = { duration: 300, easing: 'ease-in-out', fill: 'forwards' };
+  const defaults = { duration: 300, easing: "ease-in-out", fill: "forwards" };
   const animation = element.animate(keyframes, { ...defaults, ...options });
   animation.onfinish = () => element.remove();
   return animation;
@@ -63,7 +63,7 @@ export function animateOut(element, keyframes, options = {}) {
  * ], { delay: 80, duration: 200 });
  */
 export function stagger(elements, keyframes, { delay = 50, ...options } = {}) {
-  const defaults = { duration: 300, easing: 'ease-in-out', fill: 'forwards' };
+  const defaults = { duration: 300, easing: "ease-in-out", fill: "forwards" };
   return Array.from(elements).map((el, i) =>
     el.animate(keyframes, { ...defaults, ...options, delay: i * delay }),
   );
@@ -76,19 +76,19 @@ export const presets = {
   fadeIn: [{ opacity: 0 }, { opacity: 1 }],
   fadeOut: [{ opacity: 1 }, { opacity: 0 }],
   slideInDown: [
-    { opacity: 0, transform: 'translateY(-20px)' },
-    { opacity: 1, transform: 'translateY(0)' },
+    { opacity: 0, transform: "translateY(-20px)" },
+    { opacity: 1, transform: "translateY(0)" },
   ],
   slideOutUp: [
-    { opacity: 1, transform: 'translateY(0)' },
-    { opacity: 0, transform: 'translateY(-20px)' },
+    { opacity: 1, transform: "translateY(0)" },
+    { opacity: 0, transform: "translateY(-20px)" },
   ],
   slideInLeft: [
-    { opacity: 0, transform: 'translateX(-20px)' },
-    { opacity: 1, transform: 'translateX(0)' },
+    { opacity: 0, transform: "translateX(-20px)" },
+    { opacity: 1, transform: "translateX(0)" },
   ],
   scaleIn: [
-    { opacity: 0, transform: 'scale(0.9)' },
-    { opacity: 1, transform: 'scale(1)' },
+    { opacity: 0, transform: "scale(0.9)" },
+    { opacity: 1, transform: "scale(1)" },
   ],
 };

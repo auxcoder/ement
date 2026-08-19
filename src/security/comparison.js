@@ -6,11 +6,11 @@
  * @module security/comparison
  */
 
-console.log('═══════════════════════════════════════════════════════════════');
-console.log('  Comparative Example: AngularJS Security vs ng-modern');
-console.log('═══════════════════════════════════════════════════════════════\n');
+console.log("═════════════════════════════════════════════════════════════");
+console.log("  Comparative Example: AngularJS Security vs ng-modern");
+console.log("═════════════════════════════════════════════════════════════\n");
 
-console.log('─── 1. AngularJS ($sce + $sanitize) ───────────────────────────\n');
+console.log("─── 1. AngularJS ($sce + $sanitize) ─────────────────────────\n");
 console.log(`
   // Rendering HTML in templates requires explicit trust:
   <div ng-bind-html="trustedHtml"></div>
@@ -39,7 +39,7 @@ console.log(`
   • No integration with browser's Trusted Types API
 `);
 
-console.log('─── 2. ng-modern (DOMParser + CSP-safe) ───────────────────────\n');
+console.log("─── 2. ng-modern (DOMParser + CSP-safe) ─────────────────────\n");
 console.log(`
   import { sanitizeHTML, escapeHTML } from 'ng-modern/security/sanitize';
 
@@ -77,7 +77,7 @@ console.log(`
   • No "trust" escape hatch — sanitize or escape, always
 `);
 
-console.log('─── CSP Comparison ─────────────────────────────────────────────\n');
+console.log("─── CSP Comparison ───────────────────────────────────────────\n");
 console.log(`
   Content-Security-Policy: script-src 'self'; style-src 'self' 'unsafe-inline'
 
@@ -92,7 +92,7 @@ console.log(`
   ✅ Shadow DOM styles use <style> in shadow root (no external CSS issues)
 `);
 
-console.log('─── Summary ────────────────────────────────────────────────────\n');
+console.log("─── Summary ──────────────────────────────────────────────────\n");
 console.log(`
   ┌──────────────────────┬─────────────────────────┬─────────────────────────┐
   │ Feature              │ AngularJS               │ ng-modern               │
@@ -108,4 +108,4 @@ console.log(`
   └──────────────────────┴─────────────────────────┴─────────────────────────┘
 `);
 
-console.log('═══════════════════════════════════════════════════════════════');
+console.log("═════════════════════════════════════════════════════════════");

@@ -21,19 +21,53 @@
 export function sanitizeHTML(html, options = {}) {
   const {
     allowedTags = [
-      'p', 'br', 'b', 'i', 'em', 'strong', 'a', 'ul', 'ol', 'li',
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre',
-      'span', 'div', 'img', 'table', 'thead', 'tbody', 'tr', 'td', 'th',
+      "p",
+      "br",
+      "b",
+      "i",
+      "em",
+      "strong",
+      "a",
+      "ul",
+      "ol",
+      "li",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "blockquote",
+      "code",
+      "pre",
+      "span",
+      "div",
+      "img",
+      "table",
+      "thead",
+      "tbody",
+      "tr",
+      "td",
+      "th",
     ],
-    allowedAttrs = ['href', 'src', 'alt', 'title', 'class', 'id', 'width', 'height'],
+    allowedAttrs = [
+      "href",
+      "src",
+      "alt",
+      "title",
+      "class",
+      "id",
+      "width",
+      "height",
+    ],
   } = options;
 
-  const allowedTagSet = new Set(allowedTags.map(t => t.toLowerCase()));
-  const allowedAttrSet = new Set(allowedAttrs.map(a => a.toLowerCase()));
+  const allowedTagSet = new Set(allowedTags.map((t) => t.toLowerCase()));
+  const allowedAttrSet = new Set(allowedAttrs.map((a) => a.toLowerCase()));
 
   // Parse with DOMParser
   const doc = parseSafe(html);
-  if (!doc) return '';
+  if (!doc) return "";
 
   // Walk and clean
   cleanNode(doc.body, allowedTagSet, allowedAttrSet);
@@ -46,12 +80,12 @@ export function sanitizeHTML(html, options = {}) {
  * @private
  */
 function parseSafe(html) {
-  if (typeof DOMParser === 'undefined') {
+  if (typeof DOMParser === "undefined") {
     // Node.js environment — use simple regex-based fallback
     return parseSimple(html);
   }
   const parser = new DOMParser();
-  return parser.parseFromString(html, 'text/html');
+  return parser.parseFromString(html, "text/html");
 }
 
 /**
@@ -64,7 +98,9 @@ function parseSimple(html) {
   return {
     body: {
       innerHTML: html,
-      get childNodes() { return []; },
+      get childNodes() {
+        return [];
+      },
     },
   };
 }
@@ -80,7 +116,8 @@ function cleanNode(parent, allowedTags, allowedAttrs) {
 
   for (const node of [...parent.childNodes]) {
     if (node.nodeType === 3) continue; // text nodes are safe
-    if (node.nodeType === 8) { // comment nodes — remove
+    if (node.nodeType === 8) {
+      // comment nodes — remove
       toRemove.push(node);
       continue;
     }
@@ -106,15 +143,18 @@ function cleanNode(parent, allowedTags, allowedAttrs) {
         const name = attr.name.toLowerCase();
 
         // Remove event handlers (onclick, onload, etc.)
-        if (name.startsWith('on')) {
+        if (name.startsWith("on")) {
           node.removeAttribute(attr.name);
           continue;
         }
 
         // Remove javascript: URIs
-        if ((name === 'href' || name === 'src') && attr.value) {
+        if ((name === "href" || name === "src") && attr.value) {
           const val = attr.value.trim().toLowerCase();
-          if (val.startsWith('javascript:') || val.startsWith('data:') && !val.startsWith('data:image/')) {
+          if (
+            val.startsWith("javascript:") ||
+            (val.startsWith("data:") && !val.startsWith("data:image/"))
+          ) {
             node.removeAttribute(attr.name);
             continue;
           }
@@ -144,9 +184,9 @@ function cleanNode(parent, allowedTags, allowedAttrs) {
  */
 export function escapeHTML(text) {
   return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
 }

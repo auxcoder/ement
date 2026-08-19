@@ -12,7 +12,7 @@
  * @module router/route-outlet
  */
 
-const BaseElement = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
+const BaseElement = typeof HTMLElement !== "undefined" ? HTMLElement : class {};
 
 export class RouteOutlet extends BaseElement {
   #currentComponent = null;
@@ -50,12 +50,12 @@ export class RouteOutlet extends BaseElement {
       this.#currentComponent = null;
     }
     if (this.innerHTML !== undefined) {
-      this.innerHTML = '';
+      this.innerHTML = "";
     }
   }
 }
 
 // Register if in browser
-if (typeof customElements !== 'undefined') {
-  customElements.define('route-outlet', RouteOutlet);
+if (typeof customElements !== "undefined") {
+  customElements.define("route-outlet", RouteOutlet);
 }
