@@ -3,20 +3,20 @@
  * Run with: node --test src/di/container.test.js
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { Container } from './container.js';
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { ElContainer } from "./container.js";
 
 // Test tokens
-const HttpToken = Symbol('Http');
-const LoggerToken = Symbol('Logger');
-const DbToken = Symbol('Db');
-const AuthToken = Symbol('Auth');
+const HttpToken = Symbol("Http");
+const LoggerToken = Symbol("Logger");
+const DbToken = Symbol("Db");
+const AuthToken = Symbol("Auth");
 
-describe('Container', () => {
-  describe('register + resolve', () => {
-    it('resolves a registered token', () => {
-      const container = new Container();
+describe("Container", () => {
+  describe("register + resolve", () => {
+    it("resolves a registered token", () => {
+      const container = new ElContainer();
       const mockHttp = { get: () => {} };
       container.register(HttpToken, () => mockHttp);
 
@@ -24,8 +24,8 @@ describe('Container', () => {
       assert.strictEqual(result, mockHttp);
     });
 
-    it('throws when resolving an unregistered token', () => {
-      const container = new Container();
+    it("throws when resolving an unregistered token", () => {
+      const container = new ElContainer();
 
       assert.throws(
         () => container.resolve(HttpToken),
@@ -33,8 +33,8 @@ describe('Container', () => {
       );
     });
 
-    it('passes the container to the factory (for resolving dependencies)', () => {
-      const container = new Container();
+    it("passes the container to the factory (for resolving dependencies)", () => {
+      const container = new ElContainer();
       container.register(LoggerToken, () => ({ log: () => {} }));
       container.register(HttpToken, (c) => {
         const logger = c.resolve(LoggerToken);
@@ -47,9 +47,9 @@ describe('Container', () => {
     });
   });
 
-  describe('singleton lifetime', () => {
-    it('returns the same instance on multiple resolves (default: singleton)', () => {
-      const container = new Container();
+  describe("singleton lifetime", () => {
+    it("returns the same instance on multiple resolves (default: singleton)", () => {
+      const container = new ElContainer();
       let callCount = 0;
       container.register(HttpToken, () => {
         callCount++;
@@ -63,13 +63,17 @@ describe('Container', () => {
       assert.equal(callCount, 1);
     });
 
-    it('returns different instances when singleton: false (transient)', () => {
-      const container = new Container();
+    it("returns different instances when singleton: false (transient)", () => {
+      const container = new ElContainer();
       let callCount = 0;
-      container.register(HttpToken, () => {
-        callCount++;
-        return { id: callCount };
-      }, { singleton: false });
+      container.register(
+        HttpToken,
+        () => {
+          callCount++;
+          return { id: callCount };
+        },
+        { singleton: false },
+      );
 
       const first = container.resolve(HttpToken);
       const second = container.resolve(HttpToken);
@@ -81,9 +85,9 @@ describe('Container', () => {
     });
   });
 
-  describe('circular dependency detection', () => {
-    it('throws on circular dependency', () => {
-      const container = new Container();
+  describe("circular dependency detection", () => {
+    it("throws on circular dependency", () => {
+      const container = new ElContainer();
 
       // A depends on B, B depends on A
       container.register(HttpToken, (c) => {
@@ -100,10 +104,10 @@ describe('Container', () => {
     });
   });
 
-  describe('container hierarchy', () => {
-    it('child resolves from parent when not overridden', () => {
-      const parent = new Container();
-      const mockHttp = { get: () => 'parent-http' };
+  describe("container hierarchy", () => {
+    it("child resolves from parent when not overridden", () => {
+      const parent = new ElContainer();
+      const mockHttp = { get: () => "parent-http" };
       parent.register(HttpToken, () => mockHttp);
 
       const child = parent.createChild();
@@ -111,10 +115,10 @@ describe('Container', () => {
       assert.strictEqual(child.resolve(HttpToken), mockHttp);
     });
 
-    it('child override shadows parent without affecting parent', () => {
-      const parent = new Container();
-      const parentHttp = { source: 'parent' };
-      const childHttp = { source: 'child' };
+    it("child override shadows parent without affecting parent", () => {
+      const parent = new ElContainer();
+      const parentHttp = { source: "parent" };
+      const childHttp = { source: "child" };
 
       parent.register(HttpToken, () => parentHttp);
       const child = parent.createChild();
@@ -124,8 +128,8 @@ describe('Container', () => {
       assert.strictEqual(parent.resolve(HttpToken), parentHttp);
     });
 
-    it('resolution walks up the chain: child → parent → grandparent', () => {
-      const grandparent = new Container();
+    it("resolution walks up the chain: child → parent → grandparent", () => {
+      const grandparent = new ElContainer();
       const logger = { log: () => {} };
       grandparent.register(LoggerToken, () => logger);
 
@@ -135,8 +139,8 @@ describe('Container', () => {
       assert.strictEqual(child.resolve(LoggerToken), logger);
     });
 
-    it('child throws when token is not in any ancestor', () => {
-      const parent = new Container();
+    it("child throws when token is not in any ancestor", () => {
+      const parent = new ElContainer();
       const child = parent.createChild();
 
       assert.throws(
@@ -146,17 +150,17 @@ describe('Container', () => {
     });
   });
 
-  describe('has()', () => {
-    it('returns true for registered tokens', () => {
-      const container = new Container();
+  describe("has()", () => {
+    it("returns true for registered tokens", () => {
+      const container = new ElContainer();
       container.register(HttpToken, () => ({}));
 
       assert.equal(container.has(HttpToken), true);
       assert.equal(container.has(LoggerToken), false);
     });
 
-    it('checks parent containers', () => {
-      const parent = new Container();
+    it("checks parent containers", () => {
+      const parent = new ElContainer();
       parent.register(HttpToken, () => ({}));
       const child = parent.createChild();
 
@@ -165,9 +169,9 @@ describe('Container', () => {
     });
   });
 
-  describe('re-registration', () => {
-    it('replaces previous registration', () => {
-      const container = new Container();
+  describe("re-registration", () => {
+    it("replaces previous registration", () => {
+      const container = new ElContainer();
       container.register(HttpToken, () => ({ version: 1 }));
       const v1 = container.resolve(HttpToken);
       assert.equal(v1.version, 1);

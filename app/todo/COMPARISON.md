@@ -1,6 +1,6 @@
-# AngularJS → ng-modern Comparison Guide
+# AngularJS → ement Comparison Guide
 
-If you wrote X in AngularJS, here's how in ng-modern — and why the solution changed.
+If you wrote X in AngularJS, here's how in ement — and why the solution changed.
 
 ## Components
 
@@ -17,7 +17,7 @@ angular.module('app').directive('userCard', function() {
 });
 ```
 
-**ng-modern:**
+**ement:**
 
 ```javascript
 class UserCard extends NgElement {
@@ -45,7 +45,7 @@ $scope.count = 5;
 $scope.$apply(); // manual trigger!
 ```
 
-**ng-modern:**
+**ement:**
 
 ```javascript
 const state = reactive({ count: 0 }, (prop, value) => {
@@ -68,7 +68,7 @@ angular.module('app').service('UserService', ['$http', function($http) { ... }])
 module(function($provide) { $provide.value('$http', mockHttp); });
 ```
 
-**ng-modern:**
+**ement:**
 
 ```javascript
 container.register(HttpToken, () => new Http());
@@ -90,7 +90,7 @@ $http.get("/api/users").then(function (response) {
 });
 ```
 
-**ng-modern:**
+**ement:**
 
 ```javascript
 const users = await http.get("/users"); // JSON directly, async/await
@@ -109,7 +109,7 @@ $stateProvider.state('admin.users', { url: '/users', component: 'adminUsers' });
 $transitions.onBefore({ to: 'admin.**' }, transition => { ... });
 ```
 
-**ng-modern:**
+**ement:**
 
 ```javascript
 router.route("/admin/users", "admin-users", { group: "admin" });
@@ -131,7 +131,7 @@ router.onBefore(async (from, to) => {
 <!-- Two-way binding: implicit, cascading mutations possible -->
 ```
 
-**ng-modern:**
+**ement:**
 
 ```javascript
 const field = new Field(input, {
@@ -155,7 +155,7 @@ const field = new Field(input, {
 { transclude: true, template: '<div><ng-transclude></ng-transclude></div>' }
 ```
 
-**ng-modern:**
+**ement:**
 
 ```html
 <div><slot></slot></div>
@@ -180,7 +180,7 @@ const field = new Field(input, {
 }
 ```
 
-**ng-modern:**
+**ement:**
 
 ```javascript
 animateIn(el, [{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
@@ -199,7 +199,7 @@ animateIn(el, [{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
 <!-- requires angular-locale files -->
 ```
 
-**ng-modern:**
+**ement:**
 
 ```javascript
 formatCurrency(price, "EUR", "de-DE"); // Intl — all locales built-in
@@ -218,7 +218,7 @@ $sce.trustAsHtml(content); // "I trust this, skip security"
 // Template expressions use eval() — incompatible with CSP
 ```
 
-**ng-modern:**
+**ement:**
 
 ```javascript
 sanitizeHTML(content); // Always sanitize, no escape hatch
@@ -240,7 +240,7 @@ inject(function(UserService, $httpBackend) {
 });
 ```
 
-**ng-modern:**
+**ement:**
 
 ```javascript
 const container = new Container();

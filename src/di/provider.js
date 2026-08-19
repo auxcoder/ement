@@ -2,7 +2,7 @@
  * DI container integration with the DOM.
  *
  * Provides:
- * 1. `<ng-provider>` element — attaches a Container to a DOM subtree
+ * 1. `<el-provider>` element — attaches an ElContainer to a DOM subtree
  * 2. `resolveContainer(element)` — walks up the DOM to find the nearest container
  *
  * This is how components access services without importing implementations directly.
@@ -11,21 +11,21 @@
  * @module di/provider
  */
 
-import { Container } from './container.js';
+import { ElContainer } from "./container.js";
 
 // Symbol used to attach container to a DOM element
-const CONTAINER_KEY = Symbol('__ngContainer');
+const CONTAINER_KEY = Symbol("__elContainer");
 
 /**
  * Attach a container to a DOM element.
  * Any descendant can resolve services from this container.
  *
  * @param {HTMLElement} element - The DOM element to provide from
- * @param {Container} container - The container instance
+ * @param {ElContainer} container - The container instance
  *
  * @example
- * const container = new Container();
- * container.register(HttpToken, () => new Http());
+ * const container = new ElContainer();
+ * container.register(HttpToken, () => new ElHttp());
  * provideContainer(document.getElementById('app'), container);
  */
 export function provideContainer(element, container) {
@@ -37,11 +37,10 @@ export function provideContainer(element, container) {
  * Checks the element itself, then ancestors, crossing Shadow DOM boundaries.
  *
  * @param {HTMLElement} element - Starting element
- * @returns {Container} The nearest container
+ * @returns {ElContainer} The nearest container
  * @throws {Error} If no container found in any ancestor
  *
  * @example
- * // Inside a component:
  * const container = resolveContainer(this);
  * const http = container.resolve(HttpToken);
  */
@@ -57,33 +56,29 @@ export function resolveContainer(element) {
   }
 
   throw new Error(
-    'No DI container found in DOM ancestors. ' +
-    'Wrap your app with provideContainer(element, container).',
+    "No DI container found in DOM ancestors. " +
+      "Wrap your app with provideContainer(element, container).",
   );
 }
 
 /**
- * `<ng-provider>` custom element.
+ * `<el-provider>` custom element.
  * Convenience element that creates and attaches a container to itself.
  * Child elements can resolve services from it.
  *
- * Usage:
- *   const provider = document.createElement('ng-provider');
- *   provider.container.register(HttpToken, () => new Http());
- *   document.body.appendChild(provider);
- *
- * Or programmatically:
- *   const provider = document.querySelector('ng-provider');
- *   provider.container.register(HttpToken, () => http);
+ * @example
+ * const provider = document.createElement('el-provider');
+ * provider.container.register(HttpToken, () => new ElHttp());
+ * document.body.appendChild(provider);
  */
-const BaseElement = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
+const BaseElement = typeof HTMLElement !== "undefined" ? HTMLElement : class {};
 
-export class NgProvider extends BaseElement {
+export class ElProvider extends BaseElement {
   #container;
 
   constructor() {
     super();
-    this.#container = new Container();
+    this.#container = new ElContainer();
     this[CONTAINER_KEY] = this.#container;
   }
 
@@ -104,6 +99,6 @@ export class NgProvider extends BaseElement {
 }
 
 // Only define if in browser environment (skip in Node tests)
-if (typeof customElements !== 'undefined') {
-  customElements.define('ng-provider', NgProvider);
+if (typeof customElements !== "undefined") {
+  customElements.define("el-provider", ElProvider);
 }

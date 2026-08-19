@@ -3,9 +3,9 @@
  * Run with: node --test src/animate/animate.test.js
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { animateIn, animateOut, stagger, presets } from './animate.js';
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { animateIn, animateOut, stagger, presets } from "./animate.js";
 
 // ─── Mock element with .animate() ──────────────────────────────────────────────
 
@@ -19,14 +19,16 @@ function makeElement() {
       this.lastAnimation = animation;
       return animation;
     },
-    remove() { this.removed = true; },
+    remove() {
+      this.removed = true;
+    },
   };
 }
 
 // ─── Tests ─────────────────────────────────────────────────────────────────────
 
-describe('animateIn()', () => {
-  it('calls element.animate with keyframes and defaults', () => {
+describe("animateIn()", () => {
+  it("calls element.animate with keyframes and defaults", () => {
     const el = makeElement();
     const keyframes = [{ opacity: 0 }, { opacity: 1 }];
 
@@ -34,24 +36,24 @@ describe('animateIn()', () => {
 
     assert.deepEqual(anim.keyframes, keyframes);
     assert.equal(anim.options.duration, 300);
-    assert.equal(anim.options.easing, 'ease-in-out');
-    assert.equal(anim.options.fill, 'forwards');
+    assert.equal(anim.options.easing, "ease-in-out");
+    assert.equal(anim.options.fill, "forwards");
   });
 
-  it('allows custom options', () => {
+  it("allows custom options", () => {
     const el = makeElement();
     const anim = animateIn(el, [{ opacity: 0 }, { opacity: 1 }], {
       duration: 500,
-      easing: 'linear',
+      easing: "linear",
     });
 
     assert.equal(anim.options.duration, 500);
-    assert.equal(anim.options.easing, 'linear');
+    assert.equal(anim.options.easing, "linear");
   });
 });
 
-describe('animateOut()', () => {
-  it('removes element after animation finishes', () => {
+describe("animateOut()", () => {
+  it("removes element after animation finishes", () => {
     const el = makeElement();
     const anim = animateOut(el, [{ opacity: 1 }, { opacity: 0 }]);
 
@@ -63,8 +65,8 @@ describe('animateOut()', () => {
   });
 });
 
-describe('stagger()', () => {
-  it('animates each element with incremental delay', () => {
+describe("stagger()", () => {
+  it("animates each element with incremental delay", () => {
     const elements = [makeElement(), makeElement(), makeElement()];
     const keyframes = [{ opacity: 0 }, { opacity: 1 }];
 
@@ -76,7 +78,7 @@ describe('stagger()', () => {
     assert.equal(animations[2].options.delay, 200);
   });
 
-  it('uses default 50ms delay', () => {
+  it("uses default 50ms delay", () => {
     const elements = [makeElement(), makeElement()];
     const animations = stagger(elements, [{ opacity: 0 }, { opacity: 1 }]);
 
@@ -85,8 +87,8 @@ describe('stagger()', () => {
   });
 });
 
-describe('presets', () => {
-  it('has standard animation presets', () => {
+describe("presets", () => {
+  it("has standard animation presets", () => {
     assert.ok(presets.fadeIn);
     assert.ok(presets.fadeOut);
     assert.ok(presets.slideInDown);

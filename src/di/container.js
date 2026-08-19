@@ -9,21 +9,21 @@
  */
 
 /**
- * DI Container — register and resolve services by token.
+ * DI ElContainer — register and resolve services by token.
  *
  * @example
- * const container = new Container();
- * container.register(HttpToken, () => new Http({ baseUrl: '/api' }));
+ * const container = new ElContainer();
+ * container.register(HttpToken, () => new ElHttp({ baseUrl: '/api' }));
  * const http = container.resolve(HttpToken);
  */
-export class Container {
+export class ElContainer {
   #services = new Map();
   #singletons = new Map();
   #parent = null;
   #resolving = new Set(); // circular dependency detection
 
   /**
-   * @param {Container|null} parent - Parent container for hierarchical resolution
+   * @param {ElContainer|null} parent - Parent container for hierarchical resolution
    */
   constructor(parent = null) {
     this.#parent = parent;
@@ -36,10 +36,10 @@ export class Container {
    * @param {Function} factory - Factory function: (container) => instance
    * @param {Object} [options]
    * @param {boolean} [options.singleton=true] - Shared instance (true) or new per resolve (false)
-   * @returns {Container} this (for chaining)
+   * @returns {ElContainer} this (for chaining)
    *
    * @example
-   * container.register(HttpToken, (c) => new Http({ baseUrl: '/api' }));
+   * container.register(HttpToken, (c) => new ElHttp({ baseUrl: '/api' }));
    * container.register(LoggerToken, () => console, { singleton: false });
    */
   register(token, factory, { singleton = true } = {}) {
@@ -92,7 +92,7 @@ export class Container {
 
     throw new Error(
       `No provider registered for ${token.toString()}. ` +
-      `Did you forget to register it in the container?`,
+        `Did you forget to register it in the container?`,
     );
   }
 
@@ -112,13 +112,13 @@ export class Container {
    * Create a child container that inherits this container's registrations.
    * Child can override tokens without mutating the parent.
    *
-   * @returns {Container}
+   * @returns {ElContainer}
    *
    * @example
    * const child = container.createChild();
    * child.register(HttpToken, () => mockHttp); // shadows parent
    */
   createChild() {
-    return new Container(this);
+    return new ElContainer(this);
   }
 }

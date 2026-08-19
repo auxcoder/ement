@@ -14,7 +14,7 @@ describe("TodoMVC App — Integration", () => {
   beforeEach(() => {
     // Clear storage between tests
     const storage = container.resolve(StorageToken);
-    storage.removeItem("ng-modern-todos");
+    storage.removeItem("ement-todos");
   });
 
   it("container resolves TodoService", () => {

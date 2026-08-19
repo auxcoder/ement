@@ -3,20 +3,20 @@
  * Run with: node --test src/core/computed.test.js
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { reactive } from './reactive.js';
-import { computed } from './computed.js';
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { reactive } from "./reactive.js";
+import { computed } from "./computed.js";
 
-describe('computed()', () => {
-  it('computes a value from reactive state', () => {
-    const state = reactive({ firstName: 'John', lastName: 'Doe' }, () => {});
+describe("computed()", () => {
+  it("computes a value from reactive state", () => {
+    const state = reactive({ firstName: "John", lastName: "Doe" }, () => {});
     const fullName = computed(() => `${state.firstName} ${state.lastName}`);
 
-    assert.equal(fullName.value, 'John Doe');
+    assert.equal(fullName.value, "John Doe");
   });
 
-  it('re-computes when a dependency changes', () => {
+  it("re-computes when a dependency changes", () => {
     const state = reactive({ count: 1 }, () => {});
     const doubled = computed(() => state.count * 2);
 
@@ -27,7 +27,7 @@ describe('computed()', () => {
     assert.equal(doubled.value, 10);
   });
 
-  it('does not recalculate if deps unchanged (cached)', () => {
+  it("does not recalculate if deps unchanged (cached)", () => {
     let computeCount = 0;
     const state = reactive({ x: 10 }, () => {});
     const result = computed(() => {
@@ -42,7 +42,7 @@ describe('computed()', () => {
     assert.equal(computeCount, 1);
   });
 
-  it('re-computes only after invalidation', () => {
+  it("re-computes only after invalidation", () => {
     let computeCount = 0;
     const state = reactive({ x: 1 }, () => {});
     const result = computed(() => {
@@ -64,7 +64,7 @@ describe('computed()', () => {
     assert.equal(computeCount, 2);
   });
 
-  it('is lazy — does not compute until .value is read', () => {
+  it("is lazy — does not compute until .value is read", () => {
     let computeCount = 0;
     const state = reactive({ x: 1 }, () => {});
 
@@ -81,18 +81,18 @@ describe('computed()', () => {
     assert.equal(computeCount, 1);
   });
 
-  it('tracks nested property access', () => {
-    const state = reactive({ user: { name: 'Alice' } }, () => {});
+  it("tracks nested property access", () => {
+    const state = reactive({ user: { name: "Alice" } }, () => {});
     const greeting = computed(() => `Hello, ${state.user.name}`);
 
-    assert.equal(greeting.value, 'Hello, Alice');
+    assert.equal(greeting.value, "Hello, Alice");
 
-    state.user.name = 'Bob';
+    state.user.name = "Bob";
     greeting.invalidate();
-    assert.equal(greeting.value, 'Hello, Bob');
+    assert.equal(greeting.value, "Hello, Bob");
   });
 
-  it('handles multiple reactive sources', () => {
+  it("handles multiple reactive sources", () => {
     const a = reactive({ value: 1 }, () => {});
     const b = reactive({ value: 2 }, () => {});
     const sum = computed(() => a.value + b.value);
@@ -108,7 +108,7 @@ describe('computed()', () => {
     assert.equal(sum.value, 30);
   });
 
-  it('isDirty reflects computation state', () => {
+  it("isDirty reflects computation state", () => {
     const state = reactive({ x: 1 }, () => {});
     const result = computed(() => state.x * 2);
 
@@ -125,7 +125,7 @@ describe('computed()', () => {
     assert.equal(result.isDirty, false);
   });
 
-  it('destroy cleans up and marks as dirty', () => {
+  it("destroy cleans up and marks as dirty", () => {
     const state = reactive({ x: 1 }, () => {});
     const result = computed(() => state.x);
 

@@ -3,16 +3,18 @@
  * Run with: node --test src/router/links.test.js
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { interceptLinks } from './links.js';
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { interceptLinks } from "./links.js";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 function makeRouter() {
   const navigated = [];
   return {
-    navigate(path) { navigated.push(path); },
+    navigate(path) {
+      navigated.push(path);
+    },
     navigated,
   };
 }
@@ -27,68 +29,76 @@ function makeEvent(anchor, opts = {}) {
     altKey: opts.altKey ?? false,
     target: {
       closest(selector) {
-        if (selector === 'a[href]') return anchor;
+        if (selector === "a[href]") return anchor;
         return null;
       },
     },
-    preventDefault() { defaultPrevented = true; },
-    get defaultPrevented() { return defaultPrevented; },
+    preventDefault() {
+      defaultPrevented = true;
+    },
+    get defaultPrevented() {
+      return defaultPrevented;
+    },
   };
 }
 
 function makeAnchor(href, attrs = {}) {
-  const pathname = href.startsWith('/') ? href : '/' + href;
+  const pathname = href.startsWith("/") ? href : "/" + href;
   return {
     getAttribute(name) {
-      if (name === 'href') return href;
-      if (name === 'target') return attrs.target || null;
+      if (name === "href") return href;
+      if (name === "target") return attrs.target || null;
       return null;
     },
     hasAttribute(name) {
       return name in attrs;
     },
     pathname,
-    search: '',
-    origin: 'http://localhost',
+    search: "",
+    origin: "http://localhost",
   };
 }
 
 // Shim location
-globalThis.location = { origin: 'http://localhost' };
+globalThis.location = { origin: "http://localhost" };
 
 // ─── Tests ─────────────────────────────────────────────────────────────────────
 
-describe('interceptLinks', () => {
-  it('intercepts same-origin link clicks and calls router.navigate', () => {
+describe("interceptLinks", () => {
+  it("intercepts same-origin link clicks and calls router.navigate", () => {
     const router = makeRouter();
     const listeners = {};
     const root = {
-      addEventListener(type, fn) { listeners[type] = fn; },
+      addEventListener(type, fn) {
+        listeners[type] = fn;
+      },
       removeEventListener() {},
     };
 
     interceptLinks(router, root);
 
-    const anchor = makeAnchor('/about');
+    const anchor = makeAnchor("/about");
     const event = makeEvent(anchor);
     listeners.click(event);
 
     assert.equal(router.navigated.length, 1);
-    assert.equal(router.navigated[0], '/about');
+    assert.equal(router.navigated[0], "/about");
     assert.equal(event.defaultPrevented, true);
   });
 
-  it('does not intercept links with data-external attribute', () => {
+  it("does not intercept links with data-external attribute", () => {
     const router = makeRouter();
     const listeners = {};
     const root = {
-      addEventListener(type, fn) { listeners[type] = fn; },
+      addEventListener(type, fn) {
+        listeners[type] = fn;
+      },
       removeEventListener() {},
     };
 
     interceptLinks(router, root);
 
-    const anchor = makeAnchor('/external', { 'data-external': '' });
+    const anchor = makeAnchor("/external", { "data-external": "" });
     const event = makeEvent(anchor);
     listeners.click(event);
 
@@ -96,17 +106,19 @@ describe('interceptLinks', () => {
     assert.equal(event.defaultPrevented, false);
   });
 
-  it('does not intercept middle-clicks or modified clicks', () => {
+  it("does not intercept middle-clicks or modified clicks", () => {
     const router = makeRouter();
     const listeners = {};
     const root = {
-      addEventListener(type, fn) { listeners[type] = fn; },
+      addEventListener(type, fn) {
+        listeners[type] = fn;
+      },
       removeEventListener() {},
     };
 
     interceptLinks(router, root);
 
-    const anchor = makeAnchor('/page');
+    const anchor = makeAnchor("/page");
 
     // Middle click
     listeners.click(makeEvent(anchor, { button: 1 }));
@@ -121,20 +133,22 @@ describe('interceptLinks', () => {
     assert.equal(router.navigated.length, 0);
   });
 
-  it('does not intercept links with target attribute', () => {
+  it("does not intercept links with target attribute", () => {
     const router = makeRouter();
     const listeners = {};
     const root = {
-      addEventListener(type, fn) { listeners[type] = fn; },
+      addEventListener(type, fn) {
+        listeners[type] = fn;
+      },
       removeEventListener() {},
     };
 
     interceptLinks(router, root);
 
-    const anchor = makeAnchor('/new-tab', { target: '_blank' });
+    const anchor = makeAnchor("/new-tab", { target: "_blank" });
     anchor.getAttribute = (name) => {
-      if (name === 'href') return '/new-tab';
-      if (name === 'target') return '_blank';
+      if (name === "href") return "/new-tab";
+      if (name === "target") return "_blank";
       return null;
     };
     const event = makeEvent(anchor);
@@ -143,34 +157,39 @@ describe('interceptLinks', () => {
     assert.equal(router.navigated.length, 0);
   });
 
-  it('does not intercept non-http links', () => {
+  it("does not intercept non-http links", () => {
     const router = makeRouter();
     const listeners = {};
     const root = {
-      addEventListener(type, fn) { listeners[type] = fn; },
+      addEventListener(type, fn) {
+        listeners[type] = fn;
+      },
       removeEventListener() {},
     };
 
     interceptLinks(router, root);
 
-    const mailAnchor = makeAnchor('mailto:test@test.com');
-    mailAnchor.getAttribute = (name) => name === 'href' ? 'mailto:test@test.com' : null;
+    const mailAnchor = makeAnchor("mailto:test@test.com");
+    mailAnchor.getAttribute = (name) =>
+      name === "href" ? "mailto:test@test.com" : null;
     listeners.click(makeEvent(mailAnchor));
 
     assert.equal(router.navigated.length, 0);
   });
 
-  it('returns a cleanup function that removes the listener', () => {
+  it("returns a cleanup function that removes the listener", () => {
     const router = makeRouter();
     let removedType = null;
     const root = {
       addEventListener() {},
-      removeEventListener(type) { removedType = type; },
+      removeEventListener(type) {
+        removedType = type;
+      },
     };
 
     const cleanup = interceptLinks(router, root);
     cleanup();
 
-    assert.equal(removedType, 'click');
+    assert.equal(removedType, "click");
   });
 });

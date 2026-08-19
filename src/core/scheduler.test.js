@@ -3,14 +3,16 @@
  * Run with: node --test src/core/scheduler.test.js
  */
 
-import { describe, it, beforeEach } from 'node:test';
-import assert from 'node:assert/strict';
-import { scheduleUpdate, flushUpdates, pendingCount } from './scheduler.js';
+import { describe, it, beforeEach } from "node:test";
+import assert from "node:assert/strict";
+import { scheduleUpdate, flushUpdates, pendingCount } from "./scheduler.js";
 
-describe('scheduleUpdate()', () => {
-  it('runs the function asynchronously (microtask)', async () => {
+describe("scheduleUpdate()", () => {
+  it("runs the function asynchronously (microtask)", async () => {
     let ran = false;
-    scheduleUpdate(() => { ran = true; });
+    scheduleUpdate(() => {
+      ran = true;
+    });
 
     // Synchronously, it hasn't run yet
     assert.equal(ran, false);
@@ -20,9 +22,11 @@ describe('scheduleUpdate()', () => {
     assert.equal(ran, true);
   });
 
-  it('deduplicates — same function runs only once per batch', async () => {
+  it("deduplicates — same function runs only once per batch", async () => {
     let count = 0;
-    const increment = () => { count++; };
+    const increment = () => {
+      count++;
+    };
 
     scheduleUpdate(increment);
     scheduleUpdate(increment);
@@ -32,11 +36,15 @@ describe('scheduleUpdate()', () => {
     assert.equal(count, 1);
   });
 
-  it('runs different functions each once', async () => {
+  it("runs different functions each once", async () => {
     let a = 0;
     let b = 0;
-    const incA = () => { a++; };
-    const incB = () => { b++; };
+    const incA = () => {
+      a++;
+    };
+    const incB = () => {
+      b++;
+    };
 
     scheduleUpdate(incA);
     scheduleUpdate(incB);
@@ -47,9 +55,11 @@ describe('scheduleUpdate()', () => {
     assert.equal(b, 1);
   });
 
-  it('batches: 10 property changes → 1 update cycle', async () => {
+  it("batches: 10 property changes → 1 update cycle", async () => {
     let renderCount = 0;
-    const render = () => { renderCount++; };
+    const render = () => {
+      renderCount++;
+    };
 
     // Simulate 10 property changes all scheduling the same render
     for (let i = 0; i < 10; i++) {
@@ -60,48 +70,52 @@ describe('scheduleUpdate()', () => {
     assert.equal(renderCount, 1);
   });
 
-  it('updates happen before next frame (microtask, not setTimeout)', async () => {
+  it("updates happen before next frame (microtask, not setTimeout)", async () => {
     const order = [];
 
-    setTimeout(() => order.push('timeout'), 0);
-    scheduleUpdate(() => order.push('microtask'));
+    setTimeout(() => order.push("timeout"), 0);
+    scheduleUpdate(() => order.push("microtask"));
 
     // Wait for both microtask and timeout
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    assert.equal(order[0], 'microtask');
-    assert.equal(order[1], 'timeout');
+    assert.equal(order[0], "microtask");
+    assert.equal(order[1], "timeout");
   });
 
-  it('allows new updates scheduled during flush (next batch)', async () => {
+  it("allows new updates scheduled during flush (next batch)", async () => {
     const order = [];
 
     scheduleUpdate(() => {
-      order.push('first');
+      order.push("first");
       // Schedule during flush — should go in next batch
-      scheduleUpdate(() => { order.push('second'); });
+      scheduleUpdate(() => {
+        order.push("second");
+      });
     });
 
     await Promise.resolve();
-    assert.deepEqual(order, ['first']);
+    assert.deepEqual(order, ["first"]);
 
     // Second batch runs in next microtask
     await Promise.resolve();
-    assert.deepEqual(order, ['first', 'second']);
+    assert.deepEqual(order, ["first", "second"]);
   });
 });
 
-describe('flushUpdates()', () => {
-  it('runs pending updates synchronously', () => {
+describe("flushUpdates()", () => {
+  it("runs pending updates synchronously", () => {
     let ran = false;
-    scheduleUpdate(() => { ran = true; });
+    scheduleUpdate(() => {
+      ran = true;
+    });
 
     assert.equal(ran, false);
     flushUpdates();
     assert.equal(ran, true);
   });
 
-  it('clears the queue after flush', () => {
+  it("clears the queue after flush", () => {
     scheduleUpdate(() => {});
     scheduleUpdate(() => {});
     assert.equal(pendingCount(), 2);
@@ -111,14 +125,14 @@ describe('flushUpdates()', () => {
   });
 });
 
-describe('pendingCount()', () => {
-  it('returns 0 when nothing is scheduled', async () => {
+describe("pendingCount()", () => {
+  it("returns 0 when nothing is scheduled", async () => {
     // Ensure any prior tests have flushed
     await Promise.resolve();
     assert.equal(pendingCount(), 0);
   });
 
-  it('reflects queued updates', () => {
+  it("reflects queued updates", () => {
     const a = () => {};
     const b = () => {};
 

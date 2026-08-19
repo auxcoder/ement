@@ -1,6 +1,6 @@
 # Limitations & Missing Pieces
 
-What AngularJS does that ng-modern can't replicate natively, where the modern approach is worse for DX, and what would be needed for production use.
+What AngularJS does that ement can't replicate natively, where the modern approach is worse for DX, and what would be needed for production use.
 
 ## What We Can't Replicate Natively
 
@@ -8,7 +8,7 @@ What AngularJS does that ng-modern can't replicate natively, where the modern ap
 
 AngularJS had `ng-if`, `ng-repeat`, `ng-switch`, `ng-show` directly in HTML. No native equivalent exists without a template engine.
 
-ng-modern uses imperative methods (`this.show()`, `this.when()`, `this.repeat()`). This works but loses the "scan the template and understand the UI" readability that AngularJS templates had.
+ement uses imperative methods (`this.show()`, `this.when()`, `this.repeat()`). This works but loses the "scan the template and understand the UI" readability that AngularJS templates had.
 
 **What would fix it:** A template compiler (like Lit's `html` tagged template or Svelte's compiler). But that adds complexity and a build step — against our zero-dependency philosophy.
 
@@ -16,7 +16,7 @@ ng-modern uses imperative methods (`this.show()`, `this.when()`, `this.repeat()`
 
 AngularJS: `{{ user.name | uppercase }}`, `ng-if="items.length > 0"`
 
-ng-modern: `{{ userName }}` — only simple property names. No expressions, no filters in templates, no ternaries.
+ement: `{{ userName }}` — only simple property names. No expressions, no filters in templates, no ternaries.
 
 **Why:** Expression evaluation requires `eval()` or a custom parser. AngularJS used `$parse` (effectively `new Function()`), which is incompatible with CSP. We chose CSP-safety over template expressiveness.
 
@@ -30,7 +30,7 @@ ng-modern: `{{ userName }}` — only simple property names. No expressions, no f
 
 AngularJS: `<input ng-model="x" ng-disabled="loading" my-custom-directive>`
 
-ng-modern: Custom Elements can't be applied as attributes on native elements. You can't add behavior to a `<button>` without wrapping it in a custom element.
+ement: Custom Elements can't be applied as attributes on native elements. You can't add behavior to a `<button>` without wrapping it in a custom element.
 
 **What would fix it:** A directive system that uses `MutationObserver` to watch for attribute changes on native elements. Possible but adds complexity.
 
@@ -38,7 +38,7 @@ ng-modern: Custom Elements can't be applied as attributes on native elements. Yo
 
 ## Where Modern is Worse for DX
 
-| Area           | AngularJS               | ng-modern                 | Gap                |
+| Area           | AngularJS               | ement                     | Gap                |
 | -------------- | ----------------------- | ------------------------- | ------------------ |
 | Form setup     | 1 attribute             | 5-10 lines                | Verbose            |
 | Template logic | Declarative             | Imperative                | Readability        |
@@ -64,7 +64,7 @@ ng-modern: Custom Elements can't be applied as attributes on native elements. Yo
 ### Should Have
 
 1. **Template compiler** — compile-time template logic (if/for/switch) into efficient DOM ops
-2. **CLI scaffolding** — `ng-modern new component user-card`
+2. **CLI scaffolding** — `ement new component user-card`
 3. **Testing utilities** — `renderComponent(UserCard, { props, container })` helper
 4. **Migration tool** — codemods to convert AngularJS directives to NgElement
 

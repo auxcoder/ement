@@ -1,5 +1,5 @@
 /**
- * Comparative Example: ngRoute vs ui-router vs ng-modern Router
+ * Comparative Example: ngRoute vs ui-router vs ement Router
  *
  * Run with: node src/router/comparison.js
  *
@@ -8,14 +8,14 @@
  * @module router/comparison
  */
 
-console.log('═══════════════════════════════════════════════════════════════');
-console.log('  Comparative Example: Router Approaches');
-console.log('  Scenario: Admin section with auth guard + shared permissions');
-console.log('═══════════════════════════════════════════════════════════════\n');
+console.log("═════════════════════════════════════════════════════════════");
+console.log("  Comparative Example: Router Approaches");
+console.log("  Scenario: Admin section with auth guard + shared permissions");
+console.log("═════════════════════════════════════════════════════════════\n");
 
-// ─── 1. ngRoute ────────────────────────────────────────────────────────────────
+// ─── 1. ngRoute ──────────────────────────────────────────────────────────────
 
-console.log('─── 1. ngRoute ─────────────────────────────────────────────────\n');
+console.log("─── 1. ngRoute ───────────────────────────────────────────────\n");
 console.log(`
   $routeProvider
     .when('/', { template: '<home>', controller: 'HomeCtrl' })
@@ -48,9 +48,9 @@ console.log(`
   • Flat routes only — no grouping concept
 `);
 
-// ─── 2. ui-router ──────────────────────────────────────────────────────────────
+// ─── 2. ui-router ────────────────────────────────────────────────────────────
 
-console.log('─── 2. ui-router ───────────────────────────────────────────────\n');
+console.log("─── 2. ui-router ─────────────────────────────────────────────\n");
 console.log(`
   $stateProvider
     .state('home', { url: '/', component: 'home' })
@@ -92,11 +92,11 @@ console.log(`
   • Resolve inheritance hides data origin
 `);
 
-// ─── 3. ng-modern ──────────────────────────────────────────────────────────────
+// ─── 3. ement ────────────────────────────────────────────────────────────
 
-console.log('─── 3. ng-modern Router ─────────────────────────────────────────\n');
+console.log("─── 3. ement Router ───────────────────────────────────────\n");
 console.log(`
-  import { Router } from 'ng-modern/router/router';
+  import { Router } from 'ement/router/router';
 
   const router = new Router(document.querySelector('route-outlet'));
 
@@ -139,20 +139,20 @@ console.log(`
   • Native URLPattern — powerful matching without custom parser
 `);
 
-console.log('─── Summary Table ──────────────────────────────────────────────\n');
+console.log("─── Summary Table ────────────────────────────────────────────\n");
 console.log(`
-  ┌──────────────────────┬────────────┬───────────┬────────────┐
-  │ Feature              │ ngRoute    │ ui-router │ ng-modern  │
-  ├──────────────────────┼────────────┼───────────┼────────────┤
-  │ Auth guards          │ ❌ hack     │ ✅ hooks   │ ✅ hooks    │
-  │ Shared resolve       │ ❌ manual   │ ✅ inherit │ ✅ groups   │
+  ┌──────────────────────┬─────────────┬────────────┬──────────────┐
+  │ Feature              │ ngRoute     │ ui-router  │ ement        │
+  ├──────────────────────┼─────────────┼────────────┼──────────────┤
+  │ Auth guards          │ ❌ hack     │ ✅ hooks   │ ✅ hooks     │
+  │ Shared resolve       │ ❌ manual   │ ✅ inherit │ ✅ groups    │
   │ Cache control        │ ❌          │ ❌         │ ✅ invalidate│
-  │ Redirect             │ ❌ $location│ ✅ target  │ ✅ string   │
-  │ URL-based            │ ✅          │ ⚠️ optional│ ✅          │
-  │ Complexity           │ Low        │ High      │ Medium     │
-  │ Learning curve       │ Low        │ High      │ Low        │
-  │ Lines of config      │ ~15        │ ~30       │ ~15        │
-  └──────────────────────┴────────────┴───────────┴────────────┘
+  │ Redirect             │ ❌ $location│ ✅ target  │ ✅ string    │
+  │ URL-based            │ ✅          │ ⚠️ optional│ ✅           │
+  │ Complexity           │ Low         │ High       │ Medium       │
+  │ Learning curve       │ Low         │ High       │ Low          │
+  │ Lines of config      │ ~15         │ ~30        │ ~15          │
+  └──────────────────────┴─────────────┴────────────┴──────────────┘
 `);
 
-console.log('═══════════════════════════════════════════════════════════════');
+console.log("═════════════════════════════════════════════════════════════");
