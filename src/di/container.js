@@ -13,7 +13,7 @@
  *
  * @example
  * const container = new ElContainer();
- * container.register(HttpToken, () => new Http({ baseUrl: '/api' }));
+ * container.register(HttpToken, () => new ElHttp({ baseUrl: '/api' }));
  * const http = container.resolve(HttpToken);
  */
 export class ElContainer {
@@ -23,7 +23,7 @@ export class ElContainer {
   #resolving = new Set(); // circular dependency detection
 
   /**
-   * @param {Container|null} parent - Parent container for hierarchical resolution
+   * @param {ElContainer|null} parent - Parent container for hierarchical resolution
    */
   constructor(parent = null) {
     this.#parent = parent;
@@ -39,7 +39,7 @@ export class ElContainer {
    * @returns {ElContainer} this (for chaining)
    *
    * @example
-   * container.register(HttpToken, (c) => new Http({ baseUrl: '/api' }));
+   * container.register(HttpToken, (c) => new ElHttp({ baseUrl: '/api' }));
    * container.register(LoggerToken, () => console, { singleton: false });
    */
   register(token, factory, { singleton = true } = {}) {

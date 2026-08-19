@@ -5,7 +5,6 @@
  * @module filters/intl
  */
 
-// TODO: Phase 8, Tasks 8.1 - 8.3
 
 /**
  * Format a number as currency.

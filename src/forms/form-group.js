@@ -8,14 +8,11 @@
 
 export class ElFormGroup {
   #fields = new Map();
-  #formElement;
 
   /**
    * @param {HTMLFormElement} formElement - The form element to manage
    */
   constructor(formElement) {
-    this.#formElement = formElement;
-
     if (formElement?.addEventListener) {
       formElement.addEventListener("submit", (e) => {
         if (!this.valid) {
@@ -58,7 +55,7 @@ export class ElFormGroup {
    * Get a field by name.
    *
    * @param {string} name
-   * @returns {Field|undefined}
+   * @returns {ElField|undefined}
    */
   field(name) {
     return this.#fields.get(name);

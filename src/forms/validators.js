@@ -6,7 +6,6 @@
  * @module forms/validators
  */
 
-// TODO: Phase 6, Task 6.8
 export const required = (v) => (!v && v !== 0 ? "required" : null);
 
 export const minLength = (min) => (v) => (v?.length < min ? "minLength" : null);

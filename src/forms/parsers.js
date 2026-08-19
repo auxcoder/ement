@@ -6,7 +6,6 @@
  * @module forms/parsers
  */
 
-// TODO: Phase 6, Task 6.8
 export const trim = (v) => v?.trim();
 export const lowercase = (v) => v?.toLowerCase();
 export const uppercase = (v) => v?.toUpperCase();

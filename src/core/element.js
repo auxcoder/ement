@@ -76,7 +76,7 @@ export class ElElement extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
     const prop = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-    const coerced = this.#coerceValue(prop, newValue, name);
+    const coerced = this.#coerceValue(prop, newValue);
     this[prop] = coerced;
     this._notifyChange(prop, coerced);
   }
@@ -85,7 +85,7 @@ export class ElElement extends HTMLElement {
    * Coerce attribute string to the declared type.
    * @private
    */
-  #coerceValue(prop, value, attrName) {
+  #coerceValue(prop, value) {
     const types = this.constructor.propTypes;
     if (!types || !types[prop]) return value;
 
@@ -332,7 +332,7 @@ export class ElElement extends HTMLElement {
     if (!container) return null;
 
     // Track what we've inserted with a data attribute
-    const marker = `__ng_when_${selector}`;
+    const marker = `__el_when_${selector}`;
 
     if (condition) {
       // Only create if not already present
@@ -378,7 +378,7 @@ export class ElElement extends HTMLElement {
     if (!container) return;
 
     // Track existing nodes by key
-    const marker = `__ng_repeat_${selector}`;
+    const marker = `__el_repeat_${selector}`;
     const existingMap = container[marker] || new Map(); // key → node
     const newMap = new Map();
 
@@ -395,7 +395,7 @@ export class ElElement extends HTMLElement {
       } else {
         // Create new node
         const node = templateFn(item, i);
-        node.__ngKey = key;
+        node.__elKey = key;
         newMap.set(key, node);
       }
       fragment.push(newMap.get(key));
