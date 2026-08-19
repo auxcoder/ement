@@ -7,7 +7,7 @@
 
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { Container } from "./container.js";
+import { ElContainer } from "./container.js";
 import { provideContainer, resolveContainer } from "./provider.js";
 
 // ─── Minimal DOM shim for testing ──────────────────────────────────────────────
@@ -37,7 +37,7 @@ const LoggerToken = Symbol("Logger");
 describe("provideContainer + resolveContainer", () => {
   it("resolves container from the element itself", () => {
     const el = createElement("div");
-    const container = new Container();
+    const container = new ElContainer();
     container.register(HttpToken, () => ({ get: () => {} }));
 
     provideContainer(el, container);
@@ -51,7 +51,7 @@ describe("provideContainer + resolveContainer", () => {
     const child = createElement("span");
     parent.appendChild(child);
 
-    const container = new Container();
+    const container = new ElContainer();
     container.register(HttpToken, () => "http-service");
     provideContainer(parent, container);
 
@@ -67,7 +67,7 @@ describe("provideContainer + resolveContainer", () => {
     grandparent.appendChild(parent);
     parent.appendChild(child);
 
-    const container = new Container();
+    const container = new ElContainer();
     provideContainer(grandparent, container);
 
     const resolved = resolveContainer(child);
@@ -81,10 +81,10 @@ describe("provideContainer + resolveContainer", () => {
     grandparent.appendChild(parent);
     parent.appendChild(child);
 
-    const gpContainer = new Container();
+    const gpContainer = new ElContainer();
     gpContainer.register(HttpToken, () => "grandparent-http");
 
-    const parentContainer = new Container();
+    const parentContainer = new ElContainer();
     parentContainer.register(HttpToken, () => "parent-http");
 
     provideContainer(grandparent, gpContainer);
@@ -109,7 +109,7 @@ describe("provideContainer + resolveContainer", () => {
     section.appendChild(component);
 
     // Root has the app container
-    const appContainer = new Container();
+    const appContainer = new ElContainer();
     appContainer.register(HttpToken, () => "real-http");
     appContainer.register(LoggerToken, () => "real-logger");
     provideContainer(root, appContainer);

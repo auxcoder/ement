@@ -8,12 +8,12 @@
  * @module app/todo
  */
 
-import { Container } from "../../src/di/container.js";
+import { ElContainer } from "../../src/di/container.js";
 import { HttpToken, StorageToken } from "../../src/di/tokens.js";
 
 // ─── DI Container Setup ────────────────────────────────────────────────────────
 
-export const container = new Container();
+export const container = new ElContainer();
 
 // Storage — use localStorage (or in-memory for testing)
 container.register(StorageToken, () => {

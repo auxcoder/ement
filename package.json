@@ -1,42 +1,18 @@
 {
   "name": "ng-modern",
   "version": "0.1.0",
-  "description": "AngularJS reimagined with modern browser APIs — a learning exercise",
+  "description": "AngularJS reimagined with modern browser APIs",
   "type": "module",
   "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "development": "./src/index.js"
-    },
-    "./core/reactive": "./src/core/reactive.js",
-    "./core/scheduler": "./src/core/scheduler.js",
-    "./core/element": "./src/core/element.js",
-    "./di/container": "./src/di/container.js",
-    "./di/tokens": "./src/di/tokens.js",
-    "./router/router": "./src/router/router.js",
-    "./http/http": "./src/http/http.js",
-    "./forms/field": "./src/forms/field.js",
-    "./forms/form-group": "./src/forms/form-group.js",
-    "./forms/parsers": "./src/forms/parsers.js",
-    "./forms/formatters": "./src/forms/formatters.js",
-    "./forms/validators": "./src/forms/validators.js",
-    "./animate/animate": "./src/animate/animate.js",
-    "./security/sanitize": "./src/security/sanitize.js",
-    "./filters/intl": "./src/filters/intl.js"
-  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:lib": "vite build --mode lib",
     "preview": "vite preview",
-    "size": "vite build && gzip -k dist/ng-modern.js && ls -lh dist/ng-modern.js.gz"
+    "test": "node --test src/**/*.test.js"
   },
   "devDependencies": {
     "vite": "8.2.1"
   },
-  "keywords": ["angularjs", "web-components", "proxy", "learning"],
   "license": "MIT",
   "engines": {
     "node": ">=20.19.0"

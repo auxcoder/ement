@@ -169,14 +169,14 @@ globalThis.CustomEvent = class CustomEvent {
 };
 
 // Import after shims
-const { NgElement } = await import("./element.js");
+const { ElElement } = await import("./element.js");
 
 // ─── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("NgElement", () => {
   describe("template resolution", () => {
     it("uses inline template string when available", async () => {
-      class InlineComp extends NgElement {
+      class InlineComp extends ElElement {
         static template = "<p>Hello inline</p>";
       }
       await InlineComp._ensureResources();
@@ -184,7 +184,7 @@ describe("NgElement", () => {
     });
 
     it("fetches templateUrl and caches at class level", async () => {
-      class FetchComp extends NgElement {
+      class FetchComp extends ElElement {
         static templateUrl = "http://example.com/comp.html";
       }
       await FetchComp._ensureResources();
@@ -204,10 +204,10 @@ describe("NgElement", () => {
     });
 
     it("each subclass has its own cache", async () => {
-      class CompA extends NgElement {
+      class CompA extends ElElement {
         static template = "<p>A</p>";
       }
-      class CompB extends NgElement {
+      class CompB extends ElElement {
         static template = "<p>B</p>";
       }
       await CompA._ensureResources();
@@ -219,7 +219,7 @@ describe("NgElement", () => {
 
   describe("template bindings ({{ prop }})", () => {
     it("parses and renders {{ prop }} from template", async () => {
-      class BindComp extends NgElement {
+      class BindComp extends ElElement {
         static template = "{{ greeting }}";
         greeting = "Hello World";
       }
@@ -237,7 +237,7 @@ describe("NgElement", () => {
     });
 
     it("updates binding when _notifyChange is called", async () => {
-      class UpdateComp extends NgElement {
+      class UpdateComp extends ElElement {
         static template = "{{ name }}";
         name = "Alice";
       }
@@ -259,7 +259,7 @@ describe("NgElement", () => {
     });
 
     it("handles multiple bindings to same property", async () => {
-      class MultiComp extends NgElement {
+      class MultiComp extends ElElement {
         static template = "{{ x }} and {{ x }}";
         x = "hi";
       }
@@ -277,7 +277,7 @@ describe("NgElement", () => {
 
   describe("attributeChangedCallback", () => {
     it("converts kebab-case to camelCase", () => {
-      class AttrComp extends NgElement {
+      class AttrComp extends ElElement {
         static observedAttributes = ["user-name"];
       }
       const comp = new AttrComp();
@@ -286,7 +286,7 @@ describe("NgElement", () => {
     });
 
     it("does not update if value unchanged", () => {
-      class NoChangeComp extends NgElement {}
+      class NoChangeComp extends ElElement {}
       const comp = new NoChangeComp();
       comp.userName = "Original";
       comp.attributeChangedCallback("user-name", "same", "same");
@@ -294,7 +294,7 @@ describe("NgElement", () => {
     });
 
     it("coerces Boolean attributes (presence = true)", () => {
-      class BoolComp extends NgElement {
+      class BoolComp extends ElElement {
         static observedAttributes = ["is-active"];
         static propTypes = { isActive: Boolean };
       }
@@ -314,7 +314,7 @@ describe("NgElement", () => {
     });
 
     it("coerces Number attributes", () => {
-      class NumComp extends NgElement {
+      class NumComp extends ElElement {
         static observedAttributes = ["count", "ratio"];
         static propTypes = { count: Number, ratio: Number };
       }
@@ -336,7 +336,7 @@ describe("NgElement", () => {
     });
 
     it("leaves string attributes unchanged when no propTypes", () => {
-      class StrComp extends NgElement {
+      class StrComp extends ElElement {
         static observedAttributes = ["label"];
       }
       const comp = new StrComp();
@@ -348,7 +348,7 @@ describe("NgElement", () => {
   describe("lifecycle", () => {
     it("calls onInit after connectedCallback", async () => {
       let initCalled = false;
-      class LifecycleComp extends NgElement {
+      class LifecycleComp extends ElElement {
         static template = "<p>hi</p>";
         onInit() {
           initCalled = true;
@@ -361,7 +361,7 @@ describe("NgElement", () => {
 
     it("calls onDestroy on disconnectedCallback", () => {
       let destroyed = false;
-      class DestroyComp extends NgElement {
+      class DestroyComp extends ElElement {
         static template = "";
         onDestroy() {
           destroyed = true;
@@ -375,7 +375,7 @@ describe("NgElement", () => {
 
   describe("emit() — event emission", () => {
     it("dispatches a CustomEvent with detail", () => {
-      class EmitComp extends NgElement {
+      class EmitComp extends ElElement {
         static template = "";
       }
       const comp = new EmitComp();
@@ -387,7 +387,7 @@ describe("NgElement", () => {
     });
 
     it("sets bubbles and composed to true (crosses Shadow DOM)", () => {
-      class BubbleComp extends NgElement {
+      class BubbleComp extends ElElement {
         static template = "";
       }
       const comp = new BubbleComp();
@@ -399,7 +399,7 @@ describe("NgElement", () => {
     });
 
     it("returns true if event was not cancelled", () => {
-      class OkComp extends NgElement {
+      class OkComp extends ElElement {
         static template = "";
       }
       const comp = new OkComp();
@@ -408,7 +408,7 @@ describe("NgElement", () => {
     });
 
     it("supports cancelable events", () => {
-      class CancelComp extends NgElement {
+      class CancelComp extends ElElement {
         static template = "";
       }
       const comp = new CancelComp();
@@ -421,7 +421,7 @@ describe("NgElement", () => {
 
   describe("show() — conditional display", () => {
     it("hides an element when condition is false", async () => {
-      class ShowComp extends NgElement {
+      class ShowComp extends ElElement {
         static template = "<div>visible</div>";
       }
       const comp = new ShowComp();
@@ -436,7 +436,7 @@ describe("NgElement", () => {
     });
 
     it("shows an element when condition is true", async () => {
-      class ShowComp2 extends NgElement {
+      class ShowComp2 extends ElElement {
         static template = "<div>visible</div>";
       }
       const comp = new ShowComp2();
@@ -452,7 +452,7 @@ describe("NgElement", () => {
 
   describe("when() — conditional rendering", () => {
     it("creates content when condition is true", async () => {
-      class WhenComp extends NgElement {
+      class WhenComp extends ElElement {
         static template = "<div>x</div>";
       }
       const comp = new WhenComp();
@@ -475,7 +475,7 @@ describe("NgElement", () => {
     });
 
     it("removes content when condition is false", async () => {
-      class WhenComp2 extends NgElement {
+      class WhenComp2 extends ElElement {
         static template = "<div>x</div>";
       }
       const comp = new WhenComp2();
@@ -508,7 +508,7 @@ describe("NgElement", () => {
     });
 
     it("does not re-create if already present", async () => {
-      class WhenComp3 extends NgElement {
+      class WhenComp3 extends ElElement {
         static template = "<div>x</div>";
       }
       const comp = new WhenComp3();
@@ -552,7 +552,7 @@ describe("NgElement", () => {
     }
 
     it("renders a list of items", async () => {
-      class ListComp extends NgElement {
+      class ListComp extends ElElement {
         static template = "<ul>x</ul>";
       }
       const comp = new ListComp();
@@ -571,7 +571,7 @@ describe("NgElement", () => {
     });
 
     it("reuses existing nodes by key", async () => {
-      class KeyComp extends NgElement {
+      class KeyComp extends ElElement {
         static template = "<div>x</div>";
       }
       const comp = new KeyComp();
@@ -607,7 +607,7 @@ describe("NgElement", () => {
     });
 
     it("removes nodes for items no longer in list", async () => {
-      class RemoveComp extends NgElement {
+      class RemoveComp extends ElElement {
         static template = "<div>x</div>";
       }
       const comp = new RemoveComp();
@@ -651,7 +651,7 @@ describe("NgElement", () => {
     });
 
     it("adds new nodes for new items", async () => {
-      class AddComp extends NgElement {
+      class AddComp extends ElElement {
         static template = "<div>x</div>";
       }
       const comp = new AddComp();

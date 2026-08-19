@@ -16,7 +16,7 @@
  * container.register(HttpToken, () => new Http({ baseUrl: '/api' }));
  * const http = container.resolve(HttpToken);
  */
-export class Container {
+export class ElContainer {
   #services = new Map();
   #singletons = new Map();
   #parent = null;
@@ -119,6 +119,6 @@ export class Container {
    * child.register(HttpToken, () => mockHttp); // shadows parent
    */
   createChild() {
-    return new Container(this);
+    return new ElContainer(this);
   }
 }

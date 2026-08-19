@@ -5,8 +5,8 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { Field } from "./field.js";
-import { FormGroup } from "./form-group.js";
+import { ElField } from "./field.js";
+import { ElFormGroup } from "./form-group.js";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -59,15 +59,15 @@ function makeForm() {
 describe("FormGroup", () => {
   it("valid is false if any child field is invalid", () => {
     const form = makeForm();
-    const group = new FormGroup(form);
+    const group = new ElFormGroup(form);
 
     const emailInput = makeInput();
-    const emailField = new Field(emailInput, {
+    const emailField = new ElField(emailInput, {
       validators: [(v) => (!v ? "required" : null)],
     });
 
     const nameInput = makeInput();
-    const nameField = new Field(nameInput);
+    const nameField = new ElField(nameInput);
 
     group.addField("email", emailField);
     group.addField("name", nameField);
@@ -81,12 +81,12 @@ describe("FormGroup", () => {
 
   it("dirty is true if any child field is dirty", () => {
     const form = makeForm();
-    const group = new FormGroup(form);
+    const group = new ElFormGroup(form);
 
     const input1 = makeInput();
     const input2 = makeInput();
-    group.addField("a", new Field(input1));
-    group.addField("b", new Field(input2));
+    group.addField("a", new ElField(input1));
+    group.addField("b", new ElField(input2));
 
     assert.equal(group.dirty, false);
 
@@ -96,12 +96,12 @@ describe("FormGroup", () => {
 
   it("touched is true if any child field is touched", () => {
     const form = makeForm();
-    const group = new FormGroup(form);
+    const group = new ElFormGroup(form);
 
     const input1 = makeInput();
     const input2 = makeInput();
-    group.addField("a", new Field(input1));
-    group.addField("b", new Field(input2));
+    group.addField("a", new ElField(input1));
+    group.addField("b", new ElField(input2));
 
     assert.equal(group.touched, false);
 
@@ -111,19 +111,19 @@ describe("FormGroup", () => {
 
   it("errors aggregates all field errors", () => {
     const form = makeForm();
-    const group = new FormGroup(form);
+    const group = new ElFormGroup(form);
 
     const emailInput = makeInput();
     const passInput = makeInput();
     group.addField(
       "email",
-      new Field(emailInput, {
+      new ElField(emailInput, {
         validators: [(v) => (!v ? "required" : null)],
       }),
     );
     group.addField(
       "password",
-      new Field(passInput, {
+      new ElField(passInput, {
         validators: [
           (v) => (!v ? "required" : null),
           (v) => (v && v.length < 8 ? "minLength" : null),
@@ -142,14 +142,14 @@ describe("FormGroup", () => {
 
   it("blocks form submit when invalid and marks all touched", () => {
     const form = makeForm();
-    const group = new FormGroup(form);
+    const group = new ElFormGroup(form);
 
     const input1 = makeInput();
     const input2 = makeInput();
-    const field1 = new Field(input1, {
+    const field1 = new ElField(input1, {
       validators: [(v) => (!v ? "required" : null)],
     });
-    const field2 = new Field(input2, {
+    const field2 = new ElField(input2, {
       validators: [(v) => (!v ? "required" : null)],
     });
     group.addField("a", field1);
@@ -167,10 +167,10 @@ describe("FormGroup", () => {
 
   it("allows submit when valid", () => {
     const form = makeForm();
-    const group = new FormGroup(form);
+    const group = new ElFormGroup(form);
 
     const input = makeInput();
-    group.addField("name", new Field(input));
+    group.addField("name", new ElField(input));
     input.type("Alice");
 
     const prevented = form.submit();
@@ -179,12 +179,12 @@ describe("FormGroup", () => {
 
   it("reset() resets all fields with values", () => {
     const form = makeForm();
-    const group = new FormGroup(form);
+    const group = new ElFormGroup(form);
 
     const emailInput = makeInput();
     const passInput = makeInput();
-    const emailField = new Field(emailInput, { formatters: [(v) => v ?? ""] });
-    const passField = new Field(passInput, { formatters: [(v) => v ?? ""] });
+    const emailField = new ElField(emailInput, { formatters: [(v) => v ?? ""] });
+    const passField = new ElField(passInput, { formatters: [(v) => v ?? ""] });
     group.addField("email", emailField);
     group.addField("password", passField);
 
@@ -201,10 +201,10 @@ describe("FormGroup", () => {
 
   it("field() returns individual field", () => {
     const form = makeForm();
-    const group = new FormGroup(form);
+    const group = new ElFormGroup(form);
 
     const input = makeInput();
-    const field = new Field(input);
+    const field = new ElField(input);
     group.addField("name", field);
 
     assert.strictEqual(group.field("name"), field);
@@ -213,10 +213,10 @@ describe("FormGroup", () => {
 
   it("removeField() destroys and removes", () => {
     const form = makeForm();
-    const group = new FormGroup(form);
+    const group = new ElFormGroup(form);
 
     const input = makeInput();
-    const field = new Field(input);
+    const field = new ElField(input);
     group.addField("temp", field);
 
     group.removeField("temp");

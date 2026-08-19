@@ -51,7 +51,7 @@ globalThis.document = {
   },
 };
 
-const { Router } = await import("./router.js");
+const { ElRouter } = await import("./router.js");
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -72,7 +72,7 @@ describe("Router", () => {
   describe("route matching and navigation", () => {
     it("navigates to a matching route and mounts component", async () => {
       const outlet = makeOutlet();
-      const router = new Router(outlet);
+      const router = new ElRouter(outlet);
       router.route("/", "app-home");
       router.route("/about", "app-about");
 
@@ -86,7 +86,7 @@ describe("Router", () => {
 
     it("extracts URL parameters", async () => {
       const outlet = makeOutlet();
-      const router = new Router(outlet);
+      const router = new ElRouter(outlet);
       router.route("/users/:id", "user-profile");
 
       router.navigate("/users/42");
@@ -97,7 +97,7 @@ describe("Router", () => {
 
     it("tracks current route", async () => {
       const outlet = makeOutlet();
-      const router = new Router(outlet);
+      const router = new ElRouter(outlet);
       router.route("/home", "app-home");
 
       assert.equal(router.current, null);
@@ -112,7 +112,7 @@ describe("Router", () => {
   describe("transition hooks — onBefore", () => {
     it("cancels navigation when hook returns false", async () => {
       const outlet = makeOutlet();
-      const router = new Router(outlet);
+      const router = new ElRouter(outlet);
       router.route("/secret", "secret-page");
       router.onBefore(async () => false);
 
@@ -124,7 +124,7 @@ describe("Router", () => {
 
     it("redirects when hook returns a string", async () => {
       const outlet = makeOutlet();
-      const router = new Router(outlet);
+      const router = new ElRouter(outlet);
       router.route("/admin", "admin-page");
       router.route("/login", "login-page");
       router.onBefore(async (from, to) => {
@@ -140,7 +140,7 @@ describe("Router", () => {
 
     it("continues when hook returns undefined", async () => {
       const outlet = makeOutlet();
-      const router = new Router(outlet);
+      const router = new ElRouter(outlet);
       router.route("/open", "open-page");
       router.onBefore(async () => undefined);
 
@@ -154,7 +154,7 @@ describe("Router", () => {
   describe("transition hooks — onSuccess and onError", () => {
     it("fires onSuccess after mount", async () => {
       const outlet = makeOutlet();
-      const router = new Router(outlet);
+      const router = new ElRouter(outlet);
       router.route("/page", "my-page");
 
       let successCalled = false;
@@ -170,7 +170,7 @@ describe("Router", () => {
 
     it("fires onError when resolve throws", async () => {
       const outlet = makeOutlet();
-      const router = new Router(outlet);
+      const router = new ElRouter(outlet);
       router.route("/broken", "broken-page", {
         resolve: async () => {
           throw new Error("fail");
@@ -193,7 +193,7 @@ describe("Router", () => {
   describe("route resolve", () => {
     it("passes resolved data to mounted component", async () => {
       const outlet = makeOutlet();
-      const router = new Router(outlet);
+      const router = new ElRouter(outlet);
       router.route("/users/:id", "user-view", {
         resolve: async (params) => ({ user: { id: params.id, name: "Alice" } }),
       });
@@ -210,7 +210,7 @@ describe("Router", () => {
   describe("route groups (shared resolve)", () => {
     it("shares resolved data across routes in same group", async () => {
       const outlet = makeOutlet();
-      const router = new Router(outlet);
+      const router = new ElRouter(outlet);
 
       let resolveCount = 0;
       router.group("admin", {
@@ -238,7 +238,7 @@ describe("Router", () => {
 
     it("invalidateGroup forces re-resolve", async () => {
       const outlet = makeOutlet();
-      const router = new Router(outlet);
+      const router = new ElRouter(outlet);
 
       let resolveCount = 0;
       router.group("session", {

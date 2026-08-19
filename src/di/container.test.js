@@ -5,7 +5,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { Container } from "./container.js";
+import { ElContainer } from "./container.js";
 
 // Test tokens
 const HttpToken = Symbol("Http");
@@ -16,7 +16,7 @@ const AuthToken = Symbol("Auth");
 describe("Container", () => {
   describe("register + resolve", () => {
     it("resolves a registered token", () => {
-      const container = new Container();
+      const container = new ElContainer();
       const mockHttp = { get: () => {} };
       container.register(HttpToken, () => mockHttp);
 
@@ -25,7 +25,7 @@ describe("Container", () => {
     });
 
     it("throws when resolving an unregistered token", () => {
-      const container = new Container();
+      const container = new ElContainer();
 
       assert.throws(
         () => container.resolve(HttpToken),
@@ -34,7 +34,7 @@ describe("Container", () => {
     });
 
     it("passes the container to the factory (for resolving dependencies)", () => {
-      const container = new Container();
+      const container = new ElContainer();
       container.register(LoggerToken, () => ({ log: () => {} }));
       container.register(HttpToken, (c) => {
         const logger = c.resolve(LoggerToken);
@@ -49,7 +49,7 @@ describe("Container", () => {
 
   describe("singleton lifetime", () => {
     it("returns the same instance on multiple resolves (default: singleton)", () => {
-      const container = new Container();
+      const container = new ElContainer();
       let callCount = 0;
       container.register(HttpToken, () => {
         callCount++;
@@ -64,7 +64,7 @@ describe("Container", () => {
     });
 
     it("returns different instances when singleton: false (transient)", () => {
-      const container = new Container();
+      const container = new ElContainer();
       let callCount = 0;
       container.register(
         HttpToken,
@@ -87,7 +87,7 @@ describe("Container", () => {
 
   describe("circular dependency detection", () => {
     it("throws on circular dependency", () => {
-      const container = new Container();
+      const container = new ElContainer();
 
       // A depends on B, B depends on A
       container.register(HttpToken, (c) => {
@@ -106,7 +106,7 @@ describe("Container", () => {
 
   describe("container hierarchy", () => {
     it("child resolves from parent when not overridden", () => {
-      const parent = new Container();
+      const parent = new ElContainer();
       const mockHttp = { get: () => "parent-http" };
       parent.register(HttpToken, () => mockHttp);
 
@@ -116,7 +116,7 @@ describe("Container", () => {
     });
 
     it("child override shadows parent without affecting parent", () => {
-      const parent = new Container();
+      const parent = new ElContainer();
       const parentHttp = { source: "parent" };
       const childHttp = { source: "child" };
 
@@ -129,7 +129,7 @@ describe("Container", () => {
     });
 
     it("resolution walks up the chain: child → parent → grandparent", () => {
-      const grandparent = new Container();
+      const grandparent = new ElContainer();
       const logger = { log: () => {} };
       grandparent.register(LoggerToken, () => logger);
 
@@ -140,7 +140,7 @@ describe("Container", () => {
     });
 
     it("child throws when token is not in any ancestor", () => {
-      const parent = new Container();
+      const parent = new ElContainer();
       const child = parent.createChild();
 
       assert.throws(
@@ -152,7 +152,7 @@ describe("Container", () => {
 
   describe("has()", () => {
     it("returns true for registered tokens", () => {
-      const container = new Container();
+      const container = new ElContainer();
       container.register(HttpToken, () => ({}));
 
       assert.equal(container.has(HttpToken), true);
@@ -160,7 +160,7 @@ describe("Container", () => {
     });
 
     it("checks parent containers", () => {
-      const parent = new Container();
+      const parent = new ElContainer();
       parent.register(HttpToken, () => ({}));
       const child = parent.createChild();
 
@@ -171,7 +171,7 @@ describe("Container", () => {
 
   describe("re-registration", () => {
     it("replaces previous registration", () => {
-      const container = new Container();
+      const container = new ElContainer();
       container.register(HttpToken, () => ({ version: 1 }));
       const v1 = container.resolve(HttpToken);
       assert.equal(v1.version, 1);

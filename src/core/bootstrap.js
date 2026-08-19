@@ -5,10 +5,10 @@
  * @module core/bootstrap
  */
 
-import { Container } from "../di/container.js";
+import { ElContainer } from "../di/container.js";
 import { HttpToken, RouterToken } from "../di/tokens.js";
-import { Http } from "../http/http.js";
-import { Router } from "../router/router.js";
+import { ElHttp } from "../http/http.js";
+import { ElRouter } from "../router/router.js";
 import { interceptLinks } from "../router/links.js";
 import { provideContainer } from "../di/provider.js";
 
@@ -59,10 +59,10 @@ export function bootstrap(root, config = {}) {
   }
 
   // Create container
-  const container = new Container();
+  const container = new ElContainer();
 
   // Register Http
-  const httpInstance = new Http(httpConfig || {});
+  const httpInstance = new ElHttp(httpConfig || {});
   container.register(HttpToken, () => httpInstance);
 
   // Register user services
@@ -77,7 +77,7 @@ export function bootstrap(root, config = {}) {
   let router = null;
   if (routes) {
     const outletEl = rootEl.querySelector(outlet) || rootEl;
-    router = new Router(outletEl);
+    router = new ElRouter(outletEl);
     container.register(RouterToken, () => router);
 
     // Configure routes

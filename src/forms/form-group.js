@@ -6,7 +6,7 @@
  * @module forms/form-group
  */
 
-export class FormGroup {
+export class ElFormGroup {
   #fields = new Map();
   #formElement;
 

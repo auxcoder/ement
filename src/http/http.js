@@ -16,7 +16,7 @@
  * @module http/http
  */
 
-export class Http {
+export class ElHttp {
   #baseUrl;
   #interceptors;
   #defaultHeaders;

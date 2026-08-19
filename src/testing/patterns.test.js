@@ -9,7 +9,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { Container } from "../di/container.js";
+import { ElContainer } from "../di/container.js";
 
 // ─── Service Tokens ────────────────────────────────────────────────────────────
 
@@ -38,7 +38,7 @@ describe("Task 10.1: Component with mocked dependencies", () => {
     };
 
     // Test container with fake
-    const testContainer = new Container();
+    const testContainer = new ElContainer();
     testContainer.register(HttpToken, () => fakeHttp);
 
     // Simulate component behavior (resolves from container)
@@ -53,7 +53,7 @@ describe("Task 10.1: Component with mocked dependencies", () => {
     // Fake storage using Map (instead of localStorage)
     const fakeStorage = new Map();
 
-    const testContainer = new Container();
+    const testContainer = new ElContainer();
     testContainer.register(StorageToken, () => ({
       getItem: (key) => fakeStorage.get(key) ?? null,
       setItem: (key, val) => fakeStorage.set(key, val),
@@ -85,7 +85,7 @@ describe("Task 10.2: Service composition with child container", () => {
     });
 
     // App container with real registration pattern
-    const appContainer = new Container();
+    const appContainer = new ElContainer();
     appContainer.register(HttpToken, () => ({
       get: async () => {
         throw new Error("real http");
@@ -120,7 +120,7 @@ describe("Task 10.2: Service composition with child container", () => {
 
 describe("Task 10.3: Router guards with DI", () => {
   it("guard rejects when auth mock returns not logged in", async () => {
-    const testContainer = new Container();
+    const testContainer = new ElContainer();
     testContainer.register(AuthToken, () => ({
       isLoggedIn: () => false,
       hasRole: () => false,
@@ -139,7 +139,7 @@ describe("Task 10.3: Router guards with DI", () => {
   });
 
   it("guard allows when auth mock returns logged in", async () => {
-    const testContainer = new Container();
+    const testContainer = new ElContainer();
     testContainer.register(AuthToken, () => ({
       isLoggedIn: () => true,
       hasRole: (role) => role === "admin",
@@ -158,7 +158,7 @@ describe("Task 10.3: Router guards with DI", () => {
   });
 
   it("role-based guard rejects insufficient permissions", async () => {
-    const testContainer = new Container();
+    const testContainer = new ElContainer();
     testContainer.register(AuthToken, () => ({
       isLoggedIn: () => true,
       hasRole: (role) => role === "viewer", // not admin
@@ -181,13 +181,13 @@ describe("Task 10.3: Router guards with DI", () => {
 describe("Task 10.4: Why DI is cleaner than vi.mock()", () => {
   it("demonstrates per-test isolation without hoisting magic", async () => {
     // Test A: Http returns users
-    const containerA = new Container();
+    const containerA = new ElContainer();
     containerA.register(HttpToken, () => ({
       get: async () => [{ name: "From Test A" }],
     }));
 
     // Test B: Http returns empty (different test, different container)
-    const containerB = new Container();
+    const containerB = new ElContainer();
     containerB.register(HttpToken, () => ({
       get: async () => [],
     }));
@@ -215,7 +215,7 @@ describe("Task 10.4: Why DI is cleaner than vi.mock()", () => {
     // container.register(HttpToken, ...) → token is a Symbol, never breaks
 
     const token = Symbol("MyService");
-    const container = new Container();
+    const container = new ElContainer();
     container.register(token, () => ({ works: true }));
 
     // Token doesn't care where the implementation lives

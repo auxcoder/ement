@@ -5,7 +5,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { Field } from "./field.js";
+import { ElField } from "./field.js";
 
 // ─── Mock Input ────────────────────────────────────────────────────────────────
 
@@ -48,7 +48,7 @@ describe("Field — core pipeline", () => {
     const input = makeInput();
     let received;
 
-    const field = new Field(input, {
+    const field = new ElField(input, {
       parsers: [(v) => v.trim(), (v) => v.toLowerCase()],
       onChange: (modelValue) => {
         received = modelValue;
@@ -66,7 +66,7 @@ describe("Field — core pipeline", () => {
     const input = makeInput();
     let onChangeCalled = false;
 
-    const field = new Field(input, {
+    const field = new ElField(input, {
       parsers: [
         (v) => (v === "" ? undefined : v), // reject empty
       ],
@@ -85,7 +85,7 @@ describe("Field — core pipeline", () => {
     const input = makeInput();
     let receivedState;
 
-    const field = new Field(input, {
+    const field = new ElField(input, {
       onChange: (modelValue, state) => {
         receivedState = state;
       },
@@ -101,7 +101,7 @@ describe("Field — core pipeline", () => {
 
   it("marks field dirty on input", () => {
     const input = makeInput();
-    const field = new Field(input);
+    const field = new ElField(input);
 
     assert.equal(field.dirty, false);
     input.type("x");
@@ -110,7 +110,7 @@ describe("Field — core pipeline", () => {
 
   it("marks field touched on blur", () => {
     const input = makeInput();
-    const field = new Field(input);
+    const field = new ElField(input);
 
     assert.equal(field.touched, false);
     input.blur();
@@ -121,7 +121,7 @@ describe("Field — core pipeline", () => {
 describe("Field — writeValue (formatters)", () => {
   it("runs formatters and sets input value", () => {
     const input = makeInput();
-    const field = new Field(input, {
+    const field = new ElField(input, {
       formatters: [(v) => (v == null ? "" : String(v))],
     });
 
@@ -134,7 +134,7 @@ describe("Field — writeValue (formatters)", () => {
 
   it("phone formatter example", () => {
     const input = makeInput();
-    const field = new Field(input, {
+    const field = new ElField(input, {
       formatters: [
         (v) => {
           if (!v) return "";
@@ -152,7 +152,7 @@ describe("Field — writeValue (formatters)", () => {
 describe("Field — sync validators", () => {
   it("populates errors object on invalid input (array format)", () => {
     const input = makeInput();
-    const field = new Field(input, {
+    const field = new ElField(input, {
       validators: [
         (v) => (!v ? "required" : null),
         (v) => (v && v.length < 3 ? "minLength" : null),
@@ -174,7 +174,7 @@ describe("Field — sync validators", () => {
 
   it("supports object format — AngularJS-compatible (boolean return)", () => {
     const input = makeInput();
-    const field = new Field(input, {
+    const field = new ElField(input, {
       validators: {
         required: (v) => !!v,
         phone: (v) => /^\d{10}$/.test(v),
@@ -200,7 +200,7 @@ describe("Field — async validators", () => {
     const input = makeInput();
     let resolveValidator;
 
-    const field = new Field(input, {
+    const field = new ElField(input, {
       asyncValidators: [
         (value, signal) =>
           new Promise((r) => {
@@ -224,7 +224,7 @@ describe("Field — async validators", () => {
     let callCount = 0;
     let signals = [];
 
-    const field = new Field(input, {
+    const field = new ElField(input, {
       asyncValidators: [
         async (value, signal) => {
           callCount++;
@@ -249,7 +249,7 @@ describe("Field — async validators", () => {
 describe("Field — CSS classes", () => {
   it("applies ng-dirty, ng-pristine classes", () => {
     const input = makeInput();
-    const field = new Field(input);
+    const field = new ElField(input);
 
     // Before any interaction, no classes yet (sync happens on events)
     // Type to trigger dirty
@@ -265,7 +265,7 @@ describe("Field — CSS classes", () => {
 
   it("applies ng-touched on blur", () => {
     const input = makeInput();
-    const field = new Field(input);
+    const field = new ElField(input);
 
     assert.ok(!input._classes.has("ng-touched"));
     input.blur();
@@ -275,7 +275,7 @@ describe("Field — CSS classes", () => {
 
   it("applies ng-valid / ng-invalid", () => {
     const input = makeInput();
-    const field = new Field(input, {
+    const field = new ElField(input, {
       validators: [(v) => (!v ? "required" : null)],
     });
 
@@ -290,7 +290,7 @@ describe("Field — CSS classes", () => {
 describe("Field — programmatic controls", () => {
   it("reset() clears dirty, touched, and writes value", () => {
     const input = makeInput();
-    const field = new Field(input, {
+    const field = new ElField(input, {
       formatters: [(v) => v ?? ""],
     });
 
@@ -308,7 +308,7 @@ describe("Field — programmatic controls", () => {
 
   it("destroy() clears timeout and aborts async", () => {
     const input = makeInput();
-    const field = new Field(input, {
+    const field = new ElField(input, {
       debounce: 1000,
       asyncValidators: [async () => null],
     });
@@ -324,7 +324,7 @@ describe("Field — debounce", () => {
     const input = makeInput();
     let callCount = 0;
 
-    const field = new Field(input, {
+    const field = new ElField(input, {
       debounce: 30,
       onChange: () => {
         callCount++;
@@ -345,7 +345,7 @@ describe("Field — debounce", () => {
     const input = makeInput();
     let callCount = 0;
 
-    const field = new Field(input, {
+    const field = new ElField(input, {
       debounce: 0,
       onChange: () => {
         callCount++;

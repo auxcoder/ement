@@ -1,5 +1,5 @@
 /**
- * NgElement — Custom Element base class.
+ * ElElement — Custom Element base class.
  * Replaces AngularJS directives + $compile.
  *
  * Features:
@@ -19,7 +19,7 @@ import { resolveContainer } from "../di/provider.js";
 import { reactive } from "./reactive.js";
 import { scheduleUpdate } from "./scheduler.js";
 
-export class NgElement extends HTMLElement {
+export class ElElement extends HTMLElement {
   #shadow;
   #bindings = new Map(); // prop → [{ node, template }]
 

@@ -5,7 +5,7 @@
 
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { Http, HttpError } from "./http.js";
+import { ElHttp, HttpError } from "./http.js";
 
 // ─── Mock fetch ────────────────────────────────────────────────────────────────
 
@@ -45,7 +45,7 @@ describe("Http", () => {
   describe("basic requests", () => {
     it("GET returns parsed JSON", async () => {
       setMockResponse({ users: [{ name: "Alice" }] });
-      const http = new Http({ baseUrl: "http://api.test" });
+      const http = new ElHttp({ baseUrl: "http://api.test" });
 
       const result = await http.get("/users");
 
@@ -56,7 +56,7 @@ describe("Http", () => {
 
     it("POST sends JSON body", async () => {
       setMockResponse({ id: 1 });
-      const http = new Http({ baseUrl: "http://api.test" });
+      const http = new ElHttp({ baseUrl: "http://api.test" });
 
       const result = await http.post("/users", { name: "Bob" });
 
@@ -71,7 +71,7 @@ describe("Http", () => {
 
     it("PUT sends JSON body", async () => {
       setMockResponse({ updated: true });
-      const http = new Http();
+      const http = new ElHttp();
 
       await http.put("/items/1", { name: "Updated" });
 
@@ -81,7 +81,7 @@ describe("Http", () => {
 
     it("PATCH sends JSON body", async () => {
       setMockResponse({ patched: true });
-      const http = new Http();
+      const http = new ElHttp();
 
       await http.patch("/items/1", { status: "done" });
 
@@ -91,7 +91,7 @@ describe("Http", () => {
 
     it("DELETE sends request", async () => {
       setMockResponse(null, { headers: { "content-length": "0" } });
-      const http = new Http();
+      const http = new ElHttp();
 
       const result = await http.delete("/items/1");
 
@@ -103,7 +103,7 @@ describe("Http", () => {
   describe("baseUrl and headers", () => {
     it("prepends baseUrl to all requests", async () => {
       setMockResponse({});
-      const http = new Http({ baseUrl: "https://api.example.com/v2" });
+      const http = new ElHttp({ baseUrl: "https://api.example.com/v2" });
 
       await http.get("/users");
 
@@ -112,7 +112,7 @@ describe("Http", () => {
 
     it("sends default headers on all requests", async () => {
       setMockResponse({});
-      const http = new Http({ headers: { "X-App": "my-app" } });
+      const http = new ElHttp({ headers: { "X-App": "my-app" } });
 
       await http.get("/data");
 
@@ -126,7 +126,7 @@ describe("Http", () => {
         { error: "Not Found" },
         { status: 404, statusText: "Not Found" },
       );
-      const http = new Http();
+      const http = new ElHttp();
 
       await assert.rejects(
         () => http.get("/missing"),
@@ -143,7 +143,7 @@ describe("Http", () => {
   describe("interceptors", () => {
     it("request interceptor can add auth headers", async () => {
       setMockResponse({ data: "secret" });
-      const http = new Http({
+      const http = new ElHttp({
         interceptors: [
           {
             request: async (config) => {
@@ -164,7 +164,7 @@ describe("Http", () => {
 
     it("response interceptor can transform response", async () => {
       setMockResponse({ wrapped: { users: ["A"] } });
-      const http = new Http({
+      const http = new ElHttp({
         interceptors: [
           {
             response: async (response) => {
@@ -201,7 +201,7 @@ describe("Http", () => {
         });
       };
 
-      const http = new Http();
+      const http = new ElHttp();
       const controller = new AbortController();
 
       const promise = http.get("/slow", { signal: controller.signal });
@@ -236,7 +236,7 @@ describe("Http", () => {
         });
       };
 
-      const http = new Http({ baseUrl: "http://test" });
+      const http = new ElHttp({ baseUrl: "http://test" });
 
       // Fire off requests (don't await)
       http.get("/a").catch(() => {});
@@ -260,7 +260,7 @@ describe("Http", () => {
 
     it("pendingCount tracks active requests", async () => {
       setMockResponse({ ok: true });
-      const http = new Http();
+      const http = new ElHttp();
 
       assert.equal(http.pendingCount, 0);
       await http.get("/fast");
@@ -278,7 +278,7 @@ describe("Http", () => {
           });
         });
 
-      const http = new Http({ timeout: 50 });
+      const http = new ElHttp({ timeout: 50 });
 
       await assert.rejects(
         () => http.get("/slow"),
@@ -305,7 +305,7 @@ describe("Http", () => {
           });
         });
 
-      const http = new Http({ timeout: 5000 }); // high default
+      const http = new ElHttp({ timeout: 5000 }); // high default
 
       await assert.rejects(
         () => http.get("/slow", { timeout: 30 }), // low override
@@ -337,7 +337,7 @@ describe("Http", () => {
         };
       };
 
-      const http = new Http({ retries: 2, retryDelay: 10 });
+      const http = new ElHttp({ retries: 2, retryDelay: 10 });
 
       await assert.rejects(
         () => http.get("/failing"),
@@ -367,7 +367,7 @@ describe("Http", () => {
         };
       };
 
-      const http = new Http({ retries: 3, retryDelay: 10 });
+      const http = new ElHttp({ retries: 3, retryDelay: 10 });
 
       await assert.rejects(
         () => http.post("/bad-data", {}),
@@ -398,7 +398,7 @@ describe("Http", () => {
         };
       };
 
-      const http = new Http({ retries: 3, retryDelay: 10 });
+      const http = new ElHttp({ retries: 3, retryDelay: 10 });
       const result = await http.get("/flaky");
 
       assert.equal(attempts, 3);

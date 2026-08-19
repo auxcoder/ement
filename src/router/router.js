@@ -5,7 +5,7 @@
  * @module router/router
  */
 
-export class Router extends EventTarget {
+export class ElRouter extends EventTarget {
   #routes = [];
   #groups = new Map();
   #hooks = { onBefore: [], onSuccess: [], onError: [] };

@@ -59,30 +59,32 @@ dist/
 
 ### Bundle Size
 
-| Metric | Size |
-|--------|------|
-| Raw minified (all modules) | ~30KB |
-| Gzipped (all modules) | ~13KB |
-| Budget | < 15KB gzipped |
-| Status | ✅ Within budget |
+| Metric                     | Size             |
+| -------------------------- | ---------------- |
+| Raw minified (all modules) | ~30KB            |
+| Gzipped (all modules)      | ~13KB            |
+| Budget                     | < 15KB gzipped   |
+| Status                     | ✅ Within budget |
 
 ## Template Inlining Plugin
 
 The custom Rollup plugin (`vite-plugins/inline-templates.js`) transforms component files at build time:
 
 **Before (source):**
+
 ```javascript
 class UserCard extends NgElement {
-  static templateUrl = new URL('./user-card.html', import.meta.url);
-  static stylesUrl = new URL('./user-card.css', import.meta.url);
+  static templateUrl = new URL("./user-card.html", import.meta.url);
+  static stylesUrl = new URL("./user-card.css", import.meta.url);
 }
 ```
 
 **After (built):**
+
 ```javascript
 class UserCard extends NgElement {
   static template = '<div class="card"><slot></slot></div>';
-  static styles = ':host { display: block; }';
+  static styles = ":host { display: block; }";
 }
 ```
 
@@ -103,8 +105,8 @@ npm link ../path/to/ng-elements
 
 ```javascript
 // In your AngularJS app code:
-import 'ng-modern/dist/core/element.js';
-import 'ng-modern/dist/forms/field.js';
+import "ng-modern/dist/core/element.js";
+import "ng-modern/dist/forms/field.js";
 // Custom elements are now registered and available
 ```
 
@@ -120,17 +122,18 @@ import 'ng-modern/dist/forms/field.js';
 **AngularJS → ng-modern:** HTML attributes (AngularJS interpolation → `observedAttributes`)
 
 **ng-modern → AngularJS:** CustomEvents
+
 ```javascript
 // AngularJS directive to bridge events:
-angular.module('app').directive('ngModernBridge', function() {
+angular.module("app").directive("ngModernBridge", function () {
   return {
-    link: function(scope, element, attrs) {
-      element[0].addEventListener('user-select', function(e) {
-        scope.$apply(function() {
+    link: function (scope, element, attrs) {
+      element[0].addEventListener("user-select", function (e) {
+        scope.$apply(function () {
           scope.$eval(attrs.onUserSelect, { $event: e.detail });
         });
       });
-    }
+    },
   };
 });
 ```

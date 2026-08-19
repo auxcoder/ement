@@ -11,7 +11,7 @@
  * @module di/provider
  */
 
-import { Container } from "./container.js";
+import { ElContainer } from "./container.js";
 
 // Symbol used to attach container to a DOM element
 const CONTAINER_KEY = Symbol("__ngContainer");
@@ -24,7 +24,7 @@ const CONTAINER_KEY = Symbol("__ngContainer");
  * @param {Container} container - The container instance
  *
  * @example
- * const container = new Container();
+ * const container = new ElContainer();
  * container.register(HttpToken, () => new Http());
  * provideContainer(document.getElementById('app'), container);
  */
@@ -83,7 +83,7 @@ export class NgProvider extends BaseElement {
 
   constructor() {
     super();
-    this.#container = new Container();
+    this.#container = new ElContainer();
     this[CONTAINER_KEY] = this.#container;
   }
 

@@ -9,7 +9,7 @@
  * @module forms/field
  */
 
-export class Field {
+export class ElField {
   #input;
   #parsers;
   #formatters;
