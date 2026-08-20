@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>bootstrap — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>bootstrap</h1>
+<p>Application entry point helper. Wires together an <code>ElContainer</code>, <code>ElHttp</code>, and optionally an <code>ElRouter</code> in one call.</p>
+<p><strong>Module:</strong> <code>core/bootstrap</code></p>
+<p><strong>Exports:</strong> <code>bootstrap</code></p>
+<h2>API</h2>
+<h3><code>bootstrap(root, config)</code></h3>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>root</code></td><td><code>string \ HTMLElement</code></td><td>CSS selector or element to attach the container to</td></tr>
+<tr><td><code>config.services</code></td><td><code>Array&lt;[Symbol, Function]&gt;</code></td><td>Additional <code>[token, factory]</code> pairs to register</td></tr>
+<tr><td><code>config.http</code></td><td><code>Object</code></td><td><code>ElHttp</code> constructor options (<code>baseUrl</code>, <code>interceptors</code>, <code>timeout</code>, <code>retries</code>)</td></tr>
+<tr><td><code>config.routes</code></td><td><code>(router: ElRouter) =&gt; void</code></td><td>Configure routes and hooks</td></tr>
+<tr><td><code>config.outlet</code></td><td><code>string</code></td><td>CSS selector for the outlet inside root (default: <code>'route-outlet'</code>)</td></tr></tbody>
+</table>
+<p>Returns <code>{ container, router, http }</code>.</p>
+<ul>
+<li><code>container</code> — the root <code>ElContainer</code>. Use to resolve services imperatively.</li>
+<li><code>router</code> — the <code>ElRouter</code> instance, or <code>null</code> if <code>config.routes</code> was not provided.</li>
+<li><code>http</code> — the <code>ElHttp</code> instance registered under <code>HttpToken</code>.</li>
+</ul>
+<h2>Example</h2>
+<pre><code class="language-javascript">import { bootstrap } from "ement";
+import { AuthToken } from "ement/di/tokens";
+import { AuthService } from "./services/auth.js";
+
+const app = bootstrap("#app", {
+  http: {
+    baseUrl: "/api",
+    timeout: 10_000,
+    interceptors: [
+      {
+        request: (config) =&gt; {
+          config.headers["Authorization"] = `Bearer ${AuthService.token}`;
+          return config;
+        },
+      },
+    ],
+  },
+
+  services: [[AuthToken, () =&gt; new AuthService()]],
+
+  routes: (router) =&gt; {
+    router
+      .route("/", "app-home")
+      .route("/login", "app-login")
+      .route("/users/:id", "user-detail", {
+        resolve: async ({ id }) =&gt; ({
+          user: await fetch(`/api/users/${id}`).then((r) =&gt; r.json()),
+        }),
+      });
+
+    router.onBefore(async (from, to) =&gt; {
+      const auth = app.container.resolve(AuthToken);
+      if (!auth.isLoggedIn &amp;&amp; to.path !== "/login") return "/login";
+    });
+  },
+});</code></pre>
+<h2>What it does internally</h2>
+<p>1. Finds the <code>root</code> element — throws if not found.</p>
+<p>2. Creates a new <code>ElContainer</code>.</p>
+<p>3. Creates an <code>ElHttp</code> with <code>config.http</code> options and registers it under <code>HttpToken</code>.</p>
+<p>4. Registers all <code>config.services</code> entries.</p>
+<p>5. Calls <code>provideContainer(rootEl, container)</code> — attaches the container to the DOM subtree.</p>
+<p>6. If <code>config.routes</code> is provided: creates <code>ElRouter</code> targeting the outlet element, registers it under <code>RouterToken</code>, calls <code>config.routes(router)</code>, installs link interception, and calls <code>router.start()</code>.</p>
+<h2>Notes</h2>
+<ul>
+<li>Calling <code>bootstrap</code> multiple times (e.g., for micro-frontend embedding) creates independent container trees.</li>
+<li>The <code>container</code> is attached to the root DOM element via a Symbol key. Any <code>ElElement</code> descendant can call <code>resolveContainer(this)</code> to reach it.</li>
+<li>Services are registered as singletons by default.</li>
+</ul>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

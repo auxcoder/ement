@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElElement — Reactivity Design — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>ElElement — Reactivity Design</h1>
+<h2>How It Works</h2>
+<p>After the template renders, ElElement finds every property name used in <code>{{ }}</code> bindings and replaces that property on the instance with a getter/setter via <code>Object.defineProperty</code>.</p>
+<pre><code class="language-javascript">class MyComp extends ElElement {
+  static template = "&lt;h1&gt;{{ name }}&lt;/h1&gt;";
+  name = "Alice";
+
+  onInit() {
+    this.name = "Bob"; // template updates automatically
+  }
+}</code></pre>
+<p>Setting <code>this.name</code> triggers a scheduled DOM update via microtask batching. No manual notification needed.</p>
+<h2>Trade-offs</h2>
+<h3>1. Only template-bound properties are reactive</h3>
+<p>If you have <code>this.count</code> but it's not in any <code>{{ count }}</code> binding, setting it won't trigger anything. It's silent — not an error, just not reactive.</p>
+<h3>2. Timing matters</h3>
+<p>The getter/setter installs in <code>connectedCallback</code> (after render). If you set a property _before_ the element connects to the DOM, it's just a plain assignment — no reactivity yet. The initial render uses whatever value was there at connection time.</p>
+<h3>3. Class field declaration order</h3>
+<p>When you write <code>name = 'Alice'</code> as a class field, it runs in the constructor. The getter/setter installs later (in <code>connectedCallback</code>). So the class field sets the initial value, and we capture it when installing the getter/setter. This works — but it's subtle.</p>
+<h3>4. No deep reactivity</h3>
+<pre><code class="language-javascript">// This does NOT trigger an update:
+this.user.name = "Bob";
+
+// This DOES trigger an update:
+this.user = { ...this.user, name: "Bob" };</code></pre>
+<p>The getter/setter only intercepts top-level property assignment, not nested mutations. This is the same trade-off React, Solid, and every non-Vue framework makes.</p>
+<h3>5. Properties not in templates need manual calls</h3>
+<p>If you use <code>this.show()</code>, <code>this.repeat()</code>, or other imperative helpers, those aren't template bindings — you call them explicitly when state changes.</p>
+<h2>Why Not Other Approaches?</h2>
+<table>
+<thead><tr><th>Approach</th><th>Pros</th><th>Cons</th></tr></thead>
+<tbody><tr><td><strong>defineProperty per binding</strong> (what we use)</td><td>Simple, no Proxy on <code>this</code>, works with Custom Elements</td><td>Only top-level, only bound props</td></tr>
+<tr><td><strong>Proxy wrapping <code>this</code></strong></td><td>Deep reactivity, catches everything</td><td>Can't replace <code>this</code> in constructor, breaks <code>instanceof</code>, private fields (<code>#shadow</code>) don't work through Proxy</td></tr>
+<tr><td><strong>Explicit <code>state</code> object with Proxy</strong></td><td>Full reactivity on a separate object</td><td>Developer writes <code>this.state.name</code> not <code>this.name</code> — worse DX</td></tr>
+<tr><td><strong>Signals (like Solid/Preact)</strong></td><td>Fine-grained, composable</td><td>Different mental model, not property assignment</td></tr></tbody>
+</table>
+<h3>Why Proxy on <code>this</code> doesn't work for Custom Elements</h3>
+<pre><code class="language-javascript">class ElElement extends HTMLElement {
+  #shadow; // private field
+
+  constructor() {
+    super();
+    this.#shadow = this.attachShadow({ mode: "open" });
+    // Can't do: return new Proxy(this, handler);
+    // Because:
+    // 1. Private fields are bound to the original object, not the Proxy
+    // 2. Returning from HTMLElement constructor is not allowed
+    // 3. instanceof checks would break
+  }
+}</code></pre>
+<p>Private fields (<code>#shadow</code>, <code>#bindings</code>, <code>#state</code>) are stored on the _target_ object, not the Proxy. Accessing <code>proxy.#shadow</code> throws — JavaScript looks up private fields on the object identity, and the Proxy is a different identity.</p>
+<h2>The Rule</h2>
+<blockquote>Reassign the property to trigger reactivity. Mutating nested objects in place is invisible.</blockquote>
+<p>This is well-understood — React's <code>setState</code>, Solid's <code>setSignal</code>, Svelte's reassignment rule — all follow this same principle. It enables simple, predictable change detection without the memory and performance overhead of deep observation.</p>
+<hr>
+<h2>onChanges Lifecycle Hook</h2>
+<h3>What it does</h3>
+<p><code>onChanges(changes)</code> is called whenever one or more reactive properties change. It receives an object describing what changed:</p>
+<pre><code class="language-javascript">class UserCard extends ElElement {
+  static template = '&lt;h1&gt;{{ name }}&lt;/h1&gt;';
+  static observedAttributes = ['user-id'];
+  static propTypes = { userId: Number };
+
+  name = '';
+  userId = null;
+
+  onChanges(changes) {
+    // changes = {
+    //   userId: { previous: null, current: 42, firstChange: true }
+    // }
+    if (changes.userId) {
+      this.loadUser(changes.userId.current);
+    }
+  }
+
+  async loadUser(id) {
+    const http = this.container.resolve(HttpToken);
+    const user = await http.get(`/users/${id}`);
+    this.name = user.name;
+  }
+}</code></pre>
+<h3>How it differs from AngularJS <code>$onChanges</code></h3>
+<table>
+<thead><tr><th>Aspect</th><th>AngularJS <code>$onChanges</code></th><th>Ement <code>onChanges</code></th></tr></thead>
+<tbody><tr><td>Triggered by</td><td>One-way binding changes from parent</td><td>Reactive property set (any source)</td></tr>
+<tr><td>Batching</td><td>Per digest cycle</td><td>Per microtask</td></tr>
+<tr><td><code>firstChange</code></td><td>On initial binding</td><td>On first attribute set</td></tr>
+<tr><td>Deep changes</td><td>No (reference only)</td><td>No (reassignment only, same as reactivity)</td></tr></tbody>
+</table>
+<h3>When it fires</h3>
+<p>1. <strong>Attribute changes</strong> — <code>&lt;user-card user-id="42"&gt;</code> → attribute parsed → property set → <code>onChanges</code> called</p>
+<p>2. <strong>Programmatic property sets</strong> — <code>this.userId = 42</code> → reactive setter → <code>onChanges</code> called</p>
+<p>3. <strong>NOT on initial render</strong> — <code>onInit</code> handles that. <code>onChanges</code> fires on subsequent changes only.</p>
+<h3>Batching</h3>
+<p>Multiple property changes in the same synchronous block produce ONE <code>onChanges</code> call:</p>
+<pre><code class="language-javascript">// This triggers onChanges ONCE with both changes:
+this.firstName = 'Jane';
+this.lastName = 'Doe';
+// → onChanges({ firstName: {...}, lastName: {...} })</code></pre>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

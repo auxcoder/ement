@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElContainer — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>ElContainer</h1>
+<p>Interface-based dependency injection container. Replaces AngularJS's <code>$injector</code> and <code>$provide</code>.</p>
+<p><strong>Module:</strong> <code>di/container</code></p>
+<p><strong>Exports:</strong> <code>ElContainer</code></p>
+<h2>Overview</h2>
+<p>Services are registered against <code>Symbol</code> tokens (the "interface") and resolved by token at runtime. Concrete implementations are never imported directly by consumers — they ask the container. This makes mocking in tests trivial: register a mock implementation against the same token.</p>
+<p>Containers can be nested (parent/child). A child container resolves from its own registrations first, then delegates to its parent.</p>
+<h2>API</h2>
+<h3><code>new ElContainer(parent?)</code></h3>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>parent</code></td><td>`ElContainer \</td><td>null`</td><td>Optional parent for hierarchical lookup</td></tr></tbody>
+</table>
+<h3><code>container.register(token, factory, options?)</code></h3>
+<p>Register a service.</p>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>token</code></td><td><code>Symbol</code></td><td>The token to register against</td></tr>
+<tr><td><code>factory</code></td><td><code>(container) =&gt; any</code></td><td>Factory called, create the instance. Receives the container.</td></tr>
+<tr><td><code>options.singleton</code></td><td><code>boolean</code></td><td>Default <code>true</code>. If <code>false</code>, a new instance in <code>resolve</code>.</td></tr></tbody>
+</table>
+<p>Returns <code>this</code> for chaining.</p>
+<pre><code class="language-javascript">container.register(HttpToken, (c) =&gt; new ElHttp({ baseUrl: "/api" }));
+container.register(LoggerToken, () =&gt; console, { singleton: false });</code></pre>
+<h3><code>container.resolve(token)</code></h3>
+<p>Resolve a service by token. Throws if no provider is found anywhere in the ancestor chain.</p>
+<pre><code class="language-javascript">const http = container.resolve(HttpToken);</code></pre>
+<h3><code>container.has(token)</code></h3>
+<p>Check if a token is resolvable (this container or any ancestor).</p>
+<pre><code class="language-javascript">if (container.has(AuthToken)) {
+  const auth = container.resolve(AuthToken);
+}</code></pre>
+<h3><code>container.createChild()</code></h3>
+<p>Create a child container that inherits all parent registrations. Child registrations shadow the parent without mutating it.</p>
+<pre><code class="language-javascript">const testContainer = container.createChild();
+testContainer.register(HttpToken, () =&gt; mockHttp);
+// resolving HttpToken from testContainer returns mockHttp
+// resolving from the parent is unchanged</code></pre>
+<h2>Circular dependency detection</h2>
+<p>If service A depends on service B which depends on service A, <code>resolve</code> throws:</p>
+<pre><code class="language-">Circular dependency detected while resolving Symbol(Http)</code></pre>
+<h2>Example: testing with a child container</h2>
+<pre><code class="language-javascript">import { ElContainer } from "ement/di/container";
+import { HttpToken } from "ement/di/tokens";
+
+const appContainer = new ElContainer();
+appContainer.register(HttpToken, () =&gt; new ElHttp({ baseUrl: "/api" }));
+
+// In tests:
+const testContainer = appContainer.createChild();
+testContainer.register(HttpToken, () =&gt; ({
+  get: () =&gt; Promise.resolve(mockData),
+}));
+
+const http = testContainer.resolve(HttpToken); // returns mock</code></pre>
+<h2>AngularJS comparison</h2>
+<table>
+<thead><tr><th>AngularJS</th><th>Ement</th></tr></thead>
+<tbody><tr><td><code>$provide.service('MyService', MyService)</code></td><td><code>container.register(MyToken, (c) =&gt; new MyService())</code></td></tr>
+<tr><td><code>$injector.get('MyService')</code></td><td><code>container.resolve(MyToken)</code></td></tr>
+<tr><td>String-based tokens</td><td>Symbol-based tokens — no name collisions</td></tr>
+<tr><td>Singleton by default</td><td>Singleton by default, configurable per registration</td></tr>
+<tr><td>Module-level registration</td><td>Instance-level — multiple containers in same app</td></tr></tbody>
+</table>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

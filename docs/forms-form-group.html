@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElFormGroup — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>ElFormGroup</h1>
+<p>Aggregates multiple <code>ElField</code> instances into a form with unified state. Replaces AngularJS's form controller (<code>NgFormController</code>).</p>
+<p><strong>Module:</strong> <code>forms/form-group</code></p>
+<p><strong>Exports:</strong> <code>ElFormGroup</code></p>
+<h2>Constructor</h2>
+<pre><code class="language-javascript">new ElFormGroup(formElement?)</code></pre>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>formElement</code></td><td><code>HTMLFormElement</code></td><td>Optional.</td></tr></tbody>
+</table>
+<p>If provided, prevents native submit when the form is invalid and marks all fields touched so errors become visible.</p>
+<h2>API</h2>
+<h3><code>group.addField(name, field)</code></h3>
+<p>Register an <code>ElField</code> under a name.</p>
+<pre><code class="language-javascript">group.addField("email", emailField);
+group.addField("password", passwordField);</code></pre>
+<p>Returns <code>this</code> for chaining.</p>
+<h3><code>group.removeField(name)</code></h3>
+<p>Unregister a field and call its <code>destroy()</code>.</p>
+<h3><code>group.field(name)</code></h3>
+<p>Get a registered field by name.</p>
+<pre><code class="language-javascript">const email = group.field("email");
+email.writeValue("user@example.com");</code></pre>
+<h3><code>group.reset(values?)</code></h3>
+<p>Reset all fields. Optionally provide a <code>{ fieldName: value }</code> map.</p>
+<pre><code class="language-javascript">group.reset();
+group.reset({ email: "", password: "" });</code></pre>
+<h3><code>group.destroy()</code></h3>
+<p>Destroy all registered fields and clear the group.</p>
+<h2>Aggregate state (read-only)</h2>
+<table>
+<thead><tr><th>Property</th><th>Type</th><th>Logic</th></tr></thead>
+<tbody><tr><td><code>group.valid</code></td><td><code>boolean</code></td><td><code>true</code> only if <strong>all</strong> fields are valid</td></tr>
+<tr><td><code>group.dirty</code></td><td><code>boolean</code></td><td><code>true</code> if <strong>any</strong> field is dirty</td></tr>
+<tr><td><code>group.touched</code></td><td><code>boolean</code></td><td><code>true</code> if <strong>any</strong> field is touched</td></tr>
+<tr><td><code>group.pending</code></td><td><code>boolean</code></td><td><code>true</code> if <strong>any</strong> field has pending async validation</td></tr>
+<tr><td><code>group.errors</code></td><td><code>Object</code></td><td><code>{ fieldName: { errorKey: true } }</code> — only fields with errors</td></tr></tbody>
+</table>
+<h2>Example</h2>
+<pre><code class="language-javascript">import { ElFormGroup } from "ement/forms/form-group";
+import { ElField } from "ement/forms/field";
+import { required, email, minLength } from "ement/forms/validators";
+
+const form = new ElFormGroup(document.querySelector("#login-form"));
+
+form.addField(
+  "email",
+  new ElField(document.querySelector("#email"), {
+    validators: [required, email],
+  }),
+);
+
+form.addField(
+  "password",
+  new ElField(document.querySelector("#password"), {
+    validators: [required, minLength(8)],
+  }),
+);
+
+document.querySelector("#submit").addEventListener("click", () =&gt; {
+  if (!form.valid) {
+    console.log("Errors:", form.errors);
+    return;
+  }
+
+  const email = form.field("email").modelValue;
+  const password = form.field("password").modelValue;
+  login(email, password);
+});</code></pre>
+<h2>AngularJS comparison</h2>
+<table>
+<thead><tr><th>AngularJS form controller</th><th>Ement <code>ElFormGroup</code></th></tr></thead>
+<tbody><tr><td>Automatic via <code>&lt;form name="myForm"&gt;</code> directive</td><td>Manual: <code>new ElFormGroup(formEl)</code></td></tr>
+<tr><td><code>$scope.myForm.$valid</code></td><td><code>form.valid</code></td></tr>
+<tr><td><code>$scope.myForm.$dirty</code></td><td><code>form.dirty</code></td></tr>
+<tr><td><code>$scope.myForm.$error</code></td><td><code>form.errors</code></td></tr>
+<tr><td>Fields auto-register via <code>ng-model</code></td><td>Fields manually registered via <code>addField</code></td></tr></tbody>
+</table>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>computed — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>computed</h1>
+<p>Lazy, cached derived values that auto-invalidate when reactive dependencies change.</p>
+<p><strong>Module:</strong> <code>core/computed</code></p>
+<p><strong>Exports:</strong> <code>computed</code></p>
+<h2>How it works</h2>
+<p>1. On first <code>.value</code> read, the compute function runs. During execution, every reactive property access is tracked via <code>trackAccess()</code>.</p>
+<p>2. The dependency set is stored. When any tracked property changes, the computed is marked dirty.</p>
+<p>3. On the next <code>.value</code> read, it re-computes. If not read, it does not re-compute (lazy evaluation).</p>
+<p>This is equivalent to AngularJS's <code>$watch</code> on an expression, but lazy (only evaluates when consumed) and cached (returns the same result if no dependency changed).</p>
+<h2>API</h2>
+<h3><code>computed(computeFn)</code></h3>
+<p>Creates a computed value.</p>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>computeFn</code></td><td><code>() =&gt; any</code></td><td>Function that reads from reactive state</td></tr></tbody>
+</table>
+<p>Returns an object with:</p>
+<table>
+<thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>.value</code></td><td><code>any</code></td><td>Get the current (possibly cached) value</td></tr>
+<tr><td><code>.isDirty</code></td><td><code>boolean</code></td><td>Whether re-computation is needed</td></tr>
+<tr><td><code>.invalidate()</code></td><td><code>Function</code></td><td>Mark dirty manually</td></tr>
+<tr><td><code>.destroy()</code></td><td><code>Function</code></td><td>Clear cache and dependency tracking</td></tr></tbody>
+</table>
+<pre><code class="language-javascript">import { reactive } from "ement/core/reactive";
+import { computed } from "ement/core/computed";
+
+const state = reactive({ firstName: "John", lastName: "Doe" }, onChange);
+
+const fullName = computed(() =&gt; `${state.firstName} ${state.lastName}`);
+
+fullName.value; // 'John Doe' — computed on first read
+fullName.value; // 'John Doe' — cached, compute fn NOT called again
+
+state.firstName = "Jane"; // marks fullName dirty
+fullName.value; // 'Jane Doe' — re-computed</code></pre>
+<h2>Dependency tracking</h2>
+<p>Dependencies are tracked by property path string (e.g. <code>"user.name"</code>). Tracking is global and synchronous — only one computed can track at a time. Do not call <code>computed().value</code> from within another computed's compute function in an async context.</p>
+<pre><code class="language-javascript">// This works — synchronous, nested reads are tracked correctly
+const display = computed(() =&gt; {
+  const n = fullName.value; // accesses state.firstName + state.lastName
+  return `Hello, ${n}!`;
+});</code></pre>
+<h2>Caveats</h2>
+<ul>
+<li>Dependencies are captured on each re-computation. If a conditional branch changes which properties are read, the dependency set updates accordingly.</li>
+<li>Array mutations tracked through <code>reactive()</code> (push, splice, etc.) invalidate computeds that accessed the array.</li>
+<li>Does not track <code>toRaw()</code> accesses — bypassing the proxy bypasses tracking.</li>
+</ul>
+<h2>AngularJS comparison</h2>
+<table>
+<thead><tr><th>AngularJS</th><th>Ement</th></tr></thead>
+<tbody><tr><td><code>$scope.$watch(expr, fn)</code></td><td><code>computed(fn)</code> — no callback, pull-based</td></tr>
+<tr><td>Eager: runs on every <code>$digest</code></td><td>Lazy: only runs when <code>.value</code> is read</td></tr>
+<tr><td>Manual dependency declaration optional</td><td>Automatic dependency detection</td></tr></tbody>
+</table>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>scheduler — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>scheduler</h1>
+<p>Microtask-based update scheduler. Batches multiple reactive mutations into a single DOM update.</p>
+<p><strong>Module:</strong> <code>core/scheduler</code></p>
+<p><strong>Exports:</strong> <code>scheduleUpdate</code>, <code>flushUpdates</code>, <code>pendingCount</code></p>
+<h2>Why it exists</h2>
+<p><code>reactive()</code> fires its <code>onChange</code> callback synchronously per property mutation. Without batching, setting 5 properties would trigger 5 separate DOM re-renders. The scheduler deduplicates: the same update function scheduled multiple times in the same synchronous block runs only once, in the next microtask.</p>
+<p>This is the equivalent of AngularJS's batched <code>$digest</code> cycle, but driven by <code>queueMicrotask</code> instead of a manual trigger.</p>
+<h2>API</h2>
+<h3><code>scheduleUpdate(updateFn)</code></h3>
+<p>Enqueues an update function to run in the next microtask. If the same function reference is scheduled again before the batch flushes, it runs only once.</p>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>updateFn</code></td><td><code>Function</code></td><td>DOM update callback to run</td></tr></tbody>
+</table>
+<pre><code class="language-javascript">import { scheduleUpdate } from "ement";
+
+function renderCount() {
+  document.querySelector("#count").textContent = state.count;
+}
+
+state.count = 1;
+state.count = 2;
+state.count = 3;
+scheduleUpdate(renderCount); // called 3 times but renderCount runs only once
+scheduleUpdate(renderCount);
+scheduleUpdate(renderCount);
+// → renderCount() fires once in the next microtask with count = 3</code></pre>
+<h3><code>flushUpdates()</code></h3>
+<p>Flushes all pending updates synchronously. Primarily used in tests to assert DOM state immediately after mutations without waiting for the microtask queue.</p>
+<pre><code class="language-javascript">import { scheduleUpdate, flushUpdates } from "ement";
+
+scheduleUpdate(render);
+flushUpdates(); // render() runs now, synchronously
+// → safe to assert DOM state here</code></pre>
+<h3><code>pendingCount()</code></h3>
+<p>Returns the number of update functions currently queued. Useful for debugging or test assertions.</p>
+<pre><code class="language-javascript">scheduleUpdate(renderA);
+scheduleUpdate(renderB);
+pendingCount(); // 2
+flushUpdates();
+pendingCount(); // 0</code></pre>
+<h2>Batching guarantee</h2>
+<p>Updates scheduled while a batch is flushing are deferred to the <strong>next</strong> batch — there is no infinite loop risk. Each <code>flush()</code> copies and clears the queue before executing, so newly scheduled updates during execution go into a fresh batch.</p>
+<h2>AngularJS comparison</h2>
+<table>
+<thead><tr><th>AngularJS</th><th>Ement</th></tr></thead>
+<tbody><tr><td><code>$scope.$digest()</code> — manual trigger</td><td><code>queueMicrotask</code> — automatic, browser-native</td></tr>
+<tr><td>All watchers re-evaluated on each digest</td><td>Only explicitly scheduled functions run</td></tr>
+<tr><td><code>$scope.$apply(fn)</code> to batch external changes</td><td>Call <code>scheduleUpdate</code> from reactive <code>onChange</code></td></tr></tbody>
+</table>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

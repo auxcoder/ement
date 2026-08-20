@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElHttp — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>ElHttp</h1>
+<p><code>fetch</code>-based HTTP client with interceptors, timeout, and automatic retry. Replaces AngularJS's <code>$http</code>.</p>
+<p><strong>Module:</strong> <code>http/http</code></p>
+<p><strong>Exports:</strong> <code>ElHttp</code>, <code>HttpError</code></p>
+<h2>Constructor</h2>
+<pre><code class="language-javascript">new ElHttp(options?)</code></pre>
+<table>
+<thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>baseUrl</code></td><td><code>string</code></td><td><code>''</code></td><td>Prepended to every request URL</td></tr>
+<tr><td><code>interceptors</code></td><td><code>Array</code></td><td><code>[]</code></td><td>Request/response interceptor objects</td></tr>
+<tr><td><code>headers</code></td><td><code>Object</code></td><td><code>{}</code></td><td>Default headers sent with every request</td></tr>
+<tr><td><code>timeout</code></td><td><code>number</code></td><td><code>0</code></td><td>Default timeout in ms (<code>0</code> = none)</td></tr>
+<tr><td><code>retries</code></td><td><code>number</code></td><td><code>0</code></td><td>Default retry count on failure</td></tr>
+<tr><td><code>retryDelay</code></td><td><code>number</code></td><td><code>1000</code></td><td>Base delay for exponential backoff between retries</td></tr></tbody>
+</table>
+<h2>HTTP methods</h2>
+<p>All methods return parsed JSON by default. They throw <code>HttpError</code> on non-2xx responses.</p>
+<pre><code class="language-javascript">const http = new ElHttp({ baseUrl: "/api" });
+
+const users = await http.get("/users");
+const user = await http.post("/users", { name: "Alice", email: "a@b.com" });
+const saved = await http.put("/users/1", updatedUser);
+const patched = await http.patch("/users/1", { name: "Bob" });
+await http.delete("/users/1");</code></pre>
+<h3>Body serialization</h3>
+<p><code>post</code>, <code>put</code>, <code>patch</code> auto-serialize the body:</p>
+<table>
+<thead><tr><th>Body type</th><th>Behavior</th></tr></thead>
+<tbody><tr><td>Plain object / array</td><td><code>JSON.stringify</code> + <code>Content-Type: application/json</code></td></tr>
+<tr><td><code>string</code></td><td>Sent as-is + <code>Content-Type: application/json</code></td></tr>
+<tr><td><code>FormData</code></td><td>Sent as-is (browser sets <code>multipart/form-data</code> with boundary)</td></tr>
+<tr><td><code>Blob</code>, <code>ArrayBuffer</code>, <code>ReadableStream</code>, <code>URLSearchParams</code></td><td>Sent as-is, no <code>Content-Type</code> override</td></tr></tbody>
+</table>
+<h3><code>request(url, options?)</code></h3>
+<p>Low-level method for full control. Returns a <code>Response</code> object (not parsed JSON).</p>
+<pre><code class="language-javascript">const response = await http.request("/users", {
+  method: "GET",
+  signal: abortController.signal,
+  timeout: 5000,
+  retries: 2,
+});
+const data = await response.json();</code></pre>
+<p>Per-request <code>timeout</code> and <code>retries</code> override the instance defaults.</p>
+<h2>Interceptors</h2>
+<p>An interceptor is a plain object with optional <code>request</code>, <code>requestError</code>, <code>response</code>, and <code>responseError</code> hooks:</p>
+<pre><code class="language-javascript">const authInterceptor = {
+  request: (config) =&gt; {
+    config.headers["Authorization"] = `Bearer ${getToken()}`;
+    return config;
+  },
+  response: (response) =&gt; {
+    // Can transform the response before it reaches the caller
+    return response;
+  },
+  responseError: async (error, config) =&gt; {
+    // Can recover: return a new response to suppress the error
+    if (error.status === 401) {
+      await refreshToken();
+      return fetch(config.url, config); // retry
+    }
+    // Otherwise re-throw by returning nothing
+  },
+};
+
+const http = new ElHttp({ interceptors: [authInterceptor] });</code></pre>
+<h2>Cancellation</h2>
+<pre><code class="language-javascript">const controller = new AbortController();
+setTimeout(() =&gt; controller.abort(), 2000);
+
+const data = await http.get("/slow-endpoint", { signal: controller.signal });</code></pre>
+<h3><code>http.cancelAll()</code></h3>
+<p>Abort all in-flight requests at once. Useful in component <code>disconnectedCallback</code>:</p>
+<pre><code class="language-javascript">disconnectedCallback() {
+  this.http.cancelAll();
+}</code></pre>
+<h2><code>HttpError</code></h2>
+<p>Thrown on non-2xx responses.</p>
+<table>
+<thead><tr><th>Property</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>error.status</code></td><td>HTTP status code</td></tr>
+<tr><td><code>error.response</code></td><td>The original <code>Response</code> object</td></tr>
+<tr><td><code>error.message</code></td><td><code>"HTTP 404: Not Found"</code></td></tr></tbody>
+</table>
+<pre><code class="language-javascript">try {
+  await http.get("/users/999");
+} catch (e) {
+  if (e instanceof HttpError &amp;&amp; e.status === 404) {
+    // handle not found
+  }
+}</code></pre>
+<h2>AngularJS comparison</h2>
+<table>
+<thead><tr><th>AngularJS <code>$http</code></th><th>Ement <code>ElHttp</code></th></tr></thead>
+<tbody><tr><td><code>$http.get('/api/users')</code></td><td><code>http.get('/users')</code></td></tr>
+<tr><td>Interceptors via <code>$httpProvider.interceptors</code></td><td><code>new ElHttp({ interceptors: [...] })</code></td></tr>
+<tr><td>Returns <code>{ data, status, headers }</code></td><td>Returns parsed JSON directly</td></tr>
+<tr><td><code>$http.defaults.headers</code></td><td><code>new ElHttp({ headers: {...} })</code></td></tr>
+<tr><td>No built-in timeout per request</td><td><code>timeout</code> option per instance or per request</td></tr>
+<tr><td>No retry</td><td><code>retries</code> + exponential backoff</td></tr></tbody>
+</table>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RouteOutlet — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>RouteOutlet</h1>
+<p>Custom element that serves as the mounting point for routed components.</p>
+<p><strong>Module:</strong> <code>router/route-outlet</code></p>
+<p><strong>Exports:</strong> <code>RouteOutlet</code></p>
+<p><strong>Tag:</strong> <code>&lt;route-outlet&gt;</code></p>
+<h2>Overview</h2>
+<p><code>&lt;route-outlet&gt;</code> is the container where <code>ElRouter</code> mounts and unmounts components during navigation. It manages the lifecycle of the currently active component: clearing the previous one before mounting the next.</p>
+<p>You typically don't call its methods directly — <code>ElRouter</code> does. Declare it in your HTML and pass it to the router constructor.</p>
+<h2>Usage</h2>
+<pre><code class="language-html">&lt;route-outlet&gt;&lt;/route-outlet&gt;</code></pre>
+<pre><code class="language-javascript">import { ElRouter } from "ement/router/router";
+
+const outlet = document.querySelector("route-outlet");
+const router = new ElRouter(outlet);</code></pre>
+<h2>API</h2>
+<h3><code>outlet.currentComponent</code></h3>
+<p>Read-only. The currently mounted <code>HTMLElement</code>, or <code>null</code> if the outlet is empty.</p>
+<h3><code>outlet.mount(element)</code></h3>
+<p>Mount a component element. Clears the current component first, then appends the new element.</p>
+<pre><code class="language-javascript">// Called internally by ElRouter — you rarely need this directly
+outlet.mount(document.createElement("my-component"));</code></pre>
+<h3><code>outlet.clear()</code></h3>
+<p>Remove the current component and empty the outlet.</p>
+<h2>Notes</h2>
+<ul>
+<li>The element auto-registers as <code>'route-outlet'</code> in browser environments.</li>
+<li>In Node.js test environments (no <code>customElements</code>), registration is skipped — safe to import without a DOM.</li>
+<li>Using <code>ElRouter</code> with a regular <code>&lt;div&gt;</code> instead of <code>&lt;route-outlet&gt;</code> works — the router calls <code>innerHTML = ''</code> and <code>appendChild</code> directly. <code>&lt;route-outlet&gt;</code> adds the <code>mount()</code> and <code>clear()</code> convenience API and the <code>currentComponent</code> property.</li>
+</ul>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>
