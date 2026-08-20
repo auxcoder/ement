@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Tokens — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>Service Tokens</h1>
+<p>Symbol constants that act as interface tokens for the DI container.</p>
+<p><strong>Module:</strong> <code>di/tokens</code></p>
+<p><strong>Exports:</strong> <code>HttpToken</code>, <code>RouterToken</code>, <code>StorageToken</code>, <code>AuthToken</code></p>
+<h2>What tokens are</h2>
+<p>A token is a <code>Symbol</code> — a unique, unforgeable key. Consumers ask the container for a service by token; they never reference the concrete implementation class. This decouples usage from implementation and makes mocking trivial.</p>
+<pre><code class="language-javascript">// Consumer asks for "an HTTP client":
+const http = container.resolve(HttpToken);
+
+// Doesn't matter what concrete class is behind it:
+container.register(HttpToken, () =&gt; new ElHttp()); // production
+container.register(HttpToken, () =&gt; new MockHttp()); // tests</code></pre>
+<h2>Built-in tokens</h2>
+<table>
+<thead><tr><th>Token</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>HttpToken</code></td><td>The HTTP client service (<code>ElHttp</code> by default)</td></tr>
+<tr><td><code>RouterToken</code></td><td>The SPA router service (<code>ElRouter</code> by default)</td></tr>
+<tr><td><code>StorageToken</code></td><td>A storage service (not provided built-in — register your own)</td></tr>
+<tr><td><code>AuthToken</code></td><td>An authentication service (not provided built-in — register your own)</td></tr></tbody>
+</table>
+<p><code>bootstrap()</code> automatically registers <code>HttpToken</code> and <code>RouterToken</code>. <code>StorageToken</code> and <code>AuthToken</code> are conventions — register whatever implementation you choose.</p>
+<h2>Defining custom tokens</h2>
+<p>Create your own tokens for application services using the same pattern:</p>
+<pre><code class="language-javascript">// tokens.js (your app)
+export const UserServiceToken = Symbol("UserService");
+export const AnalyticsToken = Symbol("Analytics");</code></pre>
+<pre><code class="language-javascript">import { UserServiceToken } from "./tokens.js";
+import { UserService } from "./user.service.js";
+
+container.register(UserServiceToken, (c) =&gt; {
+  const http = c.resolve(HttpToken);
+  return new UserService(http);
+});</code></pre>
+<h2>AngularJS comparison</h2>
+<table>
+<thead><tr><th>AngularJS</th><th>Ement</th></tr></thead>
+<tbody><tr><td>String service names: <code>$injector.get('MyService')</code></td><td>Symbol tokens: <code>container.resolve(MyToken)</code></td></tr>
+<tr><td>Name collisions possible</td><td>Symbols are globally unique — no collisions</td></tr>
+<tr><td>Minification can break string-based injection</td><td>Symbols survive minification</td></tr></tbody>
+</table>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

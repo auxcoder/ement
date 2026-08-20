@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>parsers — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>parsers</h1>
+<p>View → model transform functions for use in <code>ElField</code>'s <code>parsers</code> pipeline.</p>
+<p><strong>Module:</strong> <code>forms/parsers</code></p>
+<p><strong>Exports:</strong> <code>trim</code>, <code>lowercase</code>, <code>uppercase</code>, <code>toNumber</code>, <code>toDate</code>, <code>toBoolean</code>, <code>stripNonDigits</code>, <code>maxLength</code></p>
+<h2>Parser signature</h2>
+<pre><code class="language-">(viewValue: string) =&gt; modelValue | undefined</code></pre>
+<p>Parsers run left-to-right. Returning <code>undefined</code> halts the pipeline — the model value is not updated and no <code>onChange</code> fires.</p>
+<h2>Built-in parsers</h2>
+<table>
+<thead><tr><th>Parser</th><th>Input → Output</th><th>Notes</th></tr></thead>
+<tbody><tr><td><code>trim</code></td><td><code>" hello "</code> → <code>"hello"</code></td><td>Strips leading/trailing whitespace</td></tr>
+<tr><td><code>lowercase</code></td><td><code>"HELLO"</code> → <code>"hello"</code></td><td></td></tr>
+<tr><td><code>uppercase</code></td><td><code>"hello"</code> → <code>"HELLO"</code></td><td></td></tr>
+<tr><td><code>toNumber</code></td><td><code>"42"</code> → <code>42</code>, <code>""</code> → <code>null</code></td><td>Empty string becomes <code>null</code></td></tr>
+<tr><td><code>toDate</code></td><td><code>"2026-01-15"</code> → <code>Date</code></td><td>Returns <code>null</code> for empty string</td></tr>
+<tr><td><code>toBoolean</code></td><td><code>"true"</code> / <code>"1"</code> → <code>true</code>, else <code>false</code></td><td>For checkbox or toggle inputs</td></tr>
+<tr><td><code>stripNonDigits</code></td><td><code>"(555) 123-4567"</code> → <code>"5551234567"</code></td><td>Removes all non-digit characters</td></tr>
+<tr><td><code>maxLength(n)</code></td><td><code>"toolong"</code> → <code>"toolon"</code> (with n=6)</td><td>Trims view value to max length</td></tr></tbody>
+</table>
+<h2>Examples</h2>
+<pre><code class="language-javascript">import { ElField } from "ement/forms/field";
+import { trim, toNumber } from "ement/forms/parsers";
+
+// Numeric input: whitespace-trimmed, cast to number
+new ElField(document.querySelector("#price"), {
+  parsers: [trim, toNumber],
+});
+
+// Phone input: strip formatting, keep only digits as model value
+import { stripNonDigits } from "ement/forms/parsers";
+new ElField(document.querySelector("#phone"), {
+  parsers: [stripNonDigits],
+});</code></pre>
+<h2>Custom parsers</h2>
+<p>A custom parser is any function <code>(value) =&gt; transformed</code>. Combine freely:</p>
+<pre><code class="language-javascript">const normalizeEmail = (v) =&gt; v?.trim().toLowerCase();
+const parseJson = (v) =&gt; {
+  try {
+    return JSON.parse(v);
+  } catch {
+    return undefined;
+  }
+};
+
+new ElField(input, {
+  parsers: [normalizeEmail],
+});</code></pre>
+<h2>Halting the pipeline</h2>
+<p>Return <code>undefined</code> to signal that the input is unparseable and stop processing:</p>
+<pre><code class="language-javascript">const strictPositiveNumber = (v) =&gt; {
+  const n = Number(v);
+  return isNaN(n) || n &lt;= 0 ? undefined : n;
+};</code></pre>
+<p>When <code>undefined</code> is returned, <code>field.modelValue</code> stays at its last valid value and <code>onChange</code> is not called.</p>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>validators — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>validators</h1>
+<p>Common sync validator functions for use with <code>ElField</code>.</p>
+<p><strong>Module:</strong> <code>forms/validators</code></p>
+<p><strong>Exports:</strong> <code>required</code>, <code>minLength</code>, <code>maxLength</code>, <code>pattern</code>, <code>min</code>, <code>max</code>, <code>email</code></p>
+<h2>Validator signature</h2>
+<pre><code class="language-">(modelValue, viewValue?) =&gt; errorKey | null</code></pre>
+<p>Returns <code>null</code> if valid. Returns an error key string (e.g. <code>'required'</code>) if invalid.</p>
+<h2>Built-in validators</h2>
+<h3><code>required</code></h3>
+<p>Fails if the value is falsy (but not <code>0</code>).</p>
+<pre><code class="language-javascript">required("hello"); // null
+required(""); // 'required'
+required(null); // 'required'
+required(0); // null  — zero is a valid value</code></pre>
+<h3><code>minLength(min)</code></h3>
+<p>Fails if <code>value.length &lt; min</code>.</p>
+<pre><code class="language-javascript">minLength(3)("hi"); // 'minLength'
+minLength(3)("hey"); // null
+minLength(3)(null); // null  — length check skipped if falsy</code></pre>
+<h3><code>maxLength(max)</code></h3>
+<p>Fails if <code>value.length &gt; max</code>.</p>
+<pre><code class="language-javascript">maxLength(5)("toolong"); // 'maxLength'
+maxLength(5)("ok"); // null</code></pre>
+<h3><code>pattern(regex, key?)</code></h3>
+<p>Fails if the value doesn't match the regex. <code>key</code> is the error name returned (default: <code>'pattern'</code>).</p>
+<pre><code class="language-javascript">pattern(/^\d+$/)("123"); // null
+pattern(/^\d+$/)("abc"); // 'pattern'
+pattern(/^\d+$/, "digits")("abc"); // 'digits'</code></pre>
+<h3><code>min(min)</code></h3>
+<p>Fails if <code>value &lt; min</code> (numeric).</p>
+<pre><code class="language-javascript">min(0)(-1); // 'min'
+min(0)(0); // null</code></pre>
+<h3><code>max(max)</code></h3>
+<p>Fails if <code>value &gt; max</code> (numeric).</p>
+<pre><code class="language-javascript">max(100)(150); // 'max'
+max(100)(50); // null</code></pre>
+<h3><code>email</code></h3>
+<p>Fails if the value is not a valid email format.</p>
+<pre><code class="language-javascript">email("a@b.com"); // null
+email("notanemail"); // 'email'
+email(""); // null  — empty passes (combine with required for mandatory emails)</code></pre>
+<h2>Combining validators</h2>
+<pre><code class="language-javascript">import { ElField } from "ement/forms/field";
+import { required, minLength, maxLength, email } from "ement/forms/validators";
+
+new ElField(input, {
+  validators: [required, minLength(3), maxLength(100), email],
+});</code></pre>
+<p>The first validator to return an error key short-circuits — subsequent validators still run, but all active errors accumulate in <code>field.errors</code>.</p>
+<h2>Custom validators</h2>
+<p>A custom validator is any function that matches the signature:</p>
+<pre><code class="language-javascript">const noSpaces = (v) =&gt; (v?.includes(" ") ? "noSpaces" : null);
+
+const usernameField = new ElField(input, {
+  validators: [required, noSpaces, minLength(3)],
+});</code></pre>
+<h2>AngularJS-compatible object format</h2>
+<p>Validators can also be passed as an object for migration compatibility:</p>
+<pre><code class="language-javascript">validators: {
+  required: (v) =&gt; !!v,
+  minLength: (v) =&gt; !v || v.length &gt;= 3,
+}</code></pre>
+<p><code>true</code> = valid, <code>false</code> = invalid. The key becomes the error name in <code>field.errors</code>.</p>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sanitize — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>sanitize</h1>
+<p>HTML sanitization and escaping. Replaces AngularJS's <code>$sce</code> + <code>$sanitize</code>.</p>
+<p><strong>Module:</strong> <code>security/sanitize</code></p>
+<p><strong>Exports:</strong> <code>sanitizeHTML</code>, <code>escapeHTML</code></p>
+<h2>API</h2>
+<h3><code>sanitizeHTML(html, options?)</code></h3>
+<p>Parse and clean an untrusted HTML string. Disallowed tags are unwrapped (children kept); disallowed attributes and event handlers are stripped.</p>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>html</code></td><td><code>string</code></td><td>Untrusted HTML</td></tr>
+<tr><td><code>options.allowedTags</code></td><td><code>string[]</code></td><td>Tags to preserve. Default covers common content tags.</td></tr>
+<tr><td><code>options.allowedAttrs</code></td><td><code>string[]</code></td><td>Attributes to preserve on allowed tags. Default: <code>href</code>, <code>src</code>, <code>alt</code>, <code>title</code>, <code>class</code>, <code>id</code>, <code>width</code>, <code>height</code>.</td></tr></tbody>
+</table>
+<p>Returns a sanitized HTML string.</p>
+<pre><code class="language-javascript">import { sanitizeHTML } from "ement/security/sanitize";
+
+sanitizeHTML('&lt;p onclick="evil()"&gt;Hello &lt;script&gt;bad&lt;/script&gt;&lt;/p&gt;');
+// → '&lt;p&gt;Hello &lt;/p&gt;'
+
+sanitizeHTML('&lt;b&gt;Bold&lt;/b&gt; and &lt;iframe src="x"&gt;&lt;/iframe&gt; text');
+// → '&lt;b&gt;Bold&lt;/b&gt; and  text'  — &lt;iframe&gt; unwrapped, content kept</code></pre>
+<p>#### Default allowed tags</p>
+<p><code>p</code>, <code>br</code>, <code>b</code>, <code>i</code>, <code>em</code>, <code>strong</code>, <code>a</code>, <code>ul</code>, <code>ol</code>, <code>li</code>,</p>
+<p><code>h1</code>–<code>h6</code>, <code>blockquote</code>, <code>code</code>, <code>pre</code>, <code>span</code>, <code>div</code>, <code>img</code>,</p>
+<p><code>table</code>, <code>thead</code>, <code>tbody</code>, <code>tr</code>, <code>td</code>, <code>th</code></p>
+<p>#### Custom allowed tags</p>
+<pre><code class="language-javascript">sanitizeHTML(userContent, {
+  allowedTags: ["p", "br", "b", "i", "a"],
+  allowedAttrs: ["href"],
+});</code></pre>
+<h3><code>escapeHTML(text)</code></h3>
+<p>Escape a plain text string for safe insertion into HTML. Replaces <code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>, <code>"</code>, <code>'</code> with HTML entities.</p>
+<pre><code class="language-javascript">import { escapeHTML } from "ement/security/sanitize";
+
+escapeHTML('&lt;script&gt;alert("xss")&lt;/script&gt;');
+// → '&amp;lt;script&amp;gt;alert(&amp;quot;xss&amp;quot;)&amp;lt;/script&amp;gt;'</code></pre>
+<p>Use this when inserting user-provided plain text into HTML (not rich content). For rich content, use <code>sanitizeHTML</code>.</p>
+<h2>What is always stripped</h2>
+<p>Regardless of <code>allowedAttrs</code>:</p>
+<ul>
+<li>All <code>on*</code> event handler attributes (<code>onclick</code>, <code>onload</code>, <code>onerror</code>, etc.)</li>
+<li><code>javascript:</code> URIs in <code>href</code> or <code>src</code></li>
+<li><code>data:</code> URIs in <code>href</code> or <code>src</code> (except <code>data:image/</code> which is allowed)</li>
+<li>HTML comment nodes</li>
+</ul>
+<h2>AngularJS comparison</h2>
+<table>
+<thead><tr><th>AngularJS</th><th>Ement</th></tr></thead>
+<tbody><tr><td><code>$sce.trustAsHtml(html)</code></td><td>Not needed — use <code>sanitizeHTML</code> to clean, then bind</td></tr>
+<tr><td><code>ngSanitize</code> module + <code>$sanitize(html)</code></td><td><code>sanitizeHTML(html)</code> — no module, no DI</td></tr>
+<tr><td>Allowed tag list in <code>$sanitizeProvider</code></td><td><code>options.allowedTags</code> per call</td></tr></tbody>
+</table>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

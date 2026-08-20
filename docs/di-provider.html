@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DI Provider — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>DI Provider</h1>
+<p>DOM-based container distribution. Attaches an <code>ElContainer</code> to a DOM subtree so descendant components can resolve services without importing them directly.</p>
+<p><strong>Module:</strong> <code>di/provider</code></p>
+<p><strong>Exports:</strong> <code>provideContainer</code>, <code>resolveContainer</code>, <code>ElProvider</code></p>
+<h2>API</h2>
+<h3><code>provideContainer(element, container)</code></h3>
+<p>Attach a container to a DOM element. Any descendant can then call <code>resolveContainer</code> to reach it.</p>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>element</code></td><td><code>HTMLElement</code></td><td>The root element of the subtree</td></tr>
+<tr><td><code>container</code></td><td><code>ElContainer</code></td><td>The container to attach</td></tr></tbody>
+</table>
+<pre><code class="language-javascript">import { ElContainer } from "ement/di/container";
+import { provideContainer } from "ement/di/provider";
+
+const container = new ElContainer();
+container.register(HttpToken, () =&gt; new ElHttp({ baseUrl: "/api" }));
+provideContainer(document.getElementById("app"), container);</code></pre>
+<h3><code>resolveContainer(element)</code></h3>
+<p>Walk up the DOM (including across Shadow DOM boundaries) to find the nearest container. Throws if none is found.</p>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>element</code></td><td><code>HTMLElement</code></td><td>Starting element (typically <code>this</code> inside a component)</td></tr></tbody>
+</table>
+<p>Returns the nearest <code>ElContainer</code>.</p>
+<pre><code class="language-javascript">// Inside an ElElement:
+connectedCallback() {
+  const container = resolveContainer(this);
+  this.http = container.resolve(HttpToken);
+}</code></pre>
+<h3><code>ElProvider</code> custom element</h3>
+<p>The <code>&lt;el-provider&gt;</code> element creates its own <code>ElContainer</code> when connected to the DOM. Register services through its <code>.container</code> property.</p>
+<pre><code class="language-html">&lt;el-provider id="root"&gt;&lt;/el-provider&gt;</code></pre>
+<pre><code class="language-javascript">const provider = document.querySelector("#root");
+provider.container.register(HttpToken, () =&gt; new ElHttp());</code></pre>
+<p>You can also assign a pre-built container (e.g. one with a parent):</p>
+<pre><code class="language-javascript">const parent = existingContainer;
+const child = parent.createChild();
+child.register(AuthToken, () =&gt; mockAuth);
+provider.container = child;</code></pre>
+<h2>Shadow DOM traversal</h2>
+<p><code>resolveContainer</code> walks <code>parentElement</code> in the regular DOM, and <code>getRootNode().host</code> to cross Shadow DOM boundaries. This means components inside shadow roots can still reach a container attached to a light DOM ancestor.</p>
+<h2>AngularJS comparison</h2>
+<table>
+<thead><tr><th>AngularJS</th><th>Ement</th></tr></thead>
+<tbody><tr><td><code>$scope</code> hierarchy — implicit inheritance via prototype chain</td><td><code>provideContainer</code> — explicit attachment to a DOM element</td></tr>
+<tr><td>Service injection via <code>$injector</code> global</td><td><code>resolveContainer(this)</code> — walks DOM tree</td></tr>
+<tr><td>No sub-tree isolation</td><td>Child containers can shadow parent tokens per sub-tree</td></tr></tbody>
+</table>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

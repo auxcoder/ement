@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>reactive — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>reactive</h1>
+<p>Proxy-based reactivity system. Replaces AngularJS's digest cycle and dirty-checking.</p>
+<p><strong>Module:</strong> <code>core/reactive</code></p>
+<p><strong>Exports:</strong> <code>reactive</code>, <code>toRaw</code>, <code>isReactive</code></p>
+<h2>How it works</h2>
+<p>Every property mutation on a reactive object is intercepted by a Proxy. The <code>onChange</code> callback fires synchronously per mutation. Nested objects become reactive lazily on first access. Arrays are also reactive — mutating methods (<code>push</code>, <code>pop</code>, <code>splice</code>, etc.) trigger the callback.</p>
+<p>This is O(1) per mutation, versus AngularJS's O(n) dirty-check pass across all watchers. No <code>$apply()</code> or <code>$digest()</code> needed.</p>
+<h2>API</h2>
+<h3><code>reactive(target, onChange)</code></h3>
+<p>Wraps an object in a reactive proxy.</p>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>target</code></td><td><code>Object</code></td><td>The plain object to make reactive</td></tr>
+<tr><td><code>onChange</code></td><td><code>(prop, newValue, oldValue) =&gt; void</code></td><td>Called on every mutation</td></tr></tbody>
+</table>
+<p>Returns a <code>Proxy</code> wrapping <code>target</code>.</p>
+<pre><code class="language-javascript">import { reactive } from "ement";
+
+const state = reactive(
+  { count: 0, user: { name: "Alice" } },
+  (prop, value, old) =&gt; {
+    console.log(`${prop}: ${old} → ${value}`);
+  },
+);
+
+state.count++; // "count: 0 → 1"
+state.user.name = "Bob"; // "user.name: Alice → Bob"
+state.items = [];
+state.items.push("x"); // "items: [...] → [...]"</code></pre>
+<h3><code>toRaw(proxy)</code></h3>
+<p>Returns the underlying plain object, bypassing the proxy. Use for serialization or passing to external libraries that should not observe changes.</p>
+<pre><code class="language-javascript">const raw = toRaw(state);
+JSON.stringify(raw); // safe — no proxy overhead</code></pre>
+<h3><code>isReactive(value)</code></h3>
+<p>Returns <code>true</code> if the value is a reactive proxy created by <code>reactive()</code>.</p>
+<pre><code class="language-javascript">isReactive(state); // true
+isReactive({}); // false</code></pre>
+<h2>Rules</h2>
+<ul>
+<li>Only top-level reassignment triggers <code>onChange</code>. Mutating a nested object in place is invisible <strong>unless</strong> you accessed it through the proxy first (which makes it reactive lazily).</li>
+<li>Do not double-wrap a reactive object — <code>reactive()</code> is a no-op if the target is already a proxy.</li>
+<li>Circular references are handled via a <code>WeakMap</code> cache — no infinite loops.</li>
+<li><code>delete state.prop</code> also triggers <code>onChange</code> with <code>newValue = undefined</code>.</li>
+</ul>
+<h2>AngularJS comparison</h2>
+<table>
+<thead><tr><th>AngularJS</th><th>Ement</th></tr></thead>
+<tbody><tr><td><code>$scope.$watch('name', fn)</code></td><td><code>reactive({ name }, fn)</code> — automatic, no watch declaration</td></tr>
+<tr><td><code>$scope.$apply(fn)</code></td><td>Not needed — mutations are intercepted directly</td></tr>
+<tr><td>O(n) dirty-check on <code>$digest</code></td><td>O(1) Proxy set trap</td></tr>
+<tr><td>No deep reactivity by default</td><td>Deep reactivity via lazy nested proxies</td></tr></tbody>
+</table>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>
