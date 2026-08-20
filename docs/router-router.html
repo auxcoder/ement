@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElRouter — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>ElRouter</h1>
+<p>History-based SPA router with route groups, data resolvers, and transition hooks.</p>
+<p><strong>Module:</strong> <code>router/router</code></p>
+<p><strong>Exports:</strong> <code>ElRouter</code></p>
+<h2>API</h2>
+<h3><code>new ElRouter(outlet)</code></h3>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>outlet</code></td><td><code>HTMLElement</code></td><td>DOM element where routed components are mounted</td></tr></tbody>
+</table>
+<h3><code>router.route(pattern, component, options?)</code></h3>
+<p>Register a route.</p>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>pattern</code></td><td><code>string</code></td><td>URL pattern (e.g. <code>/users/:id</code>)</td></tr>
+<tr><td><code>component</code></td><td><code>string</code></td><td>Custom element tag name to mount on match</td></tr>
+<tr><td><code>options.resolve</code></td><td><code>async (params) =&gt; Object</code></td><td>Async data loader. Result is set as <code>el.routeData</code>.</td></tr>
+<tr><td><code>options.group</code></td><td><code>string</code></td><td>Name of a registered group to inherit its cached resolve</td></tr></tbody>
+</table>
+<p>Returns <code>this</code> for chaining.</p>
+<h3><code>router.group(name, options)</code></h3>
+<p>Register a route group with a shared resolve function. Resolve runs once and is cached until <code>invalidateGroup(name)</code> is called.</p>
+<pre><code class="language-javascript">router
+  .group("admin", {
+    resolve: async () =&gt; ({ permissions: await fetchPermissions() }),
+  })
+  .route("/admin/users", "admin-users", { group: "admin" })
+  .route("/admin/settings", "admin-settings", { group: "admin" });</code></pre>
+<h3><code>router.onBefore(hookFn)</code></h3>
+<p>Register a guard that runs before each navigation.</p>
+<ul>
+<li>Return <code>undefined</code> (or nothing) to continue.</li>
+<li>Return <code>false</code> to cancel navigation.</li>
+<li>Return a <code>string</code> path to redirect.</li>
+</ul>
+<pre><code class="language-javascript">router.onBefore(async (from, to) =&gt; {
+  if (!auth.isLoggedIn &amp;&amp; to.path !== "/login") {
+    return "/login"; // redirect
+  }
+});</code></pre>
+<h3><code>router.onSuccess(hookFn)</code></h3>
+<p>Hook called after successful navigation. Receives <code>(from, to, data)</code>.</p>
+<h3><code>router.onError(hookFn)</code></h3>
+<p>Hook called when navigation fails (resolve throws, etc.). Receives <code>(error, from, to)</code>.</p>
+<h3><code>router.navigate(path)</code></h3>
+<p>Navigate programmatically. Pushes to <code>history</code> and resolves the route.</p>
+<pre><code class="language-javascript">router.navigate("/users/42");</code></pre>
+<h3><code>router.start()</code></h3>
+<p>Resolve the current URL (<code>location.pathname</code>). Call once after configuring routes to handle the initial page load.</p>
+<h3><code>router.current</code></h3>
+<p>Read-only. Returns <code>{ path, params, route }</code> for the currently active route, or <code>null</code> if no route has resolved yet.</p>
+<h3><code>router.invalidateGroup(name)</code></h3>
+<p>Clear a group's cached resolve data. The next navigation to a route in that group will re-run the group resolve.</p>
+<h2>Mounted component properties</h2>
+<p>When a component mounts, the router sets two properties on the element:</p>
+<table>
+<thead><tr><th>Property</th><th>Value</th></tr></thead>
+<tbody><tr><td><code>el.params</code></td><td>URL parameters from the pattern (e.g. <code>{ id: '42' }</code>)</td></tr>
+<tr><td><code>el.routeData</code></td><td>Merged result from group resolve + route resolve</td></tr></tbody>
+</table>
+<h2>Events</h2>
+<p><code>ElRouter extends EventTarget</code>. A <code>navigate</code> CustomEvent fires after each successful transition:</p>
+<pre><code class="language-javascript">router.addEventListener("navigate", (e) =&gt; {
+  const { from, to, data } = e.detail;
+});</code></pre>
+<h2>Full example</h2>
+<pre><code class="language-javascript">import { ElRouter } from "ement/router/router";
+import { interceptLinks } from "ement/router/links";
+
+const outlet = document.querySelector("route-outlet");
+const router = new ElRouter(outlet);
+
+router
+  .group("auth", { resolve: () =&gt; fetchCurrentUser() })
+  .route("/", "app-home")
+  .route("/login", "login-page")
+  .route("/users", "users-list", { group: "auth" })
+  .route("/users/:id", "user-detail", {
+    group: "auth",
+    resolve: ({ id }) =&gt; fetchUser(id),
+  });
+
+router.onBefore((from, to) =&gt; {
+  if (requiresAuth(to.path) &amp;&amp; !currentUser) return "/login";
+});
+
+interceptLinks(router);
+router.start();</code></pre>
+<h2>AngularJS comparison</h2>
+<table>
+<thead><tr><th>AngularJS (<code>ngRoute</code>)</th><th>Ement</th></tr></thead>
+<tbody><tr><td><code>$routeProvider.when('/path', { controller, template })</code></td><td><code>router.route('/path', 'my-element')</code></td></tr>
+<tr><td><code>$routeParams</code></td><td><code>el.params</code> (set by router on mount)</td></tr>
+<tr><td><code>resolve</code> in route config</td><td><code>options.resolve</code> — same concept</td></tr>
+<tr><td><code>$location.path('/new')</code></td><td><code>router.navigate('/new')</code></td></tr>
+<tr><td>No built-in guards</td><td><code>router.onBefore(fn)</code></td></tr></tbody>
+</table>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>intl filters — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>intl filters</h1>
+<p>Locale-aware display formatting using native <code>Intl</code> APIs. Replaces AngularJS's built-in <code>currency</code>, <code>date</code>, <code>number</code> filters.</p>
+<p><strong>Module:</strong> <code>filters/intl</code></p>
+<p><strong>Exports:</strong> <code>formatCurrency</code>, <code>formatNumber</code>, <code>formatPercent</code>, <code>formatDate</code>, <code>formatRelative</code>, <code>formatList</code>, <code>formatPlural</code></p>
+<blockquote><strong>Filters vs formatters:</strong> These functions are for display — labels, table cells, template bindings. For transforming values inside form inputs (model ↔ view), use <a href="../forms/formatters.html"><code>forms/formatters</code></a>.</blockquote>
+<p>All functions accept an optional <code>locale</code> argument (BCP 47 tag, e.g. <code>'en-US'</code>, <code>'de-DE'</code>). When omitted, the user's browser locale is used.</p>
+<h2>API</h2>
+<h3><code>formatCurrency(value, currency?, locale?)</code></h3>
+<pre><code class="language-javascript">formatCurrency(1234.5); // '$1,234.50'  (en-US)
+formatCurrency(1234.5, "EUR", "de-DE"); // '1.234,50 €'</code></pre>
+<table>
+<thead><tr><th>Param</th><th>Default</th></tr></thead>
+<tbody><tr><td><code>currency</code></td><td><code>'USD'</code></td></tr>
+<tr><td><code>locale</code></td><td>browser locale</td></tr></tbody>
+</table>
+<h3><code>formatNumber(value, options?, locale?)</code></h3>
+<p>Wraps <code>Intl.NumberFormat</code>. Pass any <code>Intl.NumberFormat</code> options.</p>
+<pre><code class="language-javascript">formatNumber(1234567.89); // '1,234,567.89'
+formatNumber(1234567.89, { maximumFractionDigits: 0 }); // '1,234,568'
+formatNumber(0.00123, { notation: "scientific" }); // '1.23E-3'</code></pre>
+<h3><code>formatPercent(value, locale?)</code></h3>
+<p>Formats a decimal as a percentage.</p>
+<pre><code class="language-javascript">formatPercent(0.75); // '75%'
+formatPercent(1.0); // '100%'</code></pre>
+<h3><code>formatDate(value, style?, locale?)</code></h3>
+<table>
+<thead><tr><th>Style</th><th>Example (en-US)</th></tr></thead>
+<tbody><tr><td><code>'short'</code></td><td><code>8/19/26</code></td></tr>
+<tr><td><code>'medium'</code> (default)</td><td><code>Aug 19, 2026</code></td></tr>
+<tr><td><code>'long'</code></td><td><code>August 19, 2026</code></td></tr>
+<tr><td><code>'full'</code></td><td><code>Wednesday, August 19, 2026</code></td></tr></tbody>
+</table>
+<pre><code class="language-javascript">formatDate(new Date()); // 'Aug 19, 2026'
+formatDate("2026-01-01", "long"); // 'January 1, 2026'
+formatDate(new Date(), "short", "de-DE"); // '19.8.26'</code></pre>
+<h3><code>formatRelative(date, locale?)</code></h3>
+<p>Formats a past or future date relative to now.</p>
+<pre><code class="language-javascript">formatRelative(Date.now() - 3 * 60 * 1000); // '3 minutes ago'
+formatRelative(Date.now() - 2 * 86400 * 1000); // '2 days ago'
+formatRelative(Date.now() + 86400 * 1000); // 'tomorrow'</code></pre>
+<p>Uses <code>Intl.RelativeTimeFormat</code> with <code>{ numeric: 'auto' }</code>.</p>
+<h3><code>formatList(items, type?, locale?)</code></h3>
+<p>Joins an array into a locale-aware list string.</p>
+<table>
+<thead><tr><th>Type</th><th>Example (en-US)</th></tr></thead>
+<tbody><tr><td><code>'conjunction'</code> (default)</td><td><code>"A, B, and C"</code></td></tr>
+<tr><td><code>'disjunction'</code></td><td><code>"A, B, or C"</code></td></tr>
+<tr><td><code>'unit'</code></td><td><code>"A, B, C"</code></td></tr></tbody>
+</table>
+<pre><code class="language-javascript">formatList(["React", "Vue", "Svelte"]); // 'React, Vue, and Svelte'
+formatList(["React", "Vue"], "disjunction"); // 'React or Vue'
+formatList(["React", "Vue", "Svelte"], "conjunction", "es"); // 'React, Vue y Svelte'</code></pre>
+<h3><code>formatPlural(count, forms, locale?)</code></h3>
+<p>Select the correct plural form. <code>#</code> in the string is replaced by <code>count</code>.</p>
+<pre><code class="language-javascript">formatPlural(1, { one: "# item", other: "# items" }); // '1 item'
+formatPlural(5, { one: "# item", other: "# items" }); // '5 items'
+formatPlural(0, { one: "# item", other: "# items" }); // '0 items'</code></pre>
+<p>Supports all <code>Intl.PluralRules</code> categories: <code>zero</code>, <code>one</code>, <code>two</code>, <code>few</code>, <code>many</code>, <code>other</code>.</p>
+<h2>AngularJS comparison</h2>
+<table>
+<thead><tr><th>AngularJS filter</th><th>Ement</th></tr></thead>
+<tbody><tr><td>`{{ value \</td><td>currency }}`</td><td><code>formatCurrency(value)</code></td></tr>
+<tr><td>`{{ value \</td><td>date:'mediumDate' }}`</td><td><code>formatDate(value, 'medium')</code></td></tr>
+<tr><td>`{{ value \</td><td>number:2 }}`</td><td><code>formatNumber(value, { maximumFractionDigits: 2 })</code></td></tr>
+<tr><td>No relative time</td><td><code>formatRelative(date)</code></td></tr>
+<tr><td>No list formatting</td><td><code>formatList(items)</code></td></tr>
+<tr><td>No plural rules</td><td><code>formatPlural(count, forms)</code></td></tr></tbody>
+</table>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>animate — Ement</title>
+    <link rel="stylesheet" href="assets/docs.css" />
+    <link rel="stylesheet" href="assets/highlight.min.css" />
+  </head>
+  <body>
+    <nav>
+      <a
+        href="index.html"
+        style="font-weight: 600; font-size: 1rem; margin-bottom: 1rem"
+        >Ement Docs</a
+      >
+      <div class="section">core</div>
+      <a href="core-bootstrap.html">bootstrap</a>
+      <a href="core-computed.html">computed</a>
+      <a href="core-element.html">ElElement — Reactivity Design</a>
+      <a href="core-reactive.html">reactive</a>
+      <a href="core-scheduler.html">scheduler</a>
+      <div class="section">di</div>
+      <a href="di-container.html">ElContainer</a>
+      <a href="di-provider.html">DI Provider</a>
+      <a href="di-tokens.html">Service Tokens</a>
+      <div class="section">router</div>
+      <a href="router-links.html">interceptLinks</a>
+      <a href="router-route-outlet.html">RouteOutlet</a>
+      <a href="router-router.html">ElRouter</a>
+      <div class="section">http</div>
+      <a href="http-http.html">ElHttp</a>
+      <div class="section">forms</div>
+      <a href="forms-field.html">ElField</a>
+      <a href="forms-form-group.html">ElFormGroup</a>
+      <a href="forms-formatters.html">formatters</a>
+      <a href="forms-parsers.html">parsers</a>
+      <a href="forms-validators.html">validators</a>
+      <div class="section">animate</div>
+      <a href="animate-animate.html">animate</a>
+      <div class="section">security</div>
+      <a href="security-sanitize.html">sanitize</a>
+      <div class="section">filters</div>
+      <a href="filters-intl.html">intl filters</a>
+    </nav>
+    <main>
+      <h1>animate</h1>
+      <p>
+        Web Animations API helpers for enter/leave/stagger animations. Replaces
+        AngularJS's <code>ngAnimate</code>.
+      </p>
+      <p><strong>Module:</strong> <code>animate/animate</code></p>
+      <p>
+        <strong>Exports:</strong> <code>animateIn</code>,
+        <code>animateOut</code>, <code>stagger</code>, <code>presets</code>
+      </p>
+      <h2>API</h2>
+      <h3><code>animateIn(element, keyframes, options?)</code></h3>
+      <p>
+        Run an enter animation on an element. Returns the
+        <code>Animation</code> object.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Param</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>element</code></td>
+            <td><code>HTMLElement</code></td>
+            <td>Element to animate</td>
+          </tr>
+          <tr>
+            <td><code>keyframes</code></td>
+            <td><code>Keyframe[]</code></td>
+            <td>Web Animations keyframes</td>
+          </tr>
+          <tr>
+            <td><code>options</code></td>
+            <td><code>KeyframeAnimationOptions</code></td>
+            <td>
+              Overrides defaults:
+              <code
+                >{ duration: 300, easing: 'ease-in-out', fill: 'forwards'
+                }</code
+              >
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <pre><code class="language-javascript">import { animateIn, presets } from 'ement/animate/animate';
+
+animateIn(card, presets.fadeIn);
+animateIn(modal, presets.slideInDown, { duration: 200 });</code></pre>
+      <h3><code>animateOut(element, keyframes, options?)</code></h3>
+      <p>
+        Run a leave animation, then
+        <strong>remove the element from the DOM</strong> when it finishes.
+      </p>
+      <pre><code class="language-javascript">import { animateOut, presets } from 'ement/animate/animate';
+
+animateOut(toast, presets.fadeOut);
+// toast.remove() called automatically on animation end</code></pre>
+      <h3><code>stagger(elements, keyframes, options?)</code></h3>
+      <p>
+        Animate a list of elements with a time offset between each. Returns an
+        array of <code>Animation</code> objects.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Param</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>elements</code></td>
+            <td>`HTMLElement[] \</td>
+            <td>NodeList`</td>
+            <td>Elements to animate</td>
+          </tr>
+          <tr>
+            <td><code>keyframes</code></td>
+            <td><code>Keyframe[]</code></td>
+            <td>Web Animations keyframes</td>
+          </tr>
+          <tr>
+            <td><code>options.delay</code></td>
+            <td><code>number</code></td>
+            <td>Ms between each element's start (default: <code>50</code>)</td>
+          </tr>
+          <tr>
+            <td><code>options.*</code></td>
+            <td>any</td>
+            <td>All other <code>KeyframeAnimationOptions</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <pre><code class="language-javascript">import { stagger, presets } from 'ement/animate/animate';
+
+const items = document.querySelectorAll('li');
+stagger(items, presets.slideInLeft, { delay: 80, duration: 250 });</code></pre>
+      <h2>Presets</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Effect</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>presets.fadeIn</code></td>
+            <td>opacity 0 → 1</td>
+          </tr>
+          <tr>
+            <td><code>presets.fadeOut</code></td>
+            <td>opacity 1 → 0</td>
+          </tr>
+          <tr>
+            <td><code>presets.slideInDown</code></td>
+            <td>fade + translateY(-20px) → normal</td>
+          </tr>
+          <tr>
+            <td><code>presets.slideOutUp</code></td>
+            <td>normal → fade + translateY(-20px)</td>
+          </tr>
+          <tr>
+            <td><code>presets.slideInLeft</code></td>
+            <td>fade + translateX(-20px) → normal</td>
+          </tr>
+          <tr>
+            <td><code>presets.scaleIn</code></td>
+            <td>scale(0.9) + opacity 0 → normal</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        All presets are plain <code>Keyframe[]</code> arrays — pass them
+        directly to any of the three helpers.
+      </p>
+      <h2>Custom keyframes</h2>
+      <p>
+        Presets are just a convenience. Any valid Web Animations keyframes work:
+      </p>
+      <pre><code class="language-javascript">animateIn(el, [
+  { transform: 'rotate(-5deg) scale(0.95)', opacity: 0 },
+  { transform: 'rotate(0deg) scale(1)', opacity: 1 },
+], { duration: 400, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });</code></pre>
+      <h2>AngularJS comparison</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>AngularJS <code>ngAnimate</code></th>
+            <th>Ement</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              CSS class-based (<code>.ng-enter</code>, <code>.ng-leave</code>)
+            </td>
+            <td>
+              Imperative JS calls to <code>animateIn</code> /
+              <code>animateOut</code>
+            </td>
+          </tr>
+          <tr>
+            <td>Hooks into digest cycle</td>
+            <td>Pure Web Animations API — no framework coupling</td>
+          </tr>
+          <tr>
+            <td>Automatic for <code>ng-if</code>, <code>ng-repeat</code></td>
+            <td>Manual call in component lifecycle</td>
+          </tr>
+          <tr>
+            <td>Requires <code>ngAnimate</code> module</td>
+            <td>No module — import directly</td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+    <script src="assets/highlight.min.js"></script>
+    <script>
+      hljs.highlightAll();
+    </script>
+  </body>
+</html>

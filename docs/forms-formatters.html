@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>formatters — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>formatters</h1>
+<p>Model → view transform functions for use in <code>ElField</code>'s <code>formatters</code> pipeline.</p>
+<p><strong>Module:</strong> <code>forms/formatters</code></p>
+<p><strong>Exports:</strong> <code>phone</code>, <code>date</code>, <code>mask</code>, <code>currency</code>, <code>percentage</code></p>
+<blockquote><strong>Formatters vs filters:</strong> Formatters are for inputs — they control what the user sees and edits inside a form field. For display-only formatting in templates (labels, tables, spans), use <a href="../filters/intl.html"><code>filters/intl</code></a>.</blockquote>
+<h2>Formatter signature</h2>
+<pre><code class="language-">(modelValue: any) =&gt; viewValue: string</code></pre>
+<p>Formatters run left-to-right when <code>ElField.writeValue(model)</code> is called, transforming the model into a string for display in the input.</p>
+<h2>Built-in formatters</h2>
+<h3><code>phone</code></h3>
+<p>Formats a 10-digit string into <code>(NNN) NNN-NNNN</code>. Passes through unchanged if not exactly 10 digits.</p>
+<pre><code class="language-javascript">phone("5551234567"); // '(555) 123-4567'
+phone(""); // ''
+phone("123"); // '123'  (not 10 digits — pass-through)</code></pre>
+<h3><code>date</code></h3>
+<p>Formats a <code>Date</code> or date string into <code>YYYY-MM-DD</code> (the format <code>&lt;input type="date"&gt;</code> expects).</p>
+<pre><code class="language-javascript">date(new Date("2026-08-19")); // '2026-08-19'
+date("2026-08-19T00:00:00Z"); // '2026-08-19'
+date(null); // ''</code></pre>
+<h3><code>mask(visible?, char?)</code></h3>
+<p>Masks all but the last <code>visible</code> characters. Default: last 4 visible, mask char <code>•</code>.</p>
+<pre><code class="language-javascript">mask()("4111222233334444"); // '••••••••••••4444'
+mask(4, "*")("4111222233334444"); // '************4444'
+mask(4)("short"); // 'short'  (≤4 chars — no masking)</code></pre>
+<h3><code>currency(decimals?, locale?)</code></h3>
+<p>Formats a number with locale-aware thousand separators and fixed decimals. Does <strong>not</strong> add a currency symbol — use <code>filters/intl.formatCurrency</code> for display labels.</p>
+<pre><code class="language-javascript">currency()(1234.5); // '1,234.50'  (en locale)
+currency(0)(1234.567); // '1,235'
+currency(2, "de-DE")(1234.5); // '1.234,50'</code></pre>
+<h3><code>percentage(decimals?)</code></h3>
+<p>Converts a decimal to a percentage number string for display. The <code>%</code> symbol is not added — add it in the template label.</p>
+<pre><code class="language-javascript">percentage()(0.75); // '75'
+percentage(1)(0.755); // '75.5'
+percentage()(null); // ''</code></pre>
+<h2>Example: price input</h2>
+<pre><code class="language-javascript">import { ElField } from "ement/forms/field";
+import { trim, toNumber } from "ement/forms/parsers";
+import { currency } from "ement/forms/formatters";
+import { required, min } from "ement/forms/validators";
+
+const priceField = new ElField(document.querySelector("#price"), {
+  parsers: [trim, toNumber],
+  formatters: [currency(2)],
+  validators: [required, min(0)],
+  onChange: (value) =&gt; {
+    product.price = value;
+  },
+});
+
+priceField.writeValue(product.price); // e.g. 1234.50 → input shows "1,234.50"
+// User edits "1234.50" → parser converts to 1234.5 → model updated</code></pre>
+<h2>Custom formatters</h2>
+<pre><code class="language-javascript">const yesNo = (v) =&gt; (v ? "Yes" : "No");
+const initials = (v) =&gt;
+  v
+    ?.split(" ")
+    .map((w) =&gt; w[0])
+    .join("")
+    .toUpperCase() ?? "";</code></pre>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElField — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>ElField</h1>
+<p>Input binding with a <code>parsers → validators → onChange</code> pipeline, and a formatters pipeline for writing model values back to the input. Replaces AngularJS's <code>NgModelController</code>.</p>
+<p><strong>Module:</strong> <code>forms/field</code></p>
+<p><strong>Exports:</strong> <code>ElField</code></p>
+<h2>Pipeline</h2>
+<pre><code class="language-">User types → input event → parsers → validators → onChange(modelValue, state)
+                                                         ↑
+writeValue(model) → formatters → input.value ───────────┘</code></pre>
+<h2>Constructor</h2>
+<pre><code class="language-javascript">new ElField(input, options?)</code></pre>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>input</code></td><td><code>HTMLElement</code></td><td>The element (<code>&lt;input&gt;</code>, <code>&lt;select&gt;</code>, etc.)</td></tr>
+<tr><td><code>options.parsers</code></td><td><code>Function[]</code></td><td>view → model transform chain</td></tr>
+<tr><td><code>options.formatters</code></td><td><code>Function[]</code></td><td>model → view transform chain</td></tr>
+<tr><td><code>options.validators</code></td><td>`Function[] \</td><td>Object`</td><td>Sync validators (see below)</td></tr>
+<tr><td><code>options.asyncValidators</code></td><td>`Function[] \</td><td>Object`</td><td>Async validators</td></tr>
+<tr><td><code>options.onChange</code></td><td><code>(model, state) =&gt; void</code></td><td>Called after each pipeline run</td></tr>
+<tr><td><code>options.debounce</code></td><td><code>number</code></td><td>Debounce events in ms ( <code>0</code>)</td></tr></tbody>
+</table>
+<h2>Validators</h2>
+<p>Two formats are supported:</p>
+<p><strong>Array format (ement):</strong> each function returns an error key string if invalid, or <code>null</code> if valid.</p>
+<pre><code class="language-javascript">validators: [
+  (v) =&gt; (!v ? "required" : null),
+  (v) =&gt; (v?.length &lt; 3 ? "minLength" : null),
+];</code></pre>
+<p><strong>Object format (AngularJS-compatible):</strong> <code>{ errorKey: (modelValue, viewValue) =&gt; boolean }</code>. <code>true</code> = valid.</p>
+<pre><code class="language-javascript">validators: {
+  required: (v) =&gt; !!v,
+  minLength: (v) =&gt; !v || v.length &gt;= 3,
+}</code></pre>
+<p>Async validators follow the same two-format pattern, but receive a <code>signal</code> (<code>AbortSignal</code>) as the second argument and return a <code>Promise</code>. Async validators only run when all sync validators pass.</p>
+<pre><code class="language-javascript">asyncValidators: [
+  async (v, signal) =&gt; {
+    const taken = await checkUsername(v, signal);
+    return taken ? "usernameTaken" : null;
+  },
+];</code></pre>
+<h2>State</h2>
+<p>All state is available as read-only properties:</p>
+<table>
+<thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>field.modelValue</code></td><td><code>any</code></td><td>Current model value (after parsers)</td></tr>
+<tr><td><code>field.viewValue</code></td><td><code>string</code></td><td>Current input string</td></tr>
+<tr><td><code>field.valid</code></td><td><code>boolean</code></td><td><code>true</code> if no errors</td></tr>
+<tr><td><code>field.dirty</code></td><td><code>boolean</code></td><td><code>true</code> after first user input</td></tr>
+<tr><td><code>field.touched</code></td><td><code>boolean</code></td><td><code>true</code> after first blur</td></tr>
+<tr><td><code>field.pending</code></td><td><code>boolean</code></td><td><code>true</code> while async validators run</td></tr>
+<tr><td><code>field.errors</code></td><td><code>Object</code></td><td><code>{ errorKey: true }</code> for each active error</td></tr>
+<tr><td><code>field.snapshot</code></td><td><code>Object</code></td><td>Shallow copy of all state (passed to <code>onChange</code>)</td></tr></tbody>
+</table>
+<h3>CSS classes</h3>
+<p>Automatically toggled on the input element:</p>
+<table>
+<thead><tr><th>Class</th><th>Condition</th></tr></thead>
+<tbody><tr><td><code>el-valid</code> / <code>el-invalid</code></td><td><code>valid</code> state</td></tr>
+<tr><td><code>el-dirty</code> / <code>el-pristine</code></td><td><code>dirty</code> state</td></tr>
+<tr><td><code>el-touched</code> / <code>el-untouched</code></td><td><code>touched</code> state</td></tr>
+<tr><td><code>el-pending</code></td><td>Async validation in progress</td></tr></tbody>
+</table>
+<h2>Methods</h2>
+<h3><code>field.writeValue(modelValue)</code></h3>
+<p>Push a model value into the input. Runs formatters then sets <code>input.value</code>.</p>
+<pre><code class="language-javascript">field.writeValue(user.birthDate); // Date → "2000-01-15" (with date formatter)</code></pre>
+<h3><code>field.reset(modelValue?)</code></h3>
+<p>Reset dirty, touched, and errors. Optionally write a new value.</p>
+<pre><code class="language-javascript">field.reset(); // clear state, keep current value
+field.reset(defaultUser.name); // clear state + write new value</code></pre>
+<h3><code>field.markDirty()</code> / <code>field.markPristine()</code></h3>
+<p>Programmatically set dirty state.</p>
+<h3><code>field.markTouched()</code></h3>
+<p>Programmatically mark as touched.</p>
+<h3><code>field.destroy()</code></h3>
+<p>Cancel pending async validation and clear debounce timers. Call when removing the input from the DOM.</p>
+<h2>Example</h2>
+<pre><code class="language-javascript">import { ElField } from "ement/forms/field";
+import { trim, toNumber } from "ement/forms/parsers";
+import { currency } from "ement/forms/formatters";
+import { required, min } from "ement/forms/validators";
+
+const priceField = new ElField(document.querySelector("#price"), {
+  parsers: [trim, toNumber],
+  formatters: [currency(2)],
+  validators: [required, min(0)],
+  onChange: (value, state) =&gt; {
+    console.log("price:", value, "valid:", state.valid);
+  },
+  debounce: 300,
+});
+
+// Reflect model state into input:
+priceField.writeValue(product.price);</code></pre>
+<h2>AngularJS comparison</h2>
+<table>
+<thead><tr><th>AngularJS <code>NgModelController</code></th><th>Ement <code>ElField</code></th></tr></thead>
+<tbody><tr><td><code>$parsers</code> array</td><td><code>parsers</code> option</td></tr>
+<tr><td><code>$formatters</code> array</td><td><code>formatters</code> option</td></tr>
+<tr><td><code>$validators</code> object</td><td><code>validators</code> (array or object)</td></tr>
+<tr><td><code>$asyncValidators</code> object</td><td><code>asyncValidators</code> (array or object)</td></tr>
+<tr><td><code>$setViewValue</code> (internal)</td><td><code>writeValue(model)</code></td></tr>
+<tr><td><code>$render</code></td><td><code>writeValue(model)</code></td></tr>
+<tr><td><code>$setPristine</code> / <code>$setDirty</code></td><td><code>markPristine()</code> / <code>markDirty()</code></td></tr>
+<tr><td><code>ng-valid</code>, <code>ng-invalid</code> CSS classes</td><td><code>el-valid</code>, <code>el-invalid</code></td></tr></tbody>
+</table>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

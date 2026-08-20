@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Reference — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  
+    <h1>Ement API Reference</h1>
+    <p>Modern web framework built on Custom Elements and native browser APIs.</p>
+    <hr>
+    <a href="core-bootstrap.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>bootstrap</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Application entry point helper. Wires together an `ElContainer`, `ElHttp`, and optionally an `ElRouter` in one call.</p>
+    </a>
+<a href="core-computed.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>computed</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Lazy, cached derived values that auto-invalidate when reactive dependencies change.</p>
+    </a>
+<a href="core-element.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>ElElement — Reactivity Design</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">After the template renders, ElElement finds every property name used in `{{ }}` bindings and replaces that property on the instance with a getter/setter via `Object.defineProperty`.</p>
+    </a>
+<a href="core-reactive.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>reactive</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Proxy-based reactivity system. Replaces AngularJS's digest cycle and dirty-checking.</p>
+    </a>
+<a href="core-scheduler.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>scheduler</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Microtask-based update scheduler. Batches multiple reactive mutations into a single DOM update.</p>
+    </a>
+<a href="di-container.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>ElContainer</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Interface-based dependency injection container. Replaces AngularJS's `$injector` and `$provide`.</p>
+    </a>
+<a href="di-provider.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>DI Provider</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">DOM-based container distribution. Attaches an `ElContainer` to a DOM subtree so descendant components can resolve services without importing them directly.</p>
+    </a>
+<a href="di-tokens.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>Service Tokens</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Symbol constants that act as interface tokens for the DI container.</p>
+    </a>
+<a href="router-links.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>interceptLinks</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">SPA link interception. Captures same-origin `<a>` clicks and routes them through `ElRouter` instead of triggering a full page reload.</p>
+    </a>
+<a href="router-route-outlet.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>RouteOutlet</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Custom element that serves as the mounting point for routed components.</p>
+    </a>
+<a href="router-router.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>ElRouter</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">History-based SPA router with route groups, data resolvers, and transition hooks.</p>
+    </a>
+<a href="http-http.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>ElHttp</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">`fetch`-based HTTP client with interceptors, timeout, and automatic retry. Replaces AngularJS's `$http`.</p>
+    </a>
+<a href="forms-field.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>ElField</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Input binding with a `parsers → validators → onChange` pipeline, and a formatters pipeline for writing model values back to the input. Replaces AngularJS's `NgModelController`.</p>
+    </a>
+<a href="forms-form-group.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>ElFormGroup</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Aggregates multiple `ElField` instances into a form with unified state. Replaces AngularJS's form controller (`NgFormController`).</p>
+    </a>
+<a href="forms-formatters.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>formatters</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Model → view transform functions for use in `ElField`'s `formatters` pipeline.</p>
+    </a>
+<a href="forms-parsers.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>parsers</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">View → model transform functions for use in `ElField`'s `parsers` pipeline.</p>
+    </a>
+<a href="forms-validators.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>validators</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Common sync validator functions for use with `ElField`.</p>
+    </a>
+<a href="animate-animate.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>animate</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Web Animations API helpers for enter/leave/stagger animations. Replaces AngularJS's `ngAnimate`.</p>
+    </a>
+<a href="security-sanitize.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>sanitize</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">HTML sanitization and escaping. Replaces AngularJS's `$sce` + `$sanitize`.</p>
+    </a>
+<a href="filters-intl.html" style="display:block; padding:1rem; border:1px solid #e0e0e0; border-radius:8px; text-decoration:none; color:inherit; margin-bottom:0.75rem;">
+      <strong>intl filters</strong>
+      <p style="margin:0.25rem 0 0; font-size:0.875rem; color:#555;">Locale-aware display formatting using native `Intl` APIs. Replaces AngularJS's built-in `currency`, `date`, `number` filters.</p>
+    </a>
+  
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

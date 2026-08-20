@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>interceptLinks — Ement</title>
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/highlight.min.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" style="font-weight:600; font-size:1rem; margin-bottom:1rem;">Ement Docs</a>
+  <div class="section">core</div><a href="core-bootstrap.html">bootstrap</a>
+<a href="core-computed.html">computed</a>
+<a href="core-element.html">ElElement — Reactivity Design</a>
+<a href="core-reactive.html">reactive</a>
+<a href="core-scheduler.html">scheduler</a>
+<div class="section">di</div><a href="di-container.html">ElContainer</a>
+<a href="di-provider.html">DI Provider</a>
+<a href="di-tokens.html">Service Tokens</a>
+<div class="section">router</div><a href="router-links.html">interceptLinks</a>
+<a href="router-route-outlet.html">RouteOutlet</a>
+<a href="router-router.html">ElRouter</a>
+<div class="section">http</div><a href="http-http.html">ElHttp</a>
+<div class="section">forms</div><a href="forms-field.html">ElField</a>
+<a href="forms-form-group.html">ElFormGroup</a>
+<a href="forms-formatters.html">formatters</a>
+<a href="forms-parsers.html">parsers</a>
+<a href="forms-validators.html">validators</a>
+<div class="section">animate</div><a href="animate-animate.html">animate</a>
+<div class="section">security</div><a href="security-sanitize.html">sanitize</a>
+<div class="section">filters</div><a href="filters-intl.html">intl filters</a>
+
+</nav>
+<main>
+  <h1>interceptLinks</h1>
+<p>SPA link interception. Captures same-origin <code>&lt;a&gt;</code> clicks and routes them through <code>ElRouter</code> instead of triggering a full page reload.</p>
+<p><strong>Module:</strong> <code>router/links</code></p>
+<p><strong>Exports:</strong> <code>interceptLinks</code></p>
+<h2>API</h2>
+<h3><code>interceptLinks(router, root?)</code></h3>
+<p>Install click delegation on a root element.</p>
+<table>
+<thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+<tbody><tr><td><code>router</code></td><td><code>ElRouter</code></td><td>The router instance to navigate through</td></tr>
+<tr><td><code>root</code></td><td><code>EventTarget</code></td><td>Root to attach the listener to. Defaults to <code>document</code>.</td></tr></tbody>
+</table>
+<p>Returns a <code>cleanup</code> function — call it to remove the listener.</p>
+<pre><code class="language-javascript">import { interceptLinks } from "ement/router/links";
+
+const cleanup = interceptLinks(router);
+
+// Later, if you need to tear down (e.g., micro-frontend unmount):
+cleanup();</code></pre>
+<h2>What it intercepts</h2>
+<p>A click on an <code>&lt;a href="..."&gt;</code> is intercepted if <strong>all</strong> of the following are true:</p>
+<ul>
+<li>Left mouse button, no modifier keys (<code>Ctrl</code>, <code>Meta</code>, <code>Shift</code>, <code>Alt</code>)</li>
+<li>No <code>target</code> attribute (e.g. <code>target="_blank"</code> is ignored)</li>
+<li>No <code>data-external</code> attribute (explicit opt-out)</li>
+<li><code>href</code> is not <code>mailto:</code>, <code>tel:</code>, or a bare hash (<code>#</code>)</li>
+<li>Same origin as the current page</li>
+</ul>
+<p>For anything that doesn't match, the browser handles the navigation normally.</p>
+<h2>Opting out</h2>
+<p>Add <code>data-external</code> to links that should navigate the full page:</p>
+<pre><code class="language-html">&lt;a href="/docs/download.pdf" data-external&gt;Download PDF&lt;/a&gt;
+&lt;a href="https://github.com/org/repo" data-external&gt;GitHub&lt;/a&gt;</code></pre>
+<h2>Example with bootstrap</h2>
+<p><code>bootstrap()</code> calls <code>interceptLinks</code> automatically when <code>config.routes</code> is provided. Manual use is only needed when you create a router without <code>bootstrap</code>:</p>
+<pre><code class="language-javascript">const router = new ElRouter(outlet);
+// ... configure routes ...
+router.start();
+interceptLinks(router, document.getElementById("app"));</code></pre>
+</main>
+<script src="assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>
